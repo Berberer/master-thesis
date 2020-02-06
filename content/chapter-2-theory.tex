@@ -15,9 +15,24 @@ Before explaining the ensemble approach in the next chapter, this line of reason
 
 \section{Classical Machine Learning}
 \label{sec:theory:ml}
-
-\Blindtext
-
+If a human is given a task where the correct solution or reaction is not evident, a humans has always the possibility to react with a random solution or with an arbitrary reaction.
+But if the human has any prior first- or second-hand experience with the same of a similar task, the human can choose the reaction based on the memories of different outcomes for different reactions for the more or less similar prior task.
+With the high abstraction level and very symbolic nature of human thinking and memorization, it is comparably easy for humans to recognize even remote similarities between tasks.\newline
+This is very challenging for a computer in contrast, because the models of tasks, experiences, and outcomes of reactions to tasks have to be readable and understandable for a machine, i.e. be in any kind of structured and consistent format.
+This setting can be formalized as $(T, P, E)$, where $T$ is a class of tasks, $P$ a performance measurement for solutions of a specific instances of the tasks class $T$ and $E$ is either given or collected experience, i.e. performance measurements for certain solutions in the context of specific task instance $t\in T$~\cite{Mitchell-MachineLearning}.\newline
+Of course it is possible for a human programmer to manually specify the solution with the best performance measurement for any possible $t\in T$ but for a high $|T|$ this is rarely possible and viable.
+Here, machine learning has its use-case: "Machine learning enables us to tackle tasks that are too diﬃcult to solve with ﬁxed programs written and designed by human beings"~\cite{Goodfellow-DeepLearning}.\newline
+A high number of different types of task classes $T$ is imaginable, but one of the common one is \textit{Supervised Learning}.
+In supervised learning, $T$ includes a fix set of all possible solutions $S$.
+The concrete task for Supervised Learning is now to select for a given $t\in T$ a $s\subseteq S$ such that $P(t,s)$ is optimal.
+To enable a machine to learn supervised, the experience $E$ has to be successively build in the form of ${(t_1, s_1, P(t_1, s_1)), ..., (t_n, s_n, P(t_n s_n))}$.
+For a new task instance $t_i$, the computer will select a $s_i$ based on a decision model build from $E$, receive a performance feedback $P(t_i, s_i)$ and finally enrich $E$ with $(t_i, s_i, P(t_i, s_i))$ as well as updating the decision model with the changed $E$.
+Therewith, a well working machine learning algorithm for supervised learning would now be able to achieve $P(t_j, s_j) \geq P(t_i, s_i)$ if $t_j$ and $t_i$ are similar instances, since it already has experience which $s\subseteq S$ had a certain performance value for $t_i$ and might therefore be a good or bad choice for $t_j$.\newline
+This task of comparing and judging the similarity of different instances of $T$ and to build a practicable decision model based on $E$ to select a solution out of $S$ has been tackled with a plethora of different algorithms.
+Usually, this algorithms have to be configured with a set of hyperparameter depending on $T$ and often $T$ also has to be transformed before presenting concrete instances to the algorithm for learning, i.e. pre-processing each $t\in T$ with one or more transformation methods.
+Without making suitable choices for the machine learning algorithm as well as corresponding hyperparameter and pre-processing methods for each different $T$, the performance measurements will only increase for a high $|E|$ or even not at all.
+But because the number of available task instances, i.e. the amount of data, that can be used to build $E$ with a machine learning algorithm is often limited for most use-case domains, a valid choice for the learning algorithm, hyperparameter and, if necessary, pre-processing methods is crucial.
+With the high number of available machine learning algorithms and the often complex relationships between learning performance and hyperparameter configurations of the chosen algorithm as well as properties of $T$ and suitable pre-processing methods a big expertise in the machine learning field is necessary to be able to assemble machine learning applications with good performance measurements.
 
 \section{Automated Machine Learning}
 \label{sec:theory:automl}
