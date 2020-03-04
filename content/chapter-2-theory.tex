@@ -52,7 +52,7 @@ Additionally, each AutoML tool can have further configuration necessary as an in
 The constraints for execution are required to prevent the AutoML tool from searching for the best machine learning pipeline for the given data indefinitely with probably continuously growing hardware consumption.
 Therefore, the time and/or some hardware budgets are constrained.
 This inputs and outputs of an conceptual AutoML tool are illustrated in figure~\ref{fig:theory:conceptualAutoMLTool}.\newline
-\begin{figure}
+\begin{figure}[ht!]
     \includegraphics[width=\textwidth]{gfx/Figures/AutoMLTool.pdf}
     \caption{High level view of a conceptual AutoML tool. }
 	\label{fig:theory:conceptualAutoMLTool}
@@ -66,12 +66,15 @@ The general workflow of an AutoML tool is also numbered and illustrated in the f
 \end{enumerate}
 The Model Evaluation step is usually performed by training a pipeline on one big portion of the input data and testing it with a smaller portion of the data while measuring some kind of performance measurement, for example the accuracy of predictions or some error metric.
 But other evaluation techniques for example like a Cross-Validation are also common.\newline
-While the Model Evaluation step is only very loosely defined and usually not a complex procedure, the Model Selection and Model Configuration steps of the AutoML workflow are more sophisticated and will be individually explained in the following.
+While the Model Evaluation step is only very loosely defined and usually not a complex procedure, the Model Selection and Model Configuration steps of the AutoML workflow are more sophisticated.
+They have to select a suitable candidate from a usually large space. 
+Both spaces, for Model Selection as well as for Model Configuration, will be individually explained in the following.
 
 \subsection{Model Selection}
 \label{sec:theory:automl:selection}
 Model Selection is the task of selecting $1$ to $n$ components that will be part of the machine learning pipeline and sequentially traversed when data is passed through the pipeline.
-For example, a valid pipeline would be to apply a Principal-Component-Analysis on the data as a first component and to use a Support Vector Machine for classification on the processed data as a second component afterwards.\newline
+For example, a valid pipeline would be to apply a Principal-Component-Analysis on the data as a first component and to use a Support Vector Machine for classification on the processed data as a second component afterwards.
+In this step of the worklof, the space one candidate has to be selected from, consists of all this valid pipeline, which usually have two or more components.\newline
 Usually there are three types of components:
 \begin{itemize}
     \item Pre-Processing: Transform the input data before presenting it to the learning model.
@@ -82,8 +85,8 @@ Although in theory only a single learning model is necessary and components for 
 It is possible to use more than one component from each type in a single pipeline and pipelines with arbitrary complexity can be created.
 More than one pre- or post-processor can be used in sequence or in parallel with some kind of aggregator subsequently.
 Equally, more than one learning model can be combined to be used as a composite model with a proper aggregation method like for example Bagging of models~\cite{Breiman-BaggingPredictors}.
-An example for such a complex pipeline is illustrated in figure~\ref{fig:theory:complexPipeline}\newline
-\begin{figure}
+An example for such a more complex pipeline is illustrated in figure~\ref{fig:theory:complexPipeline}.\newline
+\begin{figure}[ht!]
     \includegraphics[width=\textwidth]{gfx/Figures/ComplexPipeline.pdf}
     \caption{Example for a more complex pipeline with four pre-processing components in blue: A One-hot Encoder, a Feature Union of a PCA and a LSA. The learning model in green is a Majority Voter as an aggregation of a Decision Tree, a SVM and a Logistic Regression Classifier. }
 	\label{fig:theory:complexPipeline}
@@ -95,17 +98,19 @@ Therewith, Model Selection can be written as simple formalization with two thing
     \item A binary relation $\prec$ over $C'$ that defines which component is a data input for another component to define an order of the components for the pipeline as well as aggregation of several components with one component. 
 \end{itemize}
 Nevertheless, to find a valid set $C' \subseteq C$ is not a trivial task.
-For example, when a aggregator for multiple parallel pre-processing components is needed a valid choice could be a Feature Union component but a Decision Tree component would be invalid for this pipeline position.
-Therefore, if the pipelines shall be allowed to be more complex than for example a single pre-processing component and a single learning model, there is a big set of constraints for valid subsets of $C$.
+For example, when an aggregator for multiple parallel pre-processing components is needed, a valid choice could be a Feature Union component but a Decision Tree component would be invalid for this pipeline position.
+Therefore, if the pipelines shall be allowed to be more complex than for example a single pre-processing component and a single learning model, there is a big set of constraints for valid subsets of the candidate space of the Model selection $C$.
 
 \subsection{Model Configuration}
 \label{sec:theory:automl:configuration}
-With the resulting component set of a Model Selection step $C'=\{c_1, ..., c_r\}$ the pipeline is not ready to be used yet, because usually each component has a set of hyperparameter and for each one a concrete value is needed.
+With the resulting component set after the Model Selection step selected its candidate $C'=\{c_1, ..., c_r\}$ the pipeline is not ready to be used yet.
+Usually each component of $c_k \in C'$ has a set of hyperparameter and for each one a concrete value is needed.
+Therewith, the candidate space for the Model Configuration step is dependent on the resulting candidate from the Model Selection step.
 Each component $c_k$ has a set of hyperparameter $\Theta_k=\{ \theta_{k,1}, ..., \theta_{k,j} \}$ where each hyperparameter has a range where the value for this hyperparameter has to be chosen from.
 Such a range can for example be a numeric set $\mathbb{N}$ or a custom set like for example $\{\textrm{true}, \textrm{false}\}$.\newline
-When combining all ranges $\bigcup\limits_{i=1}^r \Theta_i$ a parametrization space with dimension $r$ is defined, where configuration vectors can be drawn from to configure a pipeline instance created from $C'$.
+When combining all ranges $\bigcup\limits_{i=1}^r \Theta_i$ a parametrization space with dimension $r$ is defined as the candidate space for the Model Configuration step, where configuration vectors can be drawn.
 An example for a concrete parametrization drawn from a three dimensional parameter space is shown in figure~\ref{fig:theory:parameterSpace}
-\begin{figure}
+\begin{figure}[ht!]
     \begin{tikzpicture}
         \begin{axis}[
           view={35}{15},
@@ -124,23 +129,39 @@ An example for a concrete parametrization drawn from a three dimensional paramet
     \caption{A parameter configuration with the values $(0.4,10,\textrm{true})$ inside the parameter space with the dimensions $[0..20]$, $[0, 1)$ and $\{\textrm{true}, \textrm{false}\}$ }
 	\label{fig:theory:parameterSpace}
 \end{figure}
-When such a vector is drawn a concrete pipeline from all selected components can be constructed and configured with the vector values to be evaluated as a candidate pipeline.
+Each of this vectors is a valid candidate and will result in a working pipeline instance created from $C'$ and configured with this vector.
+When such a pipeline is constructed and configured with the vector values it can finally be evaluated as a candidate pipeline.
 
 \subsection{Formalization of AutoML as an Optimization Problem}
 \label{sec:theory:automl:optimization}
-
-\Blindtext
-
+The choices in the Model Selection and Model Configuration step for one candidate out of the corresponding candidate spaces should not be arbitrary.
+Evaluations of a candidate pipeline yield a score for this candidate and intuitively a suitable AutoML approach should try to select candidates with scores as good as possible.
+Therefore, the AutoML problem is often considered as a special form of an optimization problem and can be formalized as one as well.\newline
+\textcolor{red}{TODO: Explain CASH}
 
 \section{Black Box Optimization}
 \label{sec:theory:optimization}
-
-\Blindtext
+With the formalization of AutoML as a CASH optimization problem the question arises if it can be tackled similar to standard textbook optimization problems, where established optimization algorithms exist.
+Unfortunately, the CASH optimization problem is a special case of optimization problem called \textit{Black Box} optimization problem.\newline
+In the following will be explained in what way Black Box problems are different to the standard textbook optimization problem and why established optimization algorithms cannot be used.
+Afterwards a selection of existing algorithms will be presented that can be used instead for the AutoML setting.
+Finally, with the aid of the \textit{No-Free-Lunch Theorem}, it will be reasoned why these approaches cannot be optimal.
 
 \subsection{Differences to General Optimization Problems}
 \label{sec:theory:optimization:differences}
-
-\Blindtext
+\textcolor{red}{TODO: Explain Black Box problems}\newline
+Without the possibility to select a optimal or near optimal candidate analytically, a series of candidates has to selected and evaluated while trying to approximate such a optimal solution.
+Now the question remains how candidates from the two presumably large candidate spaces of Model Selection and Model Configuration should be selected for each iteration and how such a approximation can be attempted.\newline
+A solely random selection in every iteration is not very likely to find good results with such a high number of choices.
+Since the approach evaluates several candidates iteratively, a better approach would be to base the selection on knowledge gathered from previous iterations.\newline
+Several algorithms were developed to tackle such a iteratively approximation of the optimum of a Black Box optimization problem.
+Some of them have already showed promising results for AutoML CASH problems and therefore the current state-of-the-art AutoML research works primarily with the following three optimization strategies:
+\begin{itemize}
+    \item (Heuristic) Search
+    \item Genetic and Evolutionary Algorithms
+    \item Bayesian Optimization
+\end{itemize}
+Each one will be explained individually in the following.
 
 \subsection{Optimization by Searching}
 \label{sec:theory:optimization:search}
