@@ -64,7 +64,7 @@ The general workflow of an AutoML tool is also numbered and illustrated in the f
     \item Model Selection as well as Model Configuration can perform a Model Evaluation to get a score for any pipeline candidate they encounter.
     \item After the constraints are met, the best found pipeline as well as the score of this pipeline are given as an output.
 \end{enumerate}
-The Model Evaluation step is usually performed by training a pipeline on one big portion of the input data and testing it with a smaller portion of the data while measuring some kind of performance measurement, for example the accuracy of predictions or some error metric.
+The Model Evaluation step is usually performed by training a pipeline on one big portion of the input data and testing it with a smaller portion of the data, sometimes called validation data, while measuring some kind of performance measurement, for example the accuracy of predictions or some error metric.
 But other evaluation techniques for example like a Cross-Validation are also common.\newline
 While the Model Evaluation step is only very loosely defined and usually not a complex procedure, the Model Selection and Model Configuration steps of the AutoML workflow are more sophisticated.
 They have to select a suitable candidate from a usually large space. 
@@ -74,7 +74,7 @@ Both spaces, for Model Selection as well as for Model Configuration, will be ind
 \label{sec:theory:automl:selection}
 Model Selection is the task of selecting $1$ to $n$ components that will be part of the machine learning pipeline and sequentially traversed when data is passed through the pipeline.
 For example, a valid pipeline would be to apply a Principal-Component-Analysis on the data as a first component and to use a Support Vector Machine for classification on the processed data as a second component afterwards.
-In this step of the worklof, the space one candidate has to be selected from, consists of all this valid pipeline, which usually have two or more components.\newline
+In this step of the workflow, the space one candidate has to be selected from, consists of all this valid pipeline, which usually have two or more components.\newline
 Usually there are three types of components:
 \begin{itemize}
     \item Pre-Processing: Transform the input data before presenting it to the learning model.
@@ -137,21 +137,57 @@ When such a pipeline is constructed and configured with the vector values it can
 The choices in the Model Selection and Model Configuration step for one candidate out of the corresponding candidate spaces should not be arbitrary.
 Evaluations of a candidate pipeline yield a score for this candidate and intuitively a suitable AutoML approach should try to select candidates with scores as good as possible.
 Therefore, the AutoML problem is often considered as a special form of an optimization problem and can be formalized as one as well.\newline
-\textcolor{red}{TODO: Explain CASH}
+\textcite{Feurer-Cash} give a formalization for AutoML problems as a so called \textit{Combined Algorithm Selection and Hyperparameter optimization} problem, or short \textit{CASH} problem.
+Their definition is the following:
+\begin{equation*}
+    A^*, \lambda_* \in \> \underset{A^{(j)} \in \mathcal{A},\lambda \in \Lambda^{(j)}}{\mathrm{argmin}} \> \frac{1}{K} \sum_{i=0}^K \mathcal{L} (A_\lambda^{(j)}, D_{\textit{train}}^{(i)}, D_{\textit{valid}}^{(i)})
+\end{equation*}
+This formula consists out of the following parts:
+\begin{itemize}
+    \item $A^*$: The best solution of the algorithm selection, i.e. for the AutoML setting the best pipeline construction found in the Model Selection step
+    \item $\lambda_*$: The best hyperparameter configuration for $A^*$ found in the hyperparameter optimization step, i.e. the Model Configuration step for AutoML
+    \item $\mathcal{A}$: A set of possible algorithms to choose from and given in the form $\mathcal{A} = \{A^{1}, ..., A^{R} \}$, which is the set of all valid pipeline component combinations in the case of AutoML
+    \item $\Lambda^{(j)}$: Each algorithm $A^{(j)} \in \mathcal{A}$ has a parameter configuration domain $\Lambda^{(j)}$, where a concrete parametrization $\lambda$ can be selected out of
+    \item $\frac{1}{K} \sum_{i=0}^K $: This is used to calculate the K-fold cross-validation of a pipeline, but other evaluation metrics are also possible if the formula is adjusted accordingly
+    \item $\mathcal{L} (A_\lambda^{(j)}, D_{\textit{train}}^{(i)}, D_{\textit{valid}}^{(i)})$: Is the loss, calculated with the loss function $\mathcal{L}$, of the algorithm $A^{(j)}$ configured with the parametrization $\lambda$, trained on the $i$-th split of the training data $D_{\textit{train}}^{(i)}$ and evaluated on the validation data $D_{\textit{valid}}^{(i)}$
+\end{itemize}
+In summary, the goal is to select an algorithm and a parameter configuration for this algorithm, such that the cross-validation loss for a for a given training and validation set is minimal.
 
 \section{Black Box Optimization}
 \label{sec:theory:optimization}
-With the formalization of AutoML as a CASH optimization problem the question arises if it can be tackled similar to standard textbook optimization problems, where established optimization algorithms exist.
-Unfortunately, the CASH optimization problem is a special case of optimization problem called \textit{Black Box} optimization problem.\newline
+With the formalization of AutoML as a CASH problem the question arises if it can be tackled similar to standard textbook optimization problems, where established optimization algorithms exist.
+Unfortunately, the CASH problem is a special case of optimization problem called \textit{Black Box} optimization problem.\newline
 In the following will be explained in what way Black Box problems are different to the standard textbook optimization problem and why established optimization algorithms cannot be used.
 Afterwards a selection of existing algorithms will be presented that can be used instead for the AutoML setting.
-Finally, with the aid of the \textit{No-Free-Lunch Theorem}, it will be reasoned why these approaches cannot be optimal.
+Finally, with the aid of the \textit{No-Free-Lunch Theorem}, it will be reasoned why these approaches cannot be optimal and why therefore a ensemble approach could be more promising.
 
 \subsection{Differences to General Optimization Problems}
 \label{sec:theory:optimization:differences}
-\textcolor{red}{TODO: Explain Black Box problems}\newline
-Without the possibility to select a optimal or near optimal candidate analytically, a series of candidates has to selected and evaluated while trying to approximate such a optimal solution.
-Now the question remains how candidates from the two presumably large candidate spaces of Model Selection and Model Configuration should be selected for each iteration and how such a approximation can be attempted.\newline
+\textcite{Boyd-Optimization} define a standard optimization problem as the following:
+\begin{alignat*}{1}
+    \underset{x}{\mathrm{minimize}} \textit{ or } \underset{x}{\mathrm{maximize}} \qquad & f_0(x)\\
+    \textit{subject to} \qquad & f_i(x) \leq 0,\> i=1,...,m\\
+                        &  h_j(x) \leq 0,\> j=1,...,p\\
+\end{alignat*}
+Here is the goal to find a value for the optimization variable $x$ such that $f_o(x)$ has either its minimum or maximum value.
+Hereby, $x$ does not have to be a single value but can be a vector of values in the case of a multi-objective optimization problem.
+$f_0$ is usually called a objective function or cost function.
+The choices for $x$ can be limited by a set of inequality constraint functions $g_k$ and a set of equality constraint functions $h_i$.
+If $m=p=0$, there are no constraint functions and the optimization problem is called unconstrained.
+For such cases, x could be any value from the domain of $f_o$.\newline
+If $f_0$ has certain properties, for example if it is convex, there are specialized optimization methods that can solve the optimization problem without the derivative $f_0'$.
+But for general optimization algorithms, where no properties of $f_0$ besides derivability are expected, $f_0'$ is required to solve the optimization problem analytically.\newline
+The problem is, for some optimization problems the exact formula of $f_0$ is not known or not given and therefore no derivative can be calculated such that the general optimization algorithms are not applicable.
+Instead, it is only possible to obtain $f_0(x)$ for any requested $x$ for example by looking it up in a table or asking an expert.
+For such problems it is only possible to observe the inputs and corresponding outputs of $f_0$ but the inner workings are hidden.
+$f_0$ is metaphorically a black box, where something goes in and something comes out but it is not possible to look inside, and therefore such optimization problems are called Black Box optimization problems.\newline
+AutoML, considered as a CASH problem, is a Black Box optimization problem as well.
+It is not possible, or at least not yet realizable, to determine a general formula for $f_0$.
+The relationship between the properties of the dataset, the different pipeline components with their configuration parameters and other factors, as for example randomness of some components, is way to complex and inscrutable to be formulated into a single cohesive function.
+But it is possible to to get a evaluation of a $x$, i.e. a concrete pipeline with a complete configuration, by training and testing the pipeline with given data and a evaluation metric like for example a cross-validation.
+The absence of a concrete formula for $f_0$ but the possibility to determine $f_0(x)$ renders AutoML as a Black Box optimization problem.\newline
+Without the possibility to determine a optimal or near optimal candidate analytically, in the case of a Black Box optimization problem a series of candidates has to be selected and evaluated while trying to find or at least approximate a optimal solution.
+Now the question remains for the AutoML setting how candidates from the two presumably large candidate spaces of Model Selection and Model Configuration should be selected for each iteration and how such a approximation can be attempted.\newline
 A solely random selection in every iteration is not very likely to find good results with such a high number of choices.
 Since the approach evaluates several candidates iteratively, a better approach would be to base the selection on knowledge gathered from previous iterations.\newline
 Several algorithms were developed to tackle such a iteratively approximation of the optimum of a Black Box optimization problem.
