@@ -197,7 +197,28 @@ Some of them have already showed promising results for AutoML CASH problems and 
     \item Genetic and Evolutionary Algorithms
     \item Bayesian Optimization
 \end{itemize}
-Each one will be explained individually in the following.
+In general is every Black Box optimization strategy defined by a selection of candidates out of the candidate space that will is evaluated and an order in which they are evaluated.
+Hereby, the selection as well as the order can be defined in many ways.
+For example it could be partially or fully pre-defined or random.
+Also it could be defined implicitly and other selected candidates and their order can depend on the knowledge gathered from the evaluation of one candidate.\newline
+For each one of the aforementioned Black-Box optimization strategies this candidate selection and candidate order will be explained in general and on the basis of some concrete algorithms, which were used in the AutoML research.
+These explanations of the strategies will be supported with a simple running example.
+The unconstrained target function $f_0(\begin{bmatrix}x\\y \end{bmatrix}) = x^2 + y^2$, which can be seen in figure~\ref{fig:theory:target-function}, shall be minimized.
+This function is defined in $\mathbb{R}^2$ and has one global minimum.
+\begin{figure}[ht!]
+    \begin{tikzpicture}
+        \begin{axis}[xmin=-1,xmax=1,ymin=-1,ymax=1]
+            \addplot3[
+                surf,
+                opacity=0.5,
+                samples=25, samples y=25,
+                domain=-1:1,domain y=-1:1
+            ] {x^2+y^2};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{A two dimensional target function with a global minimum at $x=0,y=0$.}
+    \label{fig:theory:target-function}
+\end{figure}
 
 \subsection{Optimization by Searching}
 \label{sec:theory:optimization:search}
