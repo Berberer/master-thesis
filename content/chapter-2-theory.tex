@@ -53,6 +53,7 @@ The constraints for execution are required to prevent the AutoML tool from searc
 Therefore, the time and/or some hardware budgets are constrained.
 This inputs and outputs of an conceptual AutoML tool are illustrated in figure~\ref{fig:theory:conceptualAutoMLTool}.\newline
 \begin{figure}[ht!]
+    \centering
     \includegraphics[width=\textwidth]{gfx/Figures/AutoMLTool.pdf}
     \caption{High level view of a conceptual AutoML tool. }
 	\label{fig:theory:conceptualAutoMLTool}
@@ -87,6 +88,7 @@ More than one pre- or post-processor can be used in sequence or in parallel with
 Equally, more than one learning model can be combined to be used as a composite model with a proper aggregation method like for example Bagging of models~\cite{Breiman-BaggingPredictors}.
 An example for such a more complex pipeline is illustrated in figure~\ref{fig:theory:complexPipeline}.\newline
 \begin{figure}[ht!]
+    \centering
     \includegraphics[width=\textwidth]{gfx/Figures/ComplexPipeline.pdf}
     \caption{Example for a more complex pipeline with four pre-processing components in blue: A One-hot Encoder, a Feature Union of a PCA and a LSA. The learning model in green is a Majority Voter as an aggregation of a Decision Tree, a SVM and a Logistic Regression Classifier. }
 	\label{fig:theory:complexPipeline}
@@ -111,11 +113,11 @@ Such a range can for example be a numeric set $\mathbb{N}$ or a custom set like 
 When combining all ranges $\bigcup\limits_{i=1}^r \Theta_i$ a parametrization space with dimension $r$ is defined as the candidate space for the Model Configuration step, where configuration vectors can be drawn.
 An example for a concrete parametrization drawn from a three dimensional parameter space is shown in figure~\ref{fig:theory:parameterSpace}
 \begin{figure}[ht!]
+    \centering
     \begin{tikzpicture}
         \begin{axis}[
           view={35}{15},
           axis lines=center,
-          width=15cm,height=15cm,
           xtick={0.25, 0.5, 0.75},ytick={5,10, 15},ztick={-10,-5,5,10},
           xmin=0,xmax=1,ymin=0,ymax=20,zmin=0.5,zmax=2.5,
           zticklabels={true, false},ztick={1,2},
@@ -206,6 +208,7 @@ These explanations of the strategies will be supported with a simple running exa
 The unconstrained target function $f_0(\begin{bmatrix}x\\y \end{bmatrix}) = x^2 + y^2$, which can be seen in figure~\ref{fig:theory:target-function}, shall be minimized.
 This function is defined in $\mathbb{R}^2$ and has one global minimum.
 \begin{figure}[ht!]
+    \centering
     \begin{tikzpicture}
         \begin{axis}[xmin=-1,xmax=1,ymin=-1,ymax=1]
             \addplot3[
