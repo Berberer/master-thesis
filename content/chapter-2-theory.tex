@@ -225,8 +225,20 @@ This function is defined in $\mathbb{R}^2$ and has one global minimum.
 
 \subsection{Optimization by Searching}
 \label{sec:theory:optimization:search}
-
-\Blindtext
+Optimizing with a search will evaluate candidates with the concept of \"Neighborhood\" between candidates.
+Starting with a single starting candidate, the search will extend its set of evaluated candidates by evaluating a neighboring candidate of one candidate out of this set.
+The concrete definition of this neighborhood concept is depending of the examined search space, modelled out of the candidate space, and the applied search algorithm.
+For example, a neighbor could be any candidate within a certain distance of another candidate or a graph could be created out of a set of candidates and neighbors of a candidate are the adjacent candidate nodes in the graph.
+Which neighbor should be selected next, therefore defining the order of candidate evaluations implicitly, can vary as well.
+It could be completely random, pre-defined before the search starts or based on a heuristic scoring of the candidates.\newline
+A wide range of search algorithms were developed in the corresponding research area and the most of them are applicable for optimization problems as well with a suitable neighborhood concept.
+Some search algorithms are used in state-of the art AutoML approaches and three of them are explained in more detail with the aid of the running example in the following.\newline
+\newline
+\textbf{Random Search:} abc.\newline
+\newline
+\textbf{Grid Search:} abc.\newline
+\newline
+\textbf{(Heuristic) Graph Search:} abc.
 
 \subsection{Genetic and Evolutionary Optimization}
 \label{sec:theory:optimization:genetic}
