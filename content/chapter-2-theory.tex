@@ -54,7 +54,7 @@ Therefore, the time and/or some hardware budgets are constrained.
 This inputs and outputs of an conceptual AutoML tool are illustrated in figure~\ref{fig:theory:conceptualAutoMLTool}.\newline
 \begin{figure}[ht!]
     \centering
-    \includegraphics[width=\textwidth]{gfx/Figures/AutoMLTool.pdf}
+    \includegraphics[width=\textwidth]{gfx/Figures/Theory/AutoMLTool.pdf}
     \caption{High level view of a conceptual AutoML tool. }
 	\label{fig:theory:conceptualAutoMLTool}
 \end{figure}
@@ -89,7 +89,7 @@ Equally, more than one learning model can be combined to be used as a composite 
 An example for such a more complex pipeline is illustrated in figure~\ref{fig:theory:complexPipeline}.\newline
 \begin{figure}[ht!]
     \centering
-    \includegraphics[width=\textwidth]{gfx/Figures/ComplexPipeline.pdf}
+    \includegraphics[width=\textwidth]{gfx/Figures/Theory/ComplexPipeline.pdf}
     \caption{Example for a more complex pipeline with four pre-processing components in blue: A One-hot Encoder, a Feature Union of a PCA and a LSA. The learning model in green is a Majority Voter as an aggregation of a Decision Tree, a SVM and a Logistic Regression Classifier. }
 	\label{fig:theory:complexPipeline}
 \end{figure}
@@ -233,7 +233,7 @@ This function is defined in $\mathbb{R}^2$ and has one global minimum.
         \end{tikzpicture}
     \end{subfigure}
     \begin{subfigure}{0.48\textwidth}
-        \includegraphics[width=\textwidth]{gfx/Figures/Optimization_Target_Function_Contour.png}
+        \includegraphics[width=\textwidth]{gfx/Figures/Theory/OptimizationTargetFunctionContour.png}
     \end{subfigure}
     \caption{A two dimensional target function with a global minimum at $\begin{bmatrix}0\\0 \end{bmatrix}$. On the right as a surface plot and on the left as a contour plot.}
     \label{fig:theory:target-function}
@@ -250,11 +250,32 @@ It could be completely random, pre-defined before the search starts or based on 
 A wide range of search algorithms were developed in the corresponding research area and the most of them are applicable for optimization problems as well with a suitable neighborhood concept.
 Some search algorithms are used in state-of the art AutoML approaches and three of them are explained in more detail with the aid of the running example in the following.\newline
 \newline
-\textbf{Random Search:} abc.\newline
+\textbf{Random Search}: The Random Search Algorithm comes in two variants.
+In the first one the candidates are completely drawn randomly out of the whole candidate space and evaluated.
+When the optimization budget is spent, the best candidate is returned as the result.
+Since this method does not use any knowledge gathered during the optimization, it depends on luck and the optimization budget if the optimal solution or at least a near optimal solution is found.\newline
+In the second one, a starting candidate is drawn at random out of the candidate space and evaluated.
+The next candidate will be randomly drawn out of a hypersphere with a pre-defined radius around the starting candidate and evaluated.
+If the drawn candidate has a better evaluation score than the starting candidate, the next candidate will be drawn from a hypersphere around the second candidate and from the hypersphere of the starting candidate otherwise.
+This loop is continued until the optimization budget is spent. Since this method is very prone to local minima/maxima, it is a possible improvement to remember the current best candidate, select a new completely random start point and start the loop over, if there was no improvement in the last $n$ iterations of the current loop.
+Both variants are illustrated exemplarily in figure~\ref{fig:theory:random-search}.
+\begin{figure}[ht!]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{gfx/Figures/Theory/RandomSearch.pdf}
+    \end{subfigure}
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{gfx/Figures/Theory/RandomSearchHypersphere.pdf}
+    \end{subfigure}
+\caption{On the left is the first variant with a few randomly selected candidates. On the right are six possible first iterations of the second variant. The hypersphere is only shown for the first candidate.}
+\label{fig:theory:random-search}
+\end{figure}
 \newline
-\textbf{Grid Search:} abc.\newline
+
+\textbf{Grid Search}: abc.\newline
 \newline
-\textbf{(Heuristic) Graph Search:} abc.
+
+\textbf{(Heuristic) Graph Search}: abc.
 
 \subsection{Genetic and Evolutionary Optimization}
 \label{sec:theory:optimization:genetic}
