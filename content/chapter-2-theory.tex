@@ -209,17 +209,33 @@ The unconstrained target function $f_0(\begin{bmatrix}x\\y \end{bmatrix}) = x^2 
 This function is defined in $\mathbb{R}^2$ and has one global minimum.
 \begin{figure}[ht!]
     \centering
-    \begin{tikzpicture}
-        \begin{axis}[xmin=-1,xmax=1,ymin=-1,ymax=1]
-            \addplot3[
-                surf,
-                opacity=0.5,
-                samples=25, samples y=25,
-                domain=-1:1,domain y=-1:1
-            ] {x^2+y^2};
-        \end{axis}
-    \end{tikzpicture}
-    \caption{A two dimensional target function with a global minimum at $x=0,y=0$.}
+    \begin{subfigure}{0.48\textwidth}
+        \begin{tikzpicture}
+            \begin{axis}[
+                xmin=-1,xmax=1,ymin=-1,ymax=1,
+                width=\textwidth,
+                xlabel = {x},
+                ylabel = {y},
+                xtick = {-0.5,0,0.5},
+                ytick = {-0.5,0,0.5},
+                ztick = {0.5,1,1.5},
+                tick label style={font=\tiny},
+                label style={font=\tiny}
+            ]
+                \addplot3[
+                    surf,
+                    opacity=0.5,
+                    samples=25, samples y=25,
+                    domain=-1:1, domain y=-1:1
+                ]
+                {x^2+y^2};
+            \end{axis}
+        \end{tikzpicture}
+    \end{subfigure}
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{gfx/Figures/Optimization_Target_Function_Contour.png}
+    \end{subfigure}
+    \caption{A two dimensional target function with a global minimum at $\begin{bmatrix}0\\0 \end{bmatrix}$. On the right as a surface plot and on the left as a contour plot.}
     \label{fig:theory:target-function}
 \end{figure}
 
