@@ -235,17 +235,17 @@ This function is defined in $\mathbb{R}^2$ and has one global minimum.
     \begin{subfigure}{0.48\textwidth}
         \includegraphics[width=\textwidth]{gfx/Figures/Theory/OptimizationTargetFunctionContour.png}
     \end{subfigure}
-    \caption{A two dimensional target function with a global minimum at $\begin{bmatrix}0\\0 \end{bmatrix}$. On the right as a surface plot and on the left as a contour plot.}
+    \caption[.]{A two dimensional target function with a global minimum at \ensuremath{\begin{bmatrix} 0\\0 \end{bmatrix}}. On the right as a surface plot and on the left as a contour plot.}
     \label{fig:theory:target-function}
 \end{figure}
 
 \subsection{Optimization by Searching}
 \label{sec:theory:optimization:search}
-Optimizing with a search will evaluate candidates with the concept of \"Neighborhood\" between candidates.
+Optimizing with a search will evaluate candidates with the concept of \textit{Neighborhood} between candidates.
 Starting with a single starting candidate, the search will extend its set of evaluated candidates by evaluating a neighboring candidate of one candidate out of this set.
 The concrete definition of this neighborhood concept is depending of the examined search space, modelled out of the candidate space, and the applied search algorithm.
 For example, a neighbor could be any candidate within a certain distance of another candidate or a graph could be created out of a set of candidates and neighbors of a candidate are the adjacent candidate nodes in the graph.
-Which neighbor should be selected next, therefore defining the order of candidate evaluations implicitly, can vary as well.
+Which neighbor should be selected for evaluation next, therefore defining the order of candidate evaluations implicitly, can vary with the different approaches as well.
 It could be completely random, pre-defined before the search starts or based on a heuristic scoring of the candidates.\newline
 A wide range of search algorithms were developed in the corresponding research area and the most of them are applicable for optimization problems as well with a suitable neighborhood concept.
 Some search algorithms are used in state-of the art AutoML approaches and three of them are explained in more detail with the aid of the running example in the following.\newline
@@ -258,7 +258,14 @@ In the second one, a starting candidate is drawn at random out of the candidate 
 The next candidate will be randomly drawn out of a hypersphere with a pre-defined radius around the starting candidate and evaluated.
 If the drawn candidate has a better evaluation score than the starting candidate, the next candidate will be drawn from a hypersphere around the second candidate and from the hypersphere of the starting candidate otherwise.
 This loop is continued until the optimization budget is spent. Since this method is very prone to local minima/maxima, it is a possible improvement to remember the current best candidate, select a new completely random start point and start the loop over, if there was no improvement in the last $n$ iterations of the current loop.
-Both variants are illustrated exemplarily in figure~\ref{fig:theory:random-search}.
+Both variants are illustrated for the running example in figure~\ref{fig:theory:random-search}.\newline
+One example of the Random Search algorithm applied in the context of AutoML is the \textit{Hyperband} approach~\cite{Li-Hyperband}.
+Here, multiple parallel working instances of Random Searches are evaluating candidates in a joint space of Model Selection and Model Configuration to cover as much of the candidate space as possible.
+The initial problem is that multiple instances combined require a big portion of the optimization budget.
+This was tackled by treating each random search as the arm of the bandit and canceling single search instances over time that do not find candidates with high evaluation scores and which therefore probably have a low regret.
+By terminating some probably low performing searches the optimization budget can be spent on mor promising search instances.
+Strategies like this are often referred to as \textit{Early Stopping}.
+In the context of Hyperband, selecting the search instances which will not be stopped early is done in a non-stochastic manner with the \textit{Successive Halving} algorithm~\cite{Jamieson-SuccessiveHalving}.
 \begin{figure}[ht!]
     \centering
     \begin{subfigure}{0.48\textwidth}
@@ -267,8 +274,8 @@ Both variants are illustrated exemplarily in figure~\ref{fig:theory:random-searc
     \begin{subfigure}{0.48\textwidth}
         \includegraphics[width=\textwidth]{gfx/Figures/Theory/RandomSearchHypersphere.pdf}
     \end{subfigure}
-\caption{On the left is the first variant with a few randomly selected candidates. On the right are six possible first iterations of the second variant. The hypersphere is only shown for the first candidate.}
-\label{fig:theory:random-search}
+    \caption{On the left is the first variant with a few randomly selected candidates. On the right are six possible first iterations of the second variant. The hypersphere is only shown for the first candidate.}
+    \label{fig:theory:random-search}
 \end{figure}
 \newline
 
