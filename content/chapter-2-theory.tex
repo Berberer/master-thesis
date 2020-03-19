@@ -281,7 +281,8 @@ In the context of Hyperband, selecting the search instances which will not be st
 
 \textbf{Grid Search}: A Grid Search tries to cover with a na\"ive brute-force approach as much of the candidate space as possible.
 From each dimension of the candidate space a few values are selected either manual, or more commonly by selecting values from the dimensions allowed range in periodic intervals.
-For example, if the x-dimension of the running example should be evaluated in the range $[-1,1]$, depending on the available optimization, potential value selections for this dimension could be $\{-1,0,1\}$ or $\{-0.75,-0.25,0.25,0.75\}$.\newline
+For example, if the x-dimension of the running example should be evaluated in the range $[-1,1]$, depending on the available optimization, potential value selections for this dimension could be $\{-1,0,1\}$ or $\{-0.75,-0.25,0.25,0.75\}$.
+With this method the candidate space is discretized and therewith becomes enumerable.\newline
 After selecting the value sets for each dimension, the Cartesian product of all sets is calculated.
 The elements of this Cartesian product, which are valid candidates because they have a value of each dimension, are the candidates that will be evaluated during the search and for the order of evaluations any arbitrary sequence of the sets elements can be selected.
 After either all candidates from the Cartesian product are evaluated or if the optimization budget is spent, the best evaluated candidate is the overall optimization result.
@@ -299,11 +300,41 @@ There, a joint candidate space was searched with a set of classifiers for model 
     \caption{Illustration of a Grid Search covering the search space of the running example systematically.}
     \label{fig:theory:grid-search}
 \end{figure}
-\newline
 
 \textbf{(Heuristic) Graph Search}: While a Random Search does it partially leaf to chances which candidates are evaluated, the candidate space will not be adequately covered with a high probability, a Grid Search will have certain coverage guarantees by default.
 On the other hand, a Grid Search will not utilize any gathered knowledge about the candidate space while at least the second variant of a Random Search is capable of utilizing knowledge about one prior evaluation.
-A Graph Search, usually in combination with a heuristic for search guidance, tries to achieve a trade-off between the advantages of both other presented search algorithms, i.e. having a solid coverage of the candidate space as well as utilizing knowledge gathered during the search.
+A Graph Search, usually in combination with a heuristic for search guidance, tries to achieve a trade-off between the advantages of both other presented search algorithms, i.e. having a solid coverage of the candidate space as well as utilizing knowledge gathered during the search.\newline
+As the name suggests, for a Graph Search the candidate space is depicted as a graph, but how the space is transformed into a representation consisting out of nodes and edges is very domain and approach specific and several methods exist.
+For example, each node could represent a concrete candidate out of the space and can be directly evaluated.
+The edges would connect such candidate nodes, if they have a maximum distance to each other, comparable to the hyperspheres the second Random Search variant uses to define neighborhood.
+Another method could be to use a tree as a search graph, where only the leaf nodes are concrete candidate nodes, which can be evaluated.
+Here, the inner nodes are used to progressively discretize the candidate spaces dimensions in a hierarchical manner by splitting the range into multiple intervals and creating a new child node for each one.
+This is continued until the intervals of each dimension either only consist of one element or are small enough such that one value out of it can be selected arbitrarily.
+At this point, a leaf node would be the child node because for each dimension a value is selected such that the candidates configuration is complete and could be evaluated.\newline
+With a given start node and a method to expand this start node incrementally into a bigger graph, a large amount of search algorithms exists to utilize to search this graph for the best candidate.
+They mostly differ in the selection method which unexplored node should be visited next.
+The set of nodes, consisting of the unexplored neighbors of already visited and expanded nodes is called a \textit{Search Front} and it is exemplarily illustrated for a search tree in figure~\ref{fig:theory:graph-search-front}.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{gfx/Figures/Theory/GraphSearchFront.pdf}
+    \caption{After a few iterations of a search algorithm beginning at the root node, a few nodes are already explored and expanded, here illustrated in blue. The expanded child nodes of the searched area(blue) are the search front(grey nodes) and one of them will be explored and expanded in the next search iteration.}
+    \label{fig:theory:graph-search-front}
+\end{figure}
+Some search algorithms select nodes out of the search front  based on the point in time, where they were added to the search front, like for example a Depth-First Search or a Breadth-First Search.
+This is a valid approach if the optimization budget is very large and is sufficient to traverse the graph more or less completely.
+But in the most use-cases the budget will not even be remotely sufficient for this and the next node out of the search front should be the node, were the best evaluation score or a path to the best evaluation score can be expected.\newline
+In the case of the first described method to transform a candidate space into a graph, where each node is a candidate and can be evaluated, this is trivial.
+But for the second method, this is more challenging because only leaf nodes can be evaluated and inner nodes not.
+To assign a score to a inner node without searching the complete sub-graph below it, an estimation method is utilized, usually called a heuristic.\newline
+For example with some available domain knowledge, if certain discretization intervals or selected values are more promising than other, the heuristic can assign higher scores to the corresponding child nodes representing the interval or value.
+In the AutoML context this could be done, if for example a certain pipeline component performed outstandingly for previous experiments with this component.
+But usually this will not be the case because the relationships between pipeline components to each other and their parameter configuration is too complex and even minor changes can have a big influence to the evaluation score.
+Therefore, it is hard to score an incomplete pipeline even with pre-existing domain knowledge.\newline
+Without a way to deterministically score a inner node, a probabilistic approach is more promising.
+Here, it can be assumed if enough leaf nodes at the end of the sub-graph below the inner node, which shall be scored, are evaluated, it is possible to score the inner node based on these evaluations with a sufficient certainty.
+Which path to follow to reach a leaf node in the sub-graph is decided randomly.
+To score something based on a a series of random experiments is called a \textit{Monte-Carlo} simulation/experiment and is a common approach to obtain a value, where the exact calculation of the value is either impossible or too complex.
+This combination of utilizing a heuristic Graph Search with Monte-Carlo simulations as a heuristic for optimization in the AutoML context was applied to a Best-First Search in the ML-Plan approach~\cite{Mohr-ML-Plan}. 
 
 \subsection{Genetic and Evolutionary Optimization}
 \label{sec:theory:optimization:genetic}
