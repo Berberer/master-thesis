@@ -338,8 +338,42 @@ This combination of utilizing a heuristic Graph Search with Monte-Carlo simulati
 
 \subsection{Genetic and Evolutionary Optimization}
 \label{sec:theory:optimization:genetic}
-
-\Blindtext
+Genetic and Evolutionary optimization methods try to transfer the process of the evolution in nature, as described in Charles Darwins \textit{Natural Selection} theory, to computational optimization.
+Exactly like an biological evolution model for a species, the optimization process is modelled in consecutive generations and each generation consists out of a high number of individuals.
+Ideally, only the individuals which are best adopted to their surroundings should produce offsprings and therefore create a succeeding generation, which is based on this individuals with minor changes.
+This is often referred to as \textit{Survival of the fittest}.
+Transferred to optimization, this would mean that each individual is a possible solution candidate and therefore a generation is a set of solution candidates.
+Starting with a base generation of usually randomly created individuals, a Genetic Algorithm follows the following pattern:
+\begin{enumerate}
+    \item Evaluate each individual of the current generation.
+    \item Select a subset of the current generation that will be used to create the next generation. Normally, this subset is created as a mix of the highest scoring individuals as well as some randomly selected individuals to prevent focussing on local optimums. But other selection approaches were also developed.
+    \item Generate the next generation with the selected subset. A pre-defined ratio of individuals will be directly copied into the next generation and the remaining individuals will be modified with evolutionary operators to attempt an enhancement.
+\end{enumerate}
+This steps are usually repeated until either a certain target score is achieved with one individual, the optimization budget is spent or the scores did not improve over the last $n$ generations.\newline
+The aforementioned evolutionary operators work on so called \textit{genetic representations} of candidates, sometimes also called \textit{Genomes} or \textit{Chromosomes}.
+In theory nearly every data structure is a suitable for this representation but most often are simple arrays or vectors used, where each cell represents one property of the candidates or alternatively one dimension of the candidate space.
+For the running example this would mean an array with length 2, one for the $x$ and one for the $y$ dimension.\newline
+Just as in the general principle from biological evolution, these genomes can change by random mutations as well as by recombination, when two individuals produce a new individual.
+For a mutation, one individual is selected and one or more cells are changed slightly at random and the other values are kept the same.
+If the amount of cells to change is not pre-defined, this is the same idea of randomly selecting a candidate out of hypersphere around another candidate already mentioned for Random Searches.\newline
+A recombination based on two genomes $g_1$ and $g_2$ to produce a new genome $g^*$ is usually performed as a cross-over.
+For each cell of $g^*$ the value is taken from either $g_1$ or $g_2$.
+Depending on the type of cross-over, there $k \in [1 ... |g^*| - 1]$ cross-over points, which are selected randomly.
+Each cross-over point marks an index of $g^*$ at which it will be switched from $g_1$ to $g_2$ or vice versa from which source genome the next value will be taken from.
+An example for a two-point cross-over is shown in figure~\ref{fig:theory:crossover}.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{gfx/Figures/Theory/Crossover.pdf}
+    \caption{An example of a two-point cross-over to produce $g^*$ from $g_1$ and $g_2$.}
+    \label{fig:theory:crossover}
+\end{figure}
+With the random factors during selecting the individuals for the generation of the next generation as well as during the application of the evolutionary operators, Genetic and Evolutionary optimization approaches are a stochastic optimization method just as a Random Search or certain Graph Search algorithms and heuristics.
+Therefore, the chances of finding a high scoring solution, the coverage of the candidate space as well as the risk of ending in a local optimum are highly dependent on the number of iterations the algorithm performs as well as other configuration parameters like for example the size of each generation.\newline
+Additionally to the challenges of handling chances and probabilities emerging from any probabilistic approach, in the context of AutoML there is one more major challenge in applying a Genetic Algorithm for optimization.
+A more complicated data structure is needed to represent a pipeline configuration as a single genome because usually they do not have a maximal length and can be composed as a arbitrary graph or tree, which can not represented in an array.
+Even if a suitable data structure is found, the mutation and cross-over implementations have to be made very cautious, because representations of pipelines can be very error-prone.
+Already small changes to one representation value can lead to an invalid pipeline constructions which cannot be instantiated.\newline
+Two state-of-the-art approaches tackling this challenges and applying Genetic Algorithms as optimizers for AutoML problems are \textit{TPOT}~\cite{Olson-Tpot}, using expression trees as a data structure, and \textit{RECIPE}~\cite{Guimar-Recipe}, using grammar-based genetic programming.
 
 \subsection{Bayesian Optimization}
 \label{sec:theory:optimization:bayesian}
