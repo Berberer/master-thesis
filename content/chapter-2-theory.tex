@@ -205,7 +205,7 @@ For example it could be partially or fully pre-defined or random.
 Also it could be defined implicitly and other selected candidates and their order can depend on the knowledge gathered from the evaluation of one candidate.\newline
 For each one of the aforementioned Black-Box optimization strategies this candidate selection and candidate order will be explained in general and on the basis of some concrete algorithms, which were used in the AutoML research.
 These explanations of the strategies will be supported with a simple running example.
-The unconstrained target function $f_0(\begin{bmatrix}x\\y \end{bmatrix}) = x^2 + y^2$, which can be seen in figure~\ref{fig:theory:target-function}, shall be minimized.
+The unconstrained target function $f_0 \left( \begin{bmatrix}x\\y \end{bmatrix} \right) = x^2 + y^2$, which can be seen in figure~\ref{fig:theory:target-function}, shall be minimized.
 This function is defined in $\mathbb{R}^2$ and has one global minimum.
 \begin{figure}[ht!]
     \centering
@@ -277,7 +277,6 @@ In the context of Hyperband, selecting the search instances which will not be st
     \caption{On the left is the first variant with a few randomly selected candidates. On the right are six possible first iterations of the second variant. The hypersphere is only shown for the first candidate.}
     \label{fig:theory:random-search}
 \end{figure}
-\newline
 
 \textbf{Grid Search}: A Grid Search tries to cover with a na\"ive brute-force approach as much of the candidate space as possible.
 From each dimension of the candidate space a few values are selected either manual, or more commonly by selecting values from the dimensions allowed range in periodic intervals.
@@ -355,7 +354,8 @@ In theory nearly every data structure is a suitable for this representation but 
 For the running example this would mean an array with length 2, one for the $x$ and one for the $y$ dimension.\newline
 Just as in the general principle from biological evolution, these genomes can change by random mutations as well as by recombination, when two individuals produce a new individual.
 For a mutation, one individual is selected and one or more cells are changed slightly at random and the other values are kept the same.
-If the amount of cells to change is not pre-defined, this is the same idea of randomly selecting a candidate out of hypersphere around another candidate already mentioned for Random Searches.\newline
+If the amount of cells to change is not pre-defined, this is the same idea of randomly selecting a candidate out of hypersphere around another candidate already mentioned for Random Searches.
+Thus, if the only applied evolutionary operator is the mutation operator, a Genetic Algorithm would be conceptually comparable to multiple parallel running Random Search instances, but in combination with the recombination operator this Random Search instances can interact with each other and re-organize their current positions to increase the chance of a high candidate space coverage.\newline
 A recombination based on two genomes $g_1$ and $g_2$ to produce a new genome $g^*$ is usually performed as a cross-over.
 For each cell of $g^*$ the value is taken from either $g_1$ or $g_2$.
 Depending on the type of cross-over, there $k \in [1 ... |g^*| - 1]$ cross-over points, which are selected randomly.
@@ -377,8 +377,182 @@ Two state-of-the-art approaches tackling this challenges and applying Genetic Al
 
 \subsection{Bayesian Optimization}
 \label{sec:theory:optimization:bayesian}
-
-\Blindtext
+From all the aforementioned optimization methods, Bayesian optimization utilizes the knowledge from previous candidate evaluations the most.
+The goal is to select the most promising candidate for the next evaluation and therefore minimize the overall amount of evaluations until a near-optimal score is reached.
+Since each evaluation in the context of AutoML comes with assembling a candidate pipeline and usually performing a cross-validation of the pipeline on the dataset, each evaluation consumes a lot optimization budget.
+Therewith, Bayesian Optimization is one of the most used Black Box optimization approaches in recent AutoML research.\newline
+The notation of a \textit{most promising} candidate could be interpreted in different ways.
+For example, a candidate near the current optimum, which has a high probability of having a comparable or even better score, or a candidate in a completely unevaluated region of the candidate space, where therefore a optimum could lie unnoticed.
+But in the case of Bayesian Optimization, this notation of most promising is more sophisticated.\newline
+In general, the goal is to create with Bayesian statistics a surrogate function model that replicates the unknown target function as closely as possible.
+To model the Bayesian surrogate a common choice is a regression based on a Gaussian Process.
+Detailed information about Gaussian Processes can be found for example in~\cite{Rasmussen-Gaussian-Processes}.\newline
+This surrogate is based on several evaluations as samples and will become more precise with each new sample, which is usually the next most promising candidate.
+For the actual selection of the next most promising candidate sample, a so called \textit{Acquisition Function} is used and the next value will be at an optimum of this acquisition function.
+The value of such an acquisition function for a candidate are based on two factors:
+\begin{enumerate}
+    \item The estimated score of the candidate based on the modelled Bayesian surrogate.
+    \item The size of the credible interval of the Bayesian surrogate model at the position of the candidate.
+\end{enumerate}
+The size of the credible interval is especially important, because if at a point this interval is very broad, the chances are higher that the value of the target function can differ widely from the surrogate at this position.
+Of course it can differ in both directions but this can be examined with an additional sample at this position.
+Therefore, if the estimated value already indicates an optimum and additionally the credible interval is broad, the value of the target function could be even more optimal at this position and it is the most promising candidate to be drawn as the next sample.
+For candidates that were already evaluated, this acquisition score is set to zero because the target score at this position is already known and the surrogate can be certain at this position.
+A graphical intuition for the concept of acquisition functions is given in figure~\ref{fig:theory:acquisition-function}, where Bayesian optimization on one dimension of the running example is illustrated.
+\begin{figure}[ht!]
+    \centering
+    \begin{subfigure}{\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{axis}[
+                xmin=-1, xmax=1,
+                ymin=0, ymax=1,
+                domain=-1:1,
+                xlabel=$x$,
+                ylabel=$f_0 \left( \begin{bmatrix}x\\0 \end{bmatrix} \right) $,
+                no markers,
+                height=5cm,
+                width=0.75\textwidth,
+            ]
+                \addplot[lime]{x^2};
+            \end{axis}
+        \end{tikzpicture}
+        \caption[.]{Slice of the target function $f_0$ at $y=0$.}
+    \end{subfigure}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{axis}[
+                xmin=-1, xmax=1,
+                ymin=-0.2, ymax=1,
+                domain=-1:1,
+                xlabel=$x$,
+                ylabel=$f_s \left( \begin{bmatrix}x\\0 \end{bmatrix} \right) $,
+                height=5cm,
+                width=0.75\textwidth,
+            ]
+                \addplot [only marks,red] coordinates {(-0.7,0.49) (-0.5,0.25) (-0.2,0.04) (0.4,0.16) (0.85,0.7225)};
+                \addplot [,
+                    smooth,
+                    no marks,
+                    solid,
+                    line join = round,
+                    red
+                ] coordinates {(-1,0.875) (-0.7,0.49) (-0.5,0.25) (-0.2,0.04) (0.1,0.05) (0.4,0.16) (0.7,0.5) (0.85,0.7225) (1,0.9)};
+                \addplot [,
+                    smooth,
+                    no marks,
+                    dashed,
+                    line join = round,
+                    red
+                ] coordinates {(-1,0.675) (-0.85,0.58) (-0.7,0.49) (-0.56,0.46) (-0.5,0.25) (-0.4,0.05) (-0.2,0.04) (0.1,0.2) (0.4,0.16) (0.7,0.29) (0.85,0.7225) (1,0.99)};
+                \addplot [,
+                    smooth,
+                    no marks,
+                    dashed,
+                    line join = round,
+                    red
+                ] coordinates {(-1,1.075) (-0.85,0.79) (-0.7,0.49) (-0.64,0.31) (-0.5,0.25) (-0.35,0.21) (-0.2,0.04) (0.1,-0.11) (0.4,0.16) (0.55,0.58) (0.85,0.7225) (1,0.81)};
+            \end{axis}
+        \end{tikzpicture}
+        \caption[.]{
+            Estimated surrogate function $f_s$ modelled after 5 samples.
+            The evaluated samples are shown as red dots, the surrogate function as a red line and the credible intervals as the two red dashed lines.
+            Important note: The values of the surrogate function and the credible intervals are not actually calculated but are only rough estimates to give an intuition of the method.
+        }
+    \end{subfigure}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{axis}[
+                xmin=-1, xmax=1,
+                ymin=-0.5, ymax=0.1,
+                domain=-1:1,
+                xlabel=$x$,
+                ylabel=$f_a \left( \begin{bmatrix}x\\0 \end{bmatrix} \right) $,
+                height=5cm,
+                width=0.75\textwidth,
+            ]
+                \addplot [,
+                    smooth,
+                    no marks,
+                    solid,
+                    line join = round,
+                    blue
+                ] coordinates {(-1,-0.1) (-0.85,-0.075) (-0.7,0)};
+                \addplot [,
+                    smooth,
+                    no marks,
+                    solid,
+                    line join = round,
+                    blue
+                ] coordinates {(-0.7,0) (-0.6,-0.2) (-0.5,0)};
+                \addplot [,
+                    smooth,
+                    no marks,
+                    solid,
+                    line join = round,
+                    blue
+                ] coordinates {(-0.5,0) (-0.35,-0.25) (-0.2,0)};
+                \addplot [,
+                    smooth,
+                    no marks,
+                    solid,
+                    line join = round,
+                    blue
+                ] coordinates {(-0.2,0) (0.1,-0.4) (0.4,0)};
+                \addplot [,
+                    smooth,
+                    no marks,
+                    solid,
+                    line join = round,
+                    blue
+                ] coordinates {(0.4,0) (0.625,-0.225) (0.85,0)};
+                \addplot [,
+                    smooth,
+                    no marks,
+                    solid,
+                    line join = round,
+                    blue
+                ] coordinates {(0.85,0) (0.925,-0.0485) (1,-0.06)};
+            \end{axis}
+        \end{tikzpicture}
+        \caption[.]{
+            Acquisition function $f_a$ based on $f_s$ and its credible intervals after the 5 samples in.
+            As in (b), the values are only estimations and not explicitly calculated.
+            The minimum of $f_a$ at $x=0.1$ would be the best choice for the sixth sample.
+            There the expected value of the surrogate regression is already low and the credible interval is additionally broad.
+        }
+    \end{subfigure}
+    \caption[.]{
+        Simple illustration to give an intuition of acquisition functions for the running example of minimizing $f_0 \left( \begin{bmatrix}x\\y \end{bmatrix} \right) = x^2 + y^2$.
+        For simplicity will the Bayesian optimization only be used to minimize on the x-dimension and y will be set to 0, but in theory can this approach be extended to any number of dimensions.
+        (a) shows a slice of the target function in green.
+        (b) shows in red the already evaluated samples, the estimated surrogate function model and the credible intervals.
+        (c) shows in blue the acquisition function based on the values in (b).
+    }
+    \label{fig:theory:acquisition-function}
+\end{figure}
+An exemplaric algorithm for Bayesian Optimization is given by~\textcite{Frazier-Bayesian-Optimization} with the following pseudo-code in algorithm~\ref{alg:bayesian-optimization}.
+\begin{algorithm}[ht!]
+    \SetAlgoLined
+    Place a Gaussian process prior on $f$\;
+    Observe $f$ at $n_0$ points according to an initial space-filling experimental design\;
+    Set $n=n_0$\;
+    \While{$n \leq N$}{
+        Update posterior probability distribution on $f$ using all data\;
+        Let $x_n$ be a maximizer of the acquisition function over $x$, where the acquisition function is computed using the current posterior distribution\;
+        Observe $y_n = f(x_n)$\;
+        Increment $n$\;
+    }
+    Return a solution: either the point with the largest $f(x)$, or the point with the largest posterior mean\;
+    \caption{Basic pseudo-code for Bayesian optimization}
+    \label{alg:bayesian-optimization}
+\end{algorithm}
+The notation of this pseudo-code as well as some technical terms are explained in the following:
+\begin{itemize}
+    \item
+\end{itemize}
 
 \subsection{No-Free-Lunch Theorem}
 \label{sec:theory:optimization:lunch}
