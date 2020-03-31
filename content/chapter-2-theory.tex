@@ -10,8 +10,7 @@ This theoretical background is structured in three parts:
     \item As the foundation for building an ensemble of optimizers a selection of established optimization methods is given and explained.
 \end{enumerate}
 The overview of optimization methods is concluded with the discussion of a theoretical drawback of using a single optimization method.
-This discussion of a possible disadvantage is used as a starting point for the line of reasoning why an ensemble of optimizers is an approach to counteract this drawback.
-Before explaining the ensemble approach in the next chapter, this line of reasoning is continued with a selection of related works, where other approaches that addressed this theoretical disadvantage of using a single optimization method are mentioned. 
+Before explaining the ensemble approach, which could counter this drawback to a certain degree, in the next chapter, this discussion is continued with a selection of related works, where other approaches that addressed this theoretical disadvantage of using a single optimization method are mentioned. 
 
 \section{Classical Machine Learning}
 \label{sec:theory:ml}
@@ -574,8 +573,24 @@ It is utilized as an optimization approach for a joined model selection and mode
 
 \subsection{No-Free-Lunch Theorem}
 \label{sec:theory:optimization:lunch}
-
-\Blindtext
+The state-of-the-art AutoML approaches presented with their corresponding black-box optimization method have one thing in common: They all apply a single optimization algorithm to find the best candidate from a optimization space, which is a joined model selection and model configuration space.
+While this is a valid approach and will found an optimal or near optimal solution for many AutoML problem instances, it is theoretically impossible that the best solution can be found with a single optimization method for every AutoML problem instance.
+This can be deduced from the \textit{No-free-lunch Theorems}, which were proven for optimization problems by~\textcite{Wolpert-No-Free-Lunch-Theorems}.
+In these theorems is stated that when an optimization algorithm performs superior for one problem or class of problems, it has to pay for this by performing inferior for other problems.
+Of course this is only the case for optimizing with an optimization budget, because the most optimization algorithms can find the best solution if they have an unlimited budget, even if its just by simply evaluating each possible candidate.\newline
+For the context of the AutoML setting, the notion of a problem class could for example be transferred to the data, which is given as an input.
+Therefore, in this setting with a limited budget of time or resources, one single optimization algorithm may find the best models and configurations for some datasets but cannot achieve this for all datasets.
+Thus, the presented AutoML approaches incapable of being the superior approach for all datasets.
+With a given dataset $D_1$ a Genetic Algorithm may find the best solution, while a Bayesian optimization method outperforms the same Genetic Algorithm for another dateset $D_2$.\newline
+It is additionally possible that the quality of an optimizer does not only depend on the input dataset, i.e. the AutoML problem class, but additionally on the concrete optimization space it operates in and the optimization budget.
+This three components could be used to construct a specific problem instance for a dataset problem class.
+If this optimization space is modified and thus a new problem instance $p_2$ is created from the original problem instance $p_1$, this can have a huge influence on the optimizer qualities and the optimization method that was the most successful one for $p_1$ could now theoretically be the worst one for $p_2$.\newline
+Such a modification of the optimization space can be created if, for instance, the model selection part is already finished and the remaining model configuration induces the optimization space, which is now the problem of optimizing the parameters of a concrete pipeline.
+Here, different optimization spaces can be created out of one initial space by pre-selecting a pipeline and different optimizers can differ in quality here as well.
+For example, with a given dataset, optimizer $A$ could find good configurations for a pipeline consisting of a Principal Component Analysis followed by a Decision Tree, while optimizer $B$ does this better in the case of a single Support Vector Machine.
+The same transformations of the optimization space can of course as well be done by only considering model selection instead and not model configuration.\newline
+Since one optimization method will only be the best one for a limited set problem classes, it can be beneficial to use more than one optimization method together for different transformations of the optimization space to extend the set of problem classes, where these combined optimizers can be superior.\newline
+In the next section two related works approaches will be presented, which use such transformations of the optimization space and different optimizers for the transformations, to utilize this extension of problem classes in the AutoML context, where superiority can be achieved.
 
 \section{Related Work}
 \label{sec:theory:related}
