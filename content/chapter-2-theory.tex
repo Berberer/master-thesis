@@ -549,10 +549,28 @@ An exemplaric algorithm for Bayesian Optimization is given by~\textcite{Frazier-
     \caption{Basic pseudo-code for Bayesian optimization}
     \label{alg:bayesian-optimization}
 \end{algorithm}
-The notation of this pseudo-code as well as some technical terms are explained in the following:
-\begin{itemize}
-    \item
-\end{itemize}
+The functionality of this pseudo-code as well as some technical terms are explained in the following line by line:
+\begin{enumerate}
+    \item A probably distribution, for example a Normal distribution is selected as a initial prior distribution $f_0$ to further construct the surrogate function with.
+    \item Since this initial $f_0$ is not very meaningful regarding the target function, a few candidates will be evaluated before the actual optimization loop starts.
+    This candidates are selected to be a space-filling design, which means to have the best coverage of the candidate space.
+    Therewith, the credible intervals between the initially observed points can be kept as small as possible before the acquisition function, which uses this intervals, is used.
+    An example for a simple space-filling experiment design is to chose candidates uniformly distributed in the candidate space.
+    \item Since this implementation uses the number of observations of $f$ for a given point, i.e. candidate evaluations, as a optimization budget, the variable $n$, which keeps track of the spent budget, is set to $n_0$, because this is the amount of initial evaluations.
+    \item Here starts the main optimization loop.
+    As long as the optimization budget is not spent and therefore $n \leq N$, further candidates can be selected and evaluated.
+    \item Let $d_n$ be all evaluated points from previous iterations or from $n_0$, the surrogate function model of this iteration $f_n$ will be updated based on $d_n$.
+    Therefore, a new surrogate function posterior probability distribution is calculated by updating the chosen distribution with the previous posterior distribution $f_{n-1}$ as i new prior, i.e. $f_n := f(x)|f_{n-1}$.
+    \item $x_n$ is selected to be the candidate of this iteration for evaluation. It is chosen by searching the acquisition function, which was updated with the data from prior iterations, for an optimum.
+    \item Get a evaluation score $y_n$ for the selected candidate of this iteration $x_n$ by observing the $f(x_n)$, thus having one more data point to base to posterior probability distribution on, to construct a more precise surrogate function $f_{n+1}$ in the next iteration.
+    \item Increment $n$ because another candidate evaluation was performed and therefore the remaining optimization budget decreased.
+    \item The optimization budget is spent and the main optimization loop will terminate.
+    \item After the main optimization loop finishes, the algorithm will terminate and return a candidate as the result.
+    It will select the best candidate among the evaluated points so far and compare it to the point with the largest posterior mean, i.e. the point where the global optimum, based on the overall constructed surrogate function $f_N$, is assumed.
+    If this point is assumed better than the best evaluated candidate it will be returned and the best evaluated candidate otherwise.
+\end{enumerate}
+A state-of-the-art implementation of Bayesian optimization for algorithm configuration problems is \textit{SMAC}~\cite{Hutter-SMAC}, an abbreviation for Sequential Model-Based Optimization for General Algorithm Configuration.
+It is utilized as an optimization approach for a joined model selection and model configuration AutoML optimization space by several approaches, including \textit{Auto-WEKA}~\cite{Thornton-AutoWeka} and \textit{auto-sklearn}~\cite{Feurer-AutoSklearn}.
 
 \subsection{No-Free-Lunch Theorem}
 \label{sec:theory:optimization:lunch}
