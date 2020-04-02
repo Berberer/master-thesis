@@ -590,9 +590,44 @@ Here, different optimization spaces can be created out of one initial space by p
 For example, with a given dataset, optimizer $A$ could find good configurations for a pipeline consisting of a Principal Component Analysis followed by a Decision Tree, while optimizer $B$ does this better in the case of a single Support Vector Machine.
 The same transformations of the optimization space can of course as well be done by only considering model selection instead and not model configuration.\newline
 Since one optimization method will only be the best one for a limited set problem classes, it can be beneficial to use more than one optimization method together for different transformations of the optimization space to extend the set of problem classes, where these combined optimizers can be superior.\newline
-In the next section two related works approaches will be presented, which use such transformations of the optimization space and different optimizers for the transformations, to utilize this extension of problem classes in the AutoML context, where superiority can be achieved.
+In the next section a selection of approaches from related works approaches will be presented, which use such transformations of the optimization space and different optimizers for the transformations, to utilize this extension of problem classes in the AutoML context, where superiority can be achieved.
 
 \section{Related Work}
 \label{sec:theory:related}
-
-\Blindtext
+The first presented approach that uses different optimizers for different transformed AutoML optimization spaces is \textit{ReinBo}~\cite{Sun-ReinBo}.
+Here, the overall optimization space, containing model selection and model configuration, is transformed into a solely model selection space at first.
+For practicability each pipeline can only consist out of up to three components: One for data pre-processing, one for feature engineering, and one as the machine learning model.
+The model selection is performed in three stages, in each of which one of the three component types is selected successively.
+It is also possible to not select any component for a pre-processing or feature engineering, which could be represented by a symbol like for example "NA".
+A simple example for a small optimization space for such a model selection method would therefore consist out of three sets:
+\begin{itemize}
+    \item A set $S_p$ with pre-processing algorithms: For example $S_p=\{$Min-Max Scaling, One-Hot Encoding, NA$\}$
+    \item A set $S_f$ with feature engineering methods: For example $S_f=\{$ PCA, Variant Threshold Filtering, NA$\}$
+    \item A set $S_m$ with machine learning models: For example $S_m=\{$ SVM, Decision Tree$\}$
+\end{itemize}
+Such a model selection space as in ReinBo can be imagined as a tree, where the root is an empty pipeline that has none of the three component types selected.
+This root node has a child node for each $s_p \in S_p$, including the representation symbol "NA" for not selecting any pre-processing component.
+Therefore, the child node which represents one $s_p$ means that the pipeline from this sub-tree uses $s_p$ as a pre-processor.
+Accordingly, such a child node for a $s_p \in S_p$ has a child node itself for each $s_f \in S_f$ and ultimately each $s_f$ node has a child node as well for each $s_m \in S_m$, which now is a leaf node since the pipeline components are completely constructed.
+An illustration of the previous example optimization space can be seen in figure~\ref{fig:theory:reinbo-model-selection}.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{gfx/Figures/Theory/ReinBoModelSelection.pdf}
+    \caption{Simple visualization of the underlying concepts of the three layer ReinBo model selection candidate space.}
+    \label{fig:theory:reinbo-model-selection}
+\end{figure}
+Because of the tree-like structure of this optimization space, a hierarchical Reinforcement Learning approach is trained during the optimization.
+With learning about suitable pipeline component choices, it can act as an optimizer for model selection.\newline
+After the Reinforcement Learning model has selected up to three pipeline components, the possible parametrization of each component is examined.
+From the possible parametrization of each selected component a model configuration space can be induced.
+Therewith, based on a completed model selection, the overall optimization space is once more transformed, but now to a space representing possible model configurations for the constructed pipeline.
+Each leaf node of the tree structure has such a small model configuration space.\newline
+Once the Reinforcement learning model performed the action of selecting a component from the last hierarchical layer and it reaches such a leaf node, Bayesian optimization is conducted in the model configuration space of this leaf.
+The evaluation result of the best candidate of this optimization run is given as a reward to the Reinforcement Learning model such that it can update its policy.
+Afterwards, in next iteration the Reinforcement Learning model starts once again in the root node and has to select pipeline components based on the policy and this is repeated until the optimization budget ist spent.\newline
+Because Bayesian optimization is not very effective for high dimensional spaces, it is a suitable approach to not running a Bayesian optimization on the complete candidate space as an optimization approach.
+Instead the model selection is performed by another optimizer and only a small portion of the model configuration space is the input for a Bayesian optimization run, which includes only the hyperparameter of the selected components.
+The dimensionality is reduced to a great degree and Bayesian optimization will be more successful.\newline
+But this improvements regarding the Bayesian optimization and the inclusion of a Reinforcement Learning model as an additional optimizer, does not extend the set of problem classes where this approach can be superior drastically, because there is still a big amount of problem classes where the Bayesian optimization method itself is not suitable.\newline
+\newline
+Second, another approach utilizing several optimization phases was publicized by~\textcite{Quemy-Two-Stage-Optimization}.
