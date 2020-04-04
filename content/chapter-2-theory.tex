@@ -590,7 +590,7 @@ Here, different optimization spaces can be created out of one initial space by p
 For example, with a given dataset, optimizer $A$ could find good configurations for a pipeline consisting of a Principal Component Analysis followed by a Decision Tree, while optimizer $B$ does this better in the case of a single Support Vector Machine.
 The same transformations of the optimization space can of course as well be done by only considering model selection instead and not model configuration.\newline
 Since one optimization method will only be the best one for a limited set problem classes, it can be beneficial to use more than one optimization method together for different transformations of the optimization space to extend the set of problem classes, where these combined optimizers can be superior.\newline
-In the next section a selection of approaches from related works approaches will be presented, which use such transformations of the optimization space and different optimizers for the transformations, to utilize this extension of problem classes in the AutoML context, where superiority can be achieved.
+In the next section a selection of related works approaches will be presented, which use such transformations of the optimization space for the transformations, to utilize this extension of problem classes in the AutoML context, where superiority can be achieved.
 
 \section{Related Work}
 \label{sec:theory:related}
@@ -612,7 +612,7 @@ Accordingly, such a child node for a $s_p \in S_p$ has a child node itself for e
 An illustration of the previous example optimization space can be seen in figure~\ref{fig:theory:reinbo-model-selection}.
 \begin{figure}[ht!]
     \centering
-    \includegraphics[width=\textwidth]{gfx/Figures/Theory/ReinBoModelSelection.pdf}
+    \includegraphics[height=\textheight,keepaspectratio]{gfx/Figures/Theory/ReinBoModelSelection.pdf}
     \caption{Simple visualization of the underlying concepts of the three layer ReinBo model selection candidate space.}
     \label{fig:theory:reinbo-model-selection}
 \end{figure}
@@ -630,4 +630,22 @@ Instead the model selection is performed by another optimizer and only a small p
 The dimensionality is reduced to a great degree and Bayesian optimization will be more successful.\newline
 But this improvements regarding the Bayesian optimization and the inclusion of a Reinforcement Learning model as an additional optimizer, does not extend the set of problem classes where this approach can be superior drastically, because there is still a big amount of problem classes where the Bayesian optimization method itself is not suitable.\newline
 \newline
-Second, another approach utilizing several optimization phases was publicized by~\textcite{Quemy-Two-Stage-Optimization}.
+The advantages of performing the AutoML optimization in several phases on transformed optimization spaces was further examined by~\textcite{Quemy-Two-Stage-Optimization}.
+Besides the opportunity to compensate one less suitable optimization approach with another possibly better suited optimizer mentioned before, in this publication additionally was stated, that if the optimization space is transformed into two or more smaller sub-spaces, the overall optimization process can be sped up.
+There, a two-stage optimization transformation was applied, alike ReinBo separating Model configuration and Model selection.
+Although, this approach is not as limited to a mandatory pipeline topology as ReinBo, with the constraint of three components at most and only one of each type, and is able to construct pipelines in a more unrestricted fashion as a directed acyclic graph.
+To create an optimization space of all valid pipeline graphs, all pipeline components have specifications of their input and output datatypes and can only be connected to another component node, if the output types of one node match the input types of another node.\newline
+In the formal descriptions of this approach, no certain optimization algorithm is specified.
+For this framework any optimization algorithm could be applied for either phase or the same one for both phases as well.
+Instead, the publication focusses on the allocation of the optimization budget, in their case a time budget $T$, between the two phases.
+The following allocation policies were defined:
+\begin{itemize}
+    \item \textit{Split policy}: $T$ is split into pre-defined phase allocations $T_1$ and $T_2$. $T_1$ is completely spent onto Model selection and afterwards $T_2$ is spent as a whole as well.
+    \item \textit{Iterative policy}: A very short time period $t << T$ is set and it will be alternated iteratively between the two phases, where each phase has $t$ as a budget in one iteration, until $T$ is spent.
+    \item \textit{Adaptive policy}: This policy is an extension of the Iterative policy but here the $t$ is not fix but is adaptive to the achievements of the optimization in each phase.
+    Therefore there is a $t_1$ and a $t_2$ for the corresponding phase.
+    If in one iteration the evaluation score increases during the optimization of the active phase $i$, $t_i$ is doubled.
+    In return, if the phase $i$ did not increase the evaluation score during its last two active iterations, $t_i$ is halved.
+    \item \textit{Joint policy}: Here, no separation into different optimization phases takes place and model selection and model configuration is performed in a joint search space.
+    Hence, it can spend $T$ completely.
+\end{itemize}
