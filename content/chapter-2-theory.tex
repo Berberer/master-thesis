@@ -247,8 +247,9 @@ For example, a neighbor could be any candidate within a certain distance of anot
 Which neighbor should be selected for evaluation next, therefore defining the order of candidate evaluations implicitly, can vary with the different approaches as well.
 It could be completely random, pre-defined before the search starts or based on a heuristic scoring of the candidates.\newline
 A wide range of search algorithms were developed in the corresponding research area and the most of them are applicable for optimization problems as well with a suitable neighborhood concept.
-Some search algorithms are used in state-of the art AutoML approaches and three of them are explained in more detail with the aid of the running example in the following.\newline
-\newline
+Some search algorithms are used in state-of the art AutoML approaches and three of them are explained in more detail with the aid of the running example in the following.
+
+
 \textbf{Random Search}: The Random Search Algorithm comes in two variants.
 In the first one the candidates are completely drawn randomly out of the whole candidate space and evaluated.
 When the optimization budget is spent, the best candidate is returned as the result.
@@ -277,6 +278,7 @@ In the context of Hyperband, selecting the search instances which will not be st
     \label{fig:theory:random-search}
 \end{figure}
 
+
 \textbf{Grid Search}: A Grid Search tries to cover with a na\"ive brute-force approach as much of the candidate space as possible.
 From each dimension of the candidate space a few values are selected either manual, or more commonly by selecting values from the dimensions allowed range in periodic intervals.
 For example, if the x-dimension of the running example should be evaluated in the range $[-1,1]$, depending on the available optimization, potential value selections for this dimension could be $\{-1,0,1\}$ or $\{-0.75,-0.25,0.25,0.75\}$.
@@ -298,6 +300,7 @@ There, a joint candidate space was searched with a set of classifiers for model 
     \caption{Illustration of a Grid Search covering the search space of the running example systematically.}
     \label{fig:theory:grid-search}
 \end{figure}
+
 
 \textbf{(Heuristic) Graph Search}: While a Random Search does it partially leaf to chances which candidates are evaluated, the candidate space will not be adequately covered with a high probability, a Grid Search will have certain coverage guarantees by default.
 On the other hand, a Grid Search will not utilize any gathered knowledge about the candidate space while at least the second variant of a Random Search is capable of utilizing knowledge about one prior evaluation.
@@ -628,8 +631,9 @@ Afterwards, in next iteration the Reinforcement Learning model starts once again
 Because Bayesian optimization is not very effective for high dimensional spaces, it is a suitable approach to not running a Bayesian optimization on the complete candidate space as an optimization approach.
 Instead the model selection is performed by another optimizer and only a small portion of the model configuration space is the input for a Bayesian optimization run, which includes only the hyperparameter of the selected components.
 The dimensionality is reduced to a great degree and Bayesian optimization will be more successful.\newline
-But this improvements regarding the Bayesian optimization and the inclusion of a Reinforcement Learning model as an additional optimizer, does not extend the set of problem classes where this approach can be superior drastically, because there is still a big amount of problem classes where the Bayesian optimization method itself is not suitable.\newline
-\newline
+But this improvements regarding the Bayesian optimization and the inclusion of a Reinforcement Learning model as an additional optimizer, does not extend the set of problem classes where this approach can be superior drastically, because there is still a big amount of problem classes where the Bayesian optimization method itself is not suitable.
+
+
 The advantages of performing the AutoML optimization in several phases on transformed optimization spaces was further examined by~\textcite{Quemy-Two-Stage-Optimization}.
 Besides the opportunity to compensate one less suitable optimization approach with another possibly better suited optimizer mentioned before, in this publication additionally was stated, that if the optimization space is transformed into two or more smaller sub-spaces, the overall optimization process can be sped up.
 There, a two-stage optimization transformation was applied, alike ReinBo separating model configuration and model selection.
@@ -649,3 +653,29 @@ The following allocation policies were defined:
     \item \textit{Joint policy}: Here, no separation into different optimization phases takes place and model selection and model configuration is performed in a joint search space.
     Hence, it can spend $T$ completely.
 \end{itemize}
+
+
+Monte-Carlo simulations as a heuristic for a graph search, as explained in~\ref{sec:theory:optimization:search}, are the basis of graph search algorithm named \textit{Monte-Carlo tree search}(MCTS).
+In this search algorithm the task of selecting the next child node of a tree node for expansion as an arm of an bandit problem.
+With this approach, a ballance between exploring more unevaluated areas of the tree and exploiting sub-trees which have already shown promising scores can be achieved.
+The Monte-Carlo tree search formalization \textit{UCT}(Upper Confidence bound applied to Trees)~\cite{Kocsis-UCT}.
+Child nodes are selected with the following formula: $\underset{i}{\textrm{arg max}} \left( \mu_i + \sqrt{\frac{2 \cdot \textrm{log}(c)}{n_i}} \right)$, where $\mu_i$ is the overall sampled score of the subtree below node $i$ as an average, $n_i$ is the amount of times the sub-tree below $i$ was sampled and $n$ is the amount of overall iterations so far.\newline
+MCTS will be exemplified in more detail in the next chapter but it is picked up here, since it is the basis for heuristic graph search based AutoML approach called \textit{Mosaic}~\cite{Rakotoarison-Mosaic}, which utilizes a multi-stage optimization method as well.
+Here, the tree, which MCTS searches, is modelled as a transformation of the optimization space into a model selection space.
+The first $k$ layers of the search tree are representing $k$ possible types of pipeline components, for example pre-processing methods or machine learning models, which have their corresponding $i \in [1,k]$ index in the resulting pipeline.
+These pipelines are only linear and not generalized to any form of directed acyclic graph as in the prior related works approach.
+In each of the first $k$ layers one component of each type is selected.
+Therewith, this approach has a comparable tree structure to ReinBo but is more flexible regarding the length of the pipeline.\newline
+After the model selection for a pipeline is concluded, the $k$ components of the pipeline need a configuration.
+Thus, the continuous model configuration space that remains of the initial optimization space after the discrete model selection space has been covered with the search tree, is transformed into a sole model configuration space for the selected pipeline, which is embedded in the corresponding leaf node of the selected pipeline at the bottom of the $k$ model selection layers.
+Similar to ReinBo, in each leaf node will a surrogate model $f_s$ of the expected evaluation score at any point of the optimization space for configuring the pipeline represented by the leaf be constructed and the optimization is based on this surrogate in the form of Bayesian optimization.
+
+
+Mosaic and ReinBo have two remaining drawbacks:
+\begin{itemize}
+    \item They can only create pipelines of a fixed length and are without further extensions not capable of constructing more sophisticated non-linear pipeline, which limit the final pipeline potential for some datasets.
+    \item Hyperparameter optimization in the second phase after the model selection is only performed with a single optimization method, namely Bayesian optimization, and is therefore limited by the capabilities of this method.
+    But as outlined before with the aid of the No-Free-Lunch theorems, it is possible to improve the set of problem classes, for which an AutoML approach is superior by utilizing more than one optimization algorithm, if it is possible to automatically detect and exploit the most suitable optimizer for a problem class.
+\end{itemize}
+The approach of this thesis is similar to the principal of Mosaic and ReinBo but tries to overcome these two drawbacks.
+In the following chapter, the functional principles of the approach of this thesis are explained in detail as well the strategies for both improvements.
