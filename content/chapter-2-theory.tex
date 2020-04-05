@@ -60,19 +60,19 @@ This inputs and outputs of an conceptual AutoML tool are illustrated in figure~\
 The general workflow of an AutoML tool is also numbered and illustrated in the figure and can be generalized with the following steps:
 \begin{enumerate}
     \item AutoML tool gets input data and some execution constraints as an input.
-    \item Model Selection and Model Configuration are repeated until execution constraints are met.
-    \item Model Selection as well as Model Configuration can perform a Model Evaluation to get a score for any pipeline candidate they encounter.
+    \item Model selection and model configuration are repeated until execution constraints are met.
+    \item Model selection as well as model configuration can perform a model evaluation to get a score for any pipeline candidate they encounter.
     \item After the constraints are met, the best found pipeline as well as the score of this pipeline are given as an output.
 \end{enumerate}
-The Model Evaluation step is usually performed by training a pipeline on one big portion of the input data and testing it with a smaller portion of the data, sometimes called validation data, while measuring some kind of performance measurement, for example the accuracy of predictions or some error metric.
+The model evaluation step is usually performed by training a pipeline on one big portion of the input data and testing it with a smaller portion of the data, sometimes called validation data, while measuring some kind of performance measurement, for example the accuracy of predictions or some error metric.
 But other evaluation techniques for example like a Cross-Validation are also common.\newline
-While the Model Evaluation step is only very loosely defined and usually not a complex procedure, the Model Selection and Model Configuration steps of the AutoML workflow are more sophisticated.
+While the model evaluation step is only very loosely defined and usually not a complex procedure, the model Selection and model configuration steps of the AutoML workflow are more sophisticated.
 They have to select a suitable candidate from a usually large space. 
-Both spaces, for Model Selection as well as for Model Configuration, will be individually explained in the following.
+Both spaces, for model selection as well as for model configuration, will be individually explained in the following.
 
 \subsection{Model Selection}
 \label{sec:theory:automl:selection}
-Model Selection is the task of selecting $1$ to $n$ components that will be part of the machine learning pipeline and sequentially traversed when data is passed through the pipeline.
+Model selection is the task of selecting $1$ to $n$ components that will be part of the machine learning pipeline and sequentially traversed when data is passed through the pipeline.
 For example, a valid pipeline would be to apply a Principal-Component-Analysis on the data as a first component and to use a Support Vector Machine for classification on the processed data as a second component afterwards.
 In this step of the workflow, the space one candidate has to be selected from, consists of all this valid pipeline, which usually have two or more components.\newline
 Usually there are three types of components:
@@ -92,24 +92,24 @@ An example for such a more complex pipeline is illustrated in figure~\ref{fig:th
     \caption{Example for a more complex pipeline with four pre-processing components in blue: A One-hot Encoder, a Feature Union of a PCA and a LSA. The learning model in green is a Majority Voter as an aggregation of a Decision Tree, a SVM and a Logistic Regression Classifier. }
 	\label{fig:theory:complexPipeline}
 \end{figure}
-Model Selection where the resulting pipelines can have this complexity needs to add a structural relationship between the pipeline components to the selected components.
-Therewith, Model Selection can be written as simple formalization with two things:
+Model selection, where the resulting pipelines can have this complexity, needs to add a structural relationship between the pipeline components to the selected components.
+Therewith, model selection can be written as simple formalization with two things:
 \begin{itemize}
     \item For all possible components $C=\{c_1, ..., c_n\}$ a $C' \subseteq C$ of components that will be used to construct the pipeline.
     \item A binary relation $\prec$ over $C'$ that defines which component is a data input for another component to define an order of the components for the pipeline as well as aggregation of several components with one component. 
 \end{itemize}
 Nevertheless, to find a valid set $C' \subseteq C$ is not a trivial task.
 For example, when an aggregator for multiple parallel pre-processing components is needed, a valid choice could be a Feature Union component but a Decision Tree component would be invalid for this pipeline position.
-Therefore, if the pipelines shall be allowed to be more complex than for example a single pre-processing component and a single learning model, there is a big set of constraints for valid subsets of the candidate space of the Model selection $C$.
+Therefore, if the pipelines shall be allowed to be more complex than for example a single pre-processing component and a single learning model, there is a big set of constraints for valid subsets of the candidate space of the model selection $C$.
 
 \subsection{Model Configuration}
 \label{sec:theory:automl:configuration}
-With the resulting component set after the Model Selection step selected its candidate $C'=\{c_1, ..., c_r\}$ the pipeline is not ready to be used yet.
+With the resulting component set after the model selection step selected its candidate $C'=\{c_1, ..., c_r\}$ the pipeline is not ready to be used yet.
 Usually each component of $c_k \in C'$ has a set of hyperparameter and for each one a concrete value is needed.
-Therewith, the candidate space for the Model Configuration step is dependent on the resulting candidate from the Model Selection step.
+Therewith, the candidate space for the model configuration step is dependent on the resulting candidate from the model selection step.
 Each component $c_k$ has a set of hyperparameter $\Theta_k=\{ \theta_{k,1}, ..., \theta_{k,j} \}$ where each hyperparameter has a range where the value for this hyperparameter has to be chosen from.
 Such a range can for example be a numeric set $\mathbb{N}$ or a custom set like for example $\{\textrm{true}, \textrm{false}\}$.\newline
-When combining all ranges $\bigcup\limits_{i=1}^r \Theta_i$ a parametrization space with dimension $r$ is defined as the candidate space for the Model Configuration step, where configuration vectors can be drawn.
+When combining all ranges $\bigcup\limits_{i=1}^r \Theta_i$ a parametrization space with dimension $r$ is defined as the candidate space for the model configuration step, where configuration vectors can be drawn.
 An example for a concrete parametrization drawn from a three dimensional parameter space is shown in figure~\ref{fig:theory:parameterSpace}
 \begin{figure}[ht!]
     \centering
@@ -135,7 +135,7 @@ When such a pipeline is constructed and configured with the vector values it can
 
 \subsection{Formalization of AutoML as an Optimization Problem}
 \label{sec:theory:automl:optimization}
-The choices in the Model Selection and Model Configuration step for one candidate out of the corresponding candidate spaces should not be arbitrary.
+The choices in the model selection and model configuration step for one candidate out of the corresponding candidate spaces should not be arbitrary.
 Evaluations of a candidate pipeline yield a score for this candidate and intuitively a suitable AutoML approach should try to select candidates with scores as good as possible.
 Therefore, the AutoML problem is often considered as a special form of an optimization problem and can be formalized as one as well.\newline
 \textcite{Feurer-Cash} give a formalization for AutoML problems as a so called \textit{Combined Algorithm Selection and Hyperparameter optimization} problem, or short \textit{CASH} problem.
@@ -145,8 +145,8 @@ Their definition is the following:
 \end{equation*}
 This formula consists out of the following parts:
 \begin{itemize}
-    \item $A^*$: The best solution of the algorithm selection, i.e. for the AutoML setting the best pipeline construction found in the Model Selection step
-    \item $\lambda_*$: The best hyperparameter configuration for $A^*$ found in the hyperparameter optimization step, i.e. the Model Configuration step for AutoML
+    \item $A^*$: The best solution of the algorithm selection, i.e. for the AutoML setting the best pipeline construction found in the model selection step
+    \item $\lambda_*$: The best hyperparameter configuration for $A^*$ found in the hyperparameter optimization step, i.e. the model configuration step for AutoML
     \item $\mathcal{A}$: A set of possible algorithms to choose from and given in the form $\mathcal{A} = \{A^{1}, ..., A^{R} \}$, which is the set of all valid pipeline component combinations in the case of AutoML
     \item $\Lambda^{(j)}$: Each algorithm $A^{(j)} \in \mathcal{A}$ has a parameter configuration domain $\Lambda^{(j)}$, where a concrete parametrization $\lambda$ can be selected out of
     \item $\frac{1}{K} \sum_{i=0}^K $: This is used to calculate the K-fold cross-validation of a pipeline, but other evaluation metrics are also possible if the formula is adjusted accordingly
@@ -188,7 +188,7 @@ The relationship between the properties of the dataset, the different pipeline c
 But it is possible to to get a evaluation of a $x$, i.e. a concrete pipeline with a complete configuration, by training and testing the pipeline with given data and a evaluation metric like for example a cross-validation.
 The absence of a concrete formula for $f_0$ but the possibility to determine $f_0(x)$ renders AutoML as a Black Box optimization problem.\newline
 Without the possibility to determine a optimal or near optimal candidate analytically, in the case of a Black Box optimization problem a series of candidates has to be selected and evaluated while trying to find or at least approximate a optimal solution.
-Now the question remains for the AutoML setting how candidates from the two presumably large candidate spaces of Model Selection and Model Configuration should be selected for each iteration and how such a approximation can be attempted.\newline
+Now the question remains for the AutoML setting how candidates from the two presumably large candidate spaces of model selection and model configuration should be selected for each iteration and how such a approximation can be attempted.\newline
 A solely random selection in every iteration is not very likely to find good results with such a high number of choices.
 Since the approach evaluates several candidates iteratively, a better approach would be to base the selection on knowledge gathered from previous iterations.\newline
 Several algorithms were developed to tackle such a iteratively approximation of the optimum of a Black Box optimization problem.
@@ -259,7 +259,7 @@ If the drawn candidate has a better evaluation score than the starting candidate
 This loop is continued until the optimization budget is spent. Since this method is very prone to local minima/maxima, it is a possible improvement to remember the current best candidate, select a new completely random start point and start the loop over, if there was no improvement in the last $n$ iterations of the current loop.
 Both variants are illustrated for the running example in figure~\ref{fig:theory:random-search}.\newline
 One example of the Random Search algorithm applied in the context of AutoML is the \textit{Hyperband} approach~\cite{Li-Hyperband}.
-Here, multiple parallel working instances of Random Searches are evaluating candidates in a joint space of Model Selection and Model Configuration to cover as much of the candidate space as possible.
+Here, multiple parallel working instances of Random Searches are evaluating candidates in a joint space of model selection and model configuration to cover as much of the candidate space as possible.
 The initial problem is that multiple instances combined require a big portion of the optimization budget.
 This was tackled by treating each random search as the arm of the bandit and canceling single search instances over time that do not find candidates with high evaluation scores and which therefore probably have a low regret.
 By terminating some probably low performing searches the optimization budget can be spent on mor promising search instances.
@@ -332,7 +332,7 @@ Without a way to deterministically score a inner node, a probabilistic approach 
 Here, it can be assumed if enough leaf nodes at the end of the sub-graph below the inner node, which shall be scored, are evaluated, it is possible to score the inner node based on these evaluations with a sufficient certainty.
 Which path to follow to reach a leaf node in the sub-graph is decided randomly.
 To score something based on a a series of random experiments is called a \textit{Monte-Carlo} simulation/experiment and is a common approach to obtain a value, where the exact calculation of the value is either impossible or too complex.
-This combination of utilizing a heuristic Graph Search with Monte-Carlo simulations as a heuristic for optimization in the AutoML context was applied to a Best-First Search in the ML-Plan approach~\cite{Mohr-ML-Plan}. 
+This combination of utilizing a heuristic Graph Search with Monte-Carlo simulations as a heuristic for optimization in the AutoML context was applied to a Best-First Search in the ML-Plan approach~\cite{Mohr-ML-Plan}.
 
 \subsection{Genetic and Evolutionary Optimization}
 \label{sec:theory:optimization:genetic}
@@ -632,7 +632,7 @@ But this improvements regarding the Bayesian optimization and the inclusion of a
 \newline
 The advantages of performing the AutoML optimization in several phases on transformed optimization spaces was further examined by~\textcite{Quemy-Two-Stage-Optimization}.
 Besides the opportunity to compensate one less suitable optimization approach with another possibly better suited optimizer mentioned before, in this publication additionally was stated, that if the optimization space is transformed into two or more smaller sub-spaces, the overall optimization process can be sped up.
-There, a two-stage optimization transformation was applied, alike ReinBo separating Model configuration and Model selection.
+There, a two-stage optimization transformation was applied, alike ReinBo separating model configuration and model selection.
 Although, this approach is not as limited to a mandatory pipeline topology as ReinBo, with the constraint of three components at most and only one of each type, and is able to construct pipelines in a more unrestricted fashion as a directed acyclic graph.
 To create an optimization space of all valid pipeline graphs, all pipeline components have specifications of their input and output datatypes and can only be connected to another component node, if the output types of one node match the input types of another node.\newline
 In the formal descriptions of this approach, no certain optimization algorithm is specified.
@@ -640,7 +640,7 @@ For this framework any optimization algorithm could be applied for either phase 
 Instead, the publication focusses on the allocation of the optimization budget, in their case a time budget $T$, between the two phases.
 The following allocation policies were defined:
 \begin{itemize}
-    \item \textit{Split policy}: $T$ is split into pre-defined phase allocations $T_1$ and $T_2$. $T_1$ is completely spent onto Model selection and afterwards $T_2$ is spent as a whole as well.
+    \item \textit{Split policy}: $T$ is split into pre-defined phase allocations $T_1$ and $T_2$. $T_1$ is completely spent onto model selection and afterwards $T_2$ is spent as a whole as well.
     \item \textit{Iterative policy}: A very short time period $t << T$ is set and it will be alternated iteratively between the two phases, where each phase has $t$ as a budget in one iteration, until $T$ is spent.
     \item \textit{Adaptive policy}: This policy is an extension of the Iterative policy but here the $t$ is not fix but is adaptive to the achievements of the optimization in each phase.
     Therefore there is a $t_1$ and a $t_2$ for the corresponding phase.
