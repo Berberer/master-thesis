@@ -17,18 +17,31 @@
 
 \section{Thesis Structure}
 \label{sec:intro:structure}
+Following this introduction, this thesis iste structured into five chapters.
+The content and goals of each chapter are briefly explained here:
 
 \textbf{Chapter \ref{sec:theory}} \\[0.2em]
-\blindtext
+At first, the foundations of the machine learning, the AutoML setting and optimization in general are elucidated, to give a starting point for the related work part of this chapter and aid the understanding of the approach of this thesis.
+A selection of Black Box optimization algorithms is presented and for each a few existing AutoML approaches, which apply this algorithm.
+With the help of the No-Free-Lunch theorems for optimization, it will be argued why it is not sufficient to utilize a single optimization method for a single AutoML optimization space.
+The chapter is concluded by presenting a few more AutoML approaches that already apply the idea of separating the single big optimization space and applying more than one optimizer as supplementary related works besides the AutoML approaches, which were presented priorly altogether with their optimization algorithm.
 
 \textbf{Chapter \ref{sec:approach}} \\[0.2em]
-\blindtext
+The approach of this thesis is theoretically specified here and the underlying design choices explained.
+Every concept from the theory chapter, which is taken up again for the specification of this approach is explained in more detail.
+All improvements from applying an optimizer ensemble instead of a single optimizer are listed with reference to the disadvantages from the related work approaches mentioned in chapter~\ref{sec:theory}.
 
 \textbf{Chapter \ref{sec:implementation}} \\[0.2em]
-\blindtext
+To apply the approach for actual AutoML problem settings as well as evaluating the approach empirically an implementation is necessary.
+The technical details of an exemplaric implementation as a library developed with the Python programming language are explicated accompanied with an overview of the utilized libraries.
 
 \textbf{Chapter \ref{sec:evaluation}} \\[0.2em]
-\blindtext
+In order to answer the previously listed research questions a series of empirical experiments is designed and conducted.
+This approach is matched up against simple AutoML baseline scores as well as state-of-the-art score of some of the related work approaches.
+Structured by the addressed research question, the experiments design and execution is explained.
+Subsequent to this explanations the results of the experiments are shown and interpreted with regard to the research questions.
 
 \textbf{Chapter \ref{sec:conclusion}} \\[0.2em]
-\blindtext
+Finally, the outcomes of the research questions are interpreted to compare this approach to other AutoML approaches.
+The answers to the research questions are used to summarize the concepts of this approach and their validity.
+At last, an outlook is given about additions, which could further improve this approach and are a starting point for future work.
