@@ -2,8 +2,22 @@
 %
 \chapter{AutoML with an Ensemble of Optimizers}
 \label{sec:approach}
-
-\Blindtext
+As outlined in the previous chapter, in theory any optimization approach under a resource budget is limited to a set of problem classes, where it can find a solution that is better than any solution another optimization approach could find for the same problem class, i.e. where the approach is superior.
+For an actual use-case, as for instance AutoML, it would be necessary to either have significant domain knowledge or to had conducted a broad empirical evaluation to select the optimizer that have a high chance of performing superior for a newly encountered problem class.
+This can be avoided, if during the optimization process a set of optimizers would be evaluated in the context of the presented optimization problem and the most apt one would be applied automatically.\newline
+Furthermore, it was argued how a separation of the optimization space into model selection and model configuration spaces by optimization space transformations could be beneficial.
+The anticipated advantages are a speed-up at first, because the dimensionality of the input space for an optimizer can be reduced.
+Secondly, the best suited optimizer for the model configuration can be selected independently from the constructed pipeline after the model selection.\newline
+Although this approach could be generalized to any form of algorithm selection and hyperparameter configuration problem, this thesis focusses on the AutoML use-case and therewith has to address well suited machine learning pipelines as an expected output for a wide variety of datasets as an input.
+Thus, the constructed pipelines should be able to be as sophisticated as necessary to suit the complexity of any possible input dataset.
+Therewith, the approach has the additional requirement of preventing overly stringent limitations of the pipeline topology such as a fix length or solely linear compositions.\newline
+In the following chapter such a method will be presented and applied to the AutoML use-case.
+This approach will be explained in the following steps in separate sections:
+\begin{enumerate}
+    \item A short overview how model selection and configuration spaces can be separated for this approach
+    \item The structure of the model selection optimization space and how the optimization will be performed to enable the selection of different optimizers for model configuration out of an embedded optimizer ensemble
+    \item The structure of the model configuration optimization space and which benefits can be utilized from using and re-using the different optimizers of the ensemble
+\end{enumerate}
 
 \section{Separation of Model Selection and Configuration}
 \label{sec:approach:separation}
