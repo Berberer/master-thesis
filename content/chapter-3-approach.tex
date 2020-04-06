@@ -21,8 +21,14 @@ This approach will be explained in the following steps in separate sections:
 
 \section{Separation of Model Selection and Configuration}
 \label{sec:approach:separation}
-
-\Blindtext
+A usual AutoML optimization search space is a joint space for model selection and model configuration consisting out of a set of components, which can be used to construct a machine learning pipeline, and based on the selected components, a valid configuration has to be created.
+Since in the joint optimization space the selected components are not known beforehand, the dimensionality of this space has to be selected for a fix parametrization size.
+Hence, the model configuration can only create parameter configurations with a pre-defined size as a constraint and the set of pipeline components for model selection can only contain components whose configuration does not exceed this size.\newline
+If the model selection and the model configuration steps are performed sequentially on separated optimization spaces, the dimensionality of the model configuration space can depend on the outcome of the model selection step and have the necessary dimensionality for the constructed pipelines parametrization.\newline
+Similar to ReinBo and Mosaic, the model selection space is represented by a tree structure.
+After the optimization method reaches a leaf node and has therewith complete and valid pipeline structure, the size of the required configuration becomes clear.
+Any leaf node is for this reason the connection point and foundation for a model configuration space and the configuration requirements can be deduced.
+Thus, dimensionality and structure of the optimization space for the model configuration can be determined from the configuration requirements of the pipeline represented in this leaf node.
 
 \section{Model Selection with MCTS}
 \label{sec:approach:selection}
