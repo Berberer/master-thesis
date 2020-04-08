@@ -32,8 +32,16 @@ Thus, dimensionality and structure of the optimization space for the model confi
 
 \section{Model Selection with MCTS}
 \label{sec:approach:selection}
-
-\Blindtext
+While the overall goal of the model selection step is to construct a pipeline out of a set of pipeline components, in this approach two additional sub-goals come in addition as supplementary requirements:
+\begin{enumerate}
+    \item The constructed pipeline should be able to be constructed more flexible and more sophisticated than in ReinBo and Mosaic, i.e. have an unrestricted length and no constraints regarding linearity.
+    \item The model selection step should be able to evaluate the different optimization methods and their performance regarding the input dataset or even regarding the model configuration for specific pipeline components in the context in the dataset.
+    With such an approach, the the most suitable optimizer can be detected and exploited, which will be the key concept for creating an optimizer ensemble.
+\end{enumerate}
+In the following, both sub-goals will be addressed.
+The next two sub-sections tackle the first sub-goal by modelling the model selection process as a graph search problem as first and describing this search graph in more detail afterwards.
+Thereafter, in the third sub-section a formalization of the ensemble concept for multiple optimizers is given in the form of a Multi-Armed Bandit problem.
+Finally, in the fourth sub-section it is illustrated how both sub-goals can be achieved during the model selection by performing a MCTS.
 
 \subsection{Model Selection as a Graph Search Problem}
 \label{sec:appraoch:selection:search}
