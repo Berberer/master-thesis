@@ -45,8 +45,18 @@ Finally, in the fourth sub-section it is illustrated how both sub-goals can be a
 
 \subsection{Model Selection as a Graph Search Problem}
 \label{sec:appraoch:selection:search}
-
-\Blindtext
+A machine learning pipeline can vary heavily in structure and complexity.
+For example, simple using a Decision tree as the only component as well as many components in a more sophisticated topology as in figure~\ref{fig:appraoch:complex-pipeline} are valid pipelines and depending on the concrete input dataset, both variants could be the optimal output of the model selection step.
+\begin{figure}[ht!]
+    \centering
+    % TODO: Replace figure
+    \includegraphics[width=\textwidth]{gfx/Figures/Theory/Crossover.pdf}
+    \caption{An example of a complex machine learning pipeline with a higher length and a non-linear topology.}
+    \label{fig:appraoch:complex-pipeline}
+\end{figure}
+Since ReinBo and Mosaic solve their model selection tasks by defining a fix pipeline length and creating a model selection tree containing every combinatorial possible combination from a few different component types, these approaches do not allow complex pipelines.\newline
+Other approaches, as for example ML-Plan, TPOT or RECIPE utilize hierarchical task network planning(\textit{HTN planning}) combined with a best-first search or expression trees and formal grammars together with genetic programming, to achieve a more unconstrained model selection optimization space.
+Because for the ensemble method a MCTS will be required(will be reasoned in~\ref{sec:appraoch:selection:mcts}), which is a heuristic search algorithm like the best-first search as in ML-Plan, this approach will take this HTN planning approach as a foundation to construct the model selection space.
 
 \subsection{Description of the Search Space Graph}
 \label{sec:appraoch:selection:graph}
