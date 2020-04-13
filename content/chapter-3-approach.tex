@@ -108,12 +108,49 @@ Thus, each compound tasks has one or more required interface, which represents t
 Decomposition rules are now simple matching rules, i.e. which required interfaces can be satisfied with which provided interface.
 Of course it is possible that this interface types need to be identically for simplicity.
 A compound task with a required interface of type $a$ can only be decomposed into another task, which has $a$ as one of its provided interface types.
-With such a definitions of required and provided interface types for each task, pipeline topology specific constraints like splits into two sub-pipelines and uniting such sub-pipelines, or machine learning specific constraints like for example creating ensembles out of classifiers, are straightforward to incorporate into the planning problem without the need to write a list of decomposition rules.
+With such a definitions of required and provided interface types for each task, pipeline topology specific constraints like splits into two sub-pipelines and uniting such sub-pipelines, or machine learning specific constraints like for example creating ensembles out of classifiers, are straightforward to incorporate into the planning problem without the need to write a list of decomposition rules.\newline
+The overall pipeline structure, for example Pre-Processing + Learning Model or Pre-Processing + Learning Model + Post-Processing, can be encoded in the required interfaces of the goal task.
+Every actual pipeline component, which shall be included for constructing pipelines, will be represented as primitive tasks.
+For a better structure, they should be grouped by their provided interface types that are deduced from their properties and purposes.
+Pipeline topologies, like creating parallel pre-processing sub-pipelines can be for example achieved with a Feature Union pipeline component, which has one or more types of pre-processing components as required interfaces.
+Pipelines with a dynamic length can be achieved comparable to generating sequences with an unlimited length in a regular grammar, where a pipeline can either be decomposed into just a component or a component and a pipeline.
+A simple HTN planning space for a very small AutoML model selection space is illustrated in~\ref{fig:appraoch:htn-automl}.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{gfx/Figures/Approach/HTNAutoML.pdf}
+    \caption{A complete search graph of an AutoML problem visualized in the HTN context.
+    The primitive tasks are PCA, ICA, SVN and KNN.
+    All available compound tasks are Pipeline, Pre-Processor, Classifier, Feature Union, First Pre-Processor and Second Pre-Processor.}
+    \label{fig:appraoch:htn-automl}
+\end{figure}
 
 \subsection{Multiple Optimization Algorithms as a Multi-Armed Bandit Problem}
 \label{sec:appraoch:selection:bandit}
-
-\Blindtext
+When all compound tasks are solved and therefore a leaf node $n^*$ of the search space is reached, all components of the pipeline are selected and for this node with its pipeline it can be deduced which parameters each component needs a configuration space and therefore which is the model configuration space.
+To enable an actual model configuration with one of the available optimization algorithms, or theoretically even different configurations of the same algorithms, $A = \{ a_1, ..., a_k \}$, one additional node for each $a_i \in A$ will be attached as a child of $n^*$.
+Therefore, the search tree $G=(V, E)$ of the HTN planning is extended for $A$ in the form of $V'=V \cup \{n^*_{a_1}, ..., n^*_{a_k}\}$, $E'=E \cup \{(n^*, n^*_{a_1}), ..., (n^*, n^*_{a_k})\}$, $G' = (V', E')$.
+An simplified illustration without the HTN planning aspects of this extended search tree can be seen in figure~\ref{fig:appraoch:search-graph}.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{gfx/Figures/Approach/SearchGraph.pdf}
+    \caption{A simplified illustration of the search tree. The root is drawn in blue, the inner nodes in white, a node with a fully constructed pipeline in green and the additional nodes for optimizing the parametrization of this pipeline in red.
+    The yellow box shows the configuration space of the pipeline.}
+    \label{fig:appraoch:search-graph}
+\end{figure}
+Now, the challenge arises to select one of the optimization algorithms for the model configuration step of a pipeline $p$.
+But there exists no prior knowledge, which optimizer is the most suitable one for this configuration space.
+It is possible that for example $a_1$ is the best algorithm for optimizing the parametrization of this concrete $p$.
+Alternatively it could also be the case for this example that algorithm $a_2$ is the best choice for generally optimizing all possible configurations spaces of pipelines that contain an ICA component and therefore is the best optimizer choice for the complete sub-tree below the selection of the ICA component which could include this pipeline $p$ as well.\newline
+Until such knowledge is collected, there is no other choice but to try out different optimization algorithms for optimizing the parametrization of $p$ and examine their optimization results.
+This try-and-error approach is also referred to as \textit{exploration}.
+During the collection of exploration results it will become more evident, which optimizer yields which score quality.
+But this score observations of one optimizer are equatable to an experiment that has an underlying random variable with an unknown distribution.
+Without a high number of observations it is not possible to factually assess an optimizers score quality for $p$ without uncertainty.
+Thus, the currently best scored algorithm could be not the overall best one and with further exploration of other optimizers the true best one could be found.
+But because there is a limited optimization budget, it is not a productive approach to solely explore the different candidates.
+From time to time the best optimizer explored up to that point should be utilized since it can perform the most promising optimization to the best of the collected knowledge.
+This utilization of the candidate with the best observed scores is also referred to as \textit{exploitation}.
+A balanced strategy between exploration and exploitation is the core concept of \textit{Multi-Armed Bandit} problems, which are the theoretical foundation of the model selection method and the selection of an model configuration optimizer in this appraoch.
 
 \subsection{Ensemble Interaction with a MCTS}
 \label{sec:appraoch:selection:mcts}
