@@ -93,8 +93,22 @@ The representation of one simple incomplete task tree and two applicable decompo
 
 \subsection{Description of the Search Space Graph}
 \label{sec:appraoch:selection:graph}
-
-\Blindtext
+The examples of HTN tasks in~\ref{sec:appraoch:selection:search} are given as instructions in plain english but this cannot be used in a algorithm and therefore a formalization is necessary.
+With a suitable formalization and corresponding data model, the HTN planning domain is adjustable and expandable for the exact use-case and for the case of the AutoML context it is possible to modify possible pipeline topologies and the set of pipeline components that are used for construction.\newline
+In a manual pipeline construction it is not possible to create arbitrary pipeline graphs because components often expect a certain type of input that can only be given by certain other components as an output.
+Additionally, the selection of some components implies the requirement of selecting certain other components.
+For example if an ensemble method was selected as a learning model, the components that are used to be the predictors of the ensemble must be learning model components and cannot be pre-processing models.\newline
+To incorporate such constraints into tasks and decomposition rules, ML-Plan utilizes a simple type system in the form of required and provided interfaces.
+Each task has one or more type definitions which represents certain properties of the solution to the associated task.
+For example, the primitive task of using a Decision Tree as well as the compound task of creating an ensemble learning model out of several other learning models would both offer a solution in the form of a machine learning model.
+Both of them could have something like \texttt{Classifier} or \texttt{Learner} as their solution type and therewith as the types of interfaces they provide.\newline
+On the other hand, are compound tasks only solvable if they get solutions of certain types as the results of the sub-tasks they are decomposed into.
+For example, a Stacking classifier can only be based other classifiers, i.e. solutions with types like \texttt{Classifier}.
+Thus, each compound tasks has one or more required interface, which represents this solution types the compound task will be based on.\newline
+Decomposition rules are now simple matching rules, i.e. which required interfaces can be satisfied with which provided interface.
+Of course it is possible that this interface types need to be identically for simplicity.
+A compound task with a required interface of type $a$ can only be decomposed into another task, which has $a$ as one of its provided interface types.
+With such a definitions of required and provided interface types for each task, pipeline topology specific constraints like splits into two sub-pipelines and uniting such sub-pipelines, or machine learning specific constraints like for example creating ensembles out of classifiers, are straightforward to incorporate into the planning problem without the need to write a list of decomposition rules.
 
 \subsection{Multiple Optimization Algorithms as a Multi-Armed Bandit Problem}
 \label{sec:appraoch:selection:bandit}
