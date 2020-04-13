@@ -49,14 +49,47 @@ A machine learning pipeline can vary heavily in structure and complexity.
 For example, simple using a Decision tree as the only component as well as many components in a more sophisticated topology as in figure~\ref{fig:appraoch:complex-pipeline} are valid pipelines and depending on the concrete input dataset, both variants could be the optimal output of the model selection step.
 \begin{figure}[ht!]
     \centering
-    % TODO: Replace figure
-    \includegraphics[width=\textwidth]{gfx/Figures/Theory/Crossover.pdf}
-    \caption{An example of a complex machine learning pipeline with a higher length and a non-linear topology.}
+    \includegraphics[width=\textwidth]{gfx/Figures/Approach/ComplexPipeline.pdf}
+    \caption{An example of a complex machine learning pipeline with a higher length and a non-linear topology. Input dataset and output prediction data are shown in green, pre-processing components in orange and the machine learning components constructing the machine learning model in blue.}
     \label{fig:appraoch:complex-pipeline}
 \end{figure}
 Since ReinBo and Mosaic solve their model selection tasks by defining a fix pipeline length and creating a model selection tree containing every combinatorial possible combination from a few different component types, these approaches do not allow complex pipelines.\newline
-Other approaches, as for example ML-Plan, TPOT or RECIPE utilize hierarchical task network planning(\textit{HTN planning}) combined with a best-first search or expression trees and formal grammars together with genetic programming, to achieve a more unconstrained model selection optimization space.
-Because for the ensemble method a MCTS will be required(will be reasoned in~\ref{sec:appraoch:selection:mcts}), which is a heuristic search algorithm like the best-first search as in ML-Plan, this approach will take this HTN planning approach as a foundation to construct the model selection space.
+Other approaches, as for example ML-Plan, TPOT or RECIPE utilize hierarchical task network planning (\textit{HTN planning}) combined with a best-first search or expression trees and formal grammars together with genetic programming, to achieve a more unconstrained model selection optimization space.
+Because for the ensemble method a MCTS will be required (will be reasoned in~\ref{sec:appraoch:selection:mcts}), which is a heuristic search algorithm like the best-first search as in ML-Plan, this approach will take this HTN planning approach as a foundation to construct the model selection space in the form of a tree.\newline
+As the name suggests, HTN planning is based around the notion of tasks and usually one goal task is given as the planning problem input, which would be "\textit{Construct a machine learning pipeline out of a set of components}" in this case.
+These tasks can either be primitive tasks or compound task, where the overall goal task usually is a compound task.
+Primitive tasks are simple enough be directly achievable without the need for further planning or other calculations.
+An example for a primitive task in the AutoML context could be "\textit{Use a Decision tree as a learning model for the pipeline}" as this task can be directly transformed into a pipeline construction command.\newline
+Compound tasks on the other hand, are not directly realizable and it is necessary to further decompose the task.
+Each compound task can be decomposed into one or most commonly two or more sub-tasks.
+Depending on the planning domain, there are decomposition rules where a compound task has one or more possible decompositions.
+Such sub-tasks of a compound task can be primitive tasks, again compound tasks or a mixture of both.
+If a compound task can be decomposed into solely primitive tasks, this task is directly solvable via the actions of the primitive tasks.
+But if the decomposition of the compound task consists out of at least one compound tasks, this child compound task needs to be decomposed recursively as well until it becomes solvable and this solution can be used to solve the original compound task.
+The exemplaric AutoML compound tasks "\textit{Construct a machine learning pipeline out of a set of components}" could be decomposed for example into the to smaller compound tasks "\textit{Construct a pre-processing pipeline out of a set of pre-processing components}" and "\textit{Construct a learning model out of a set of machine learning components}".\newline
+With this decomposition of compound tasks into different sub-tasks, the hierarchical aspect of HTN planning is added.
+A plan as the solution of the planning problem is therefore a task-tree, where each leaf node is a primitive task and each inner node is a compound task.
+To create a search tree for a HTN planning problem, solution states, i.e. solved or incomplete task-trees, as well as planning operations to solve an incomplete task-tree, i.e. selecting and applying decomposition rules, need to be represented with nodes and edges.\newline
+Here is one common possibility to have each node represent a task-tree and each outgoing edge is a decomposition rule that is applicable to the task-tree of the node.
+This edges are therefore connected to nodes, where the represented task-tree is the result of applying this decomposition rule on the previous task-tree.
+For a bigger HTN problem an unsolved task-tree will contain a high number of undecomposed compound nodes and therefore an immense amount of decomposition rules would be applicable.
+To reduce the maximum degree of the graph and therefore the memory and runtime complexity of most search algorithms, there should not be an outgoing edge for the applicable decomposition rules of each undecomposed compound task.
+A simplification is to create an ordering for the undecomposed compound task of the nodes task tree and only create outgoing edges for decomposition rules, which are applicable to the first compound task of this ordering.
+The representation of one simple incomplete task tree and two applicable decomposition rules for the first compound task of an ordering is illustrated in figure~\ref{fig:appraoch:htn-planning}.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[height=0.5\textheight]{gfx/Figures/Approach/HTN.pdf}
+    \caption{An example of a partial HTN planning search tree for a simple planning problem.
+    Each node is illustrated with the task-tree for the partially solved plan up to this point in its upper half, where compound task nodes are blue and primitive task nodes are green.
+    In the lower half are all involved compound tasks listed in the utilized ordering.
+    If any decomposition rule was already applied for a compound task, it is listed here as well.
+    The first node on the left has already utilized a decomposition for compound task $c_1$ into $c_2$ and $c_3$.
+    In this ordering the first undecomposed compound task is $c_2$ and since two decomposition rules $c_2 \rightarrow (c_4, p_1)$ and $c_2 \rightarrow (p_2, p_3)$ are applicable, the node of this task-tree has two outgoing edges to nodes, where the corresponding decomposition rule was applied to the represented task tree.
+    After applying the second decomposition rule, $c_2$ has solely primitive tasks as sub-tasks and can therefore be marked as solved.
+    In the case of the first decomposition rule, $c_4$ needs to be decomposed and solved before $c_2$ can would be solved.
+    }
+    \label{fig:appraoch:htn-planning}
+\end{figure}
 
 \subsection{Description of the Search Space Graph}
 \label{sec:appraoch:selection:graph}
