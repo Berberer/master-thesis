@@ -7,7 +7,8 @@ For an actual use-case, as for instance AutoML, it would be necessary to either 
 This can be avoided, if during the optimization process a set of optimizers would be evaluated in the context of the presented optimization problem and the most apt one would be applied automatically.\newline
 Furthermore, it was argued how a separation of the optimization space into model selection and model configuration spaces by optimization space transformations could be beneficial.
 The anticipated advantages are a speed-up at first, because the dimensionality of the input space for an optimizer can be reduced.
-Secondly, the best suited optimizer for the model configuration can be selected independently from the constructed pipeline after the model selection.\newline
+Secondly, the best suited optimizer for the optimization space of the model configuration of a constructed pipeline can be selected independently for each different result of the model selection steps.
+
 Although this approach could be generalized to any form of algorithm selection and hyperparameter configuration problem, this thesis focusses on the AutoML use-case and therewith has to address well suited machine learning pipelines as an expected output for a wide variety of datasets as an input.
 Thus, the constructed pipelines should be able to be as sophisticated as necessary to suit the complexity of any possible input dataset.
 Therewith, the approach has the additional requirement of preventing overly stringent limitations of the pipeline topology such as a fix length or solely linear compositions.\newline
@@ -55,7 +56,8 @@ For example, simple using a Decision tree as the only component as well as many 
 \end{figure}
 Since ReinBo and Mosaic solve their model selection tasks by defining a fix pipeline length and creating a model selection tree containing every combinatorial possible combination from a few different component types, these approaches do not allow complex pipelines.\newline
 Other approaches, as for example ML-Plan, TPOT or RECIPE utilize hierarchical task network planning (\textit{HTN planning}) combined with a best-first search or expression trees and formal grammars together with genetic programming, to achieve a more unconstrained model selection optimization space.
-Because for the ensemble method a MCTS will be required (will be reasoned in~\ref{sec:appraoch:selection:mcts}), which is a heuristic search algorithm like the best-first search as in ML-Plan, this approach will take this HTN planning approach as a foundation to construct the model selection space in the form of a tree.\newline
+Because for the ensemble method a MCTS will be required (will be reasoned in~\ref{sec:appraoch:selection:mcts}), which is a heuristic search algorithm like the best-first search as in ML-Plan, this approach will take this HTN planning approach as a foundation to construct the model selection space in the form of a tree.
+
 As the name suggests, HTN planning is based around the notion of tasks and usually one goal task is given as the planning problem input, which would be "\textit{Construct a machine learning pipeline out of a set of components}" in this case.
 These tasks can either be primitive tasks or compound task, where the overall goal task usually is a compound task.
 Primitive tasks are simple enough be directly achievable without the need for further planning or other calculations.
@@ -66,7 +68,8 @@ Depending on the planning domain, there are decomposition rules where a compound
 Such sub-tasks of a compound task can be primitive tasks, again compound tasks or a mixture of both.
 If a compound task can be decomposed into solely primitive tasks, this task is directly solvable via the actions of the primitive tasks.
 But if the decomposition of the compound task consists out of at least one compound tasks, this child compound task needs to be decomposed recursively as well until it becomes solvable and this solution can be used to solve the original compound task.
-The exemplaric AutoML compound tasks "\textit{Construct a machine learning pipeline out of a set of components}" could be decomposed for example into the to smaller compound tasks "\textit{Construct a pre-processing pipeline out of a set of pre-processing components}" and "\textit{Construct a learning model out of a set of machine learning components}".\newline
+The exemplaric AutoML compound tasks "\textit{Construct a machine learning pipeline out of a set of components}" could be decomposed for example into the to smaller compound tasks "\textit{Construct a pre-processing pipeline out of a set of pre-processing components}" and "\textit{Construct a learning model out of a set of machine learning components}".
+
 With this decomposition of compound tasks into different sub-tasks, the hierarchical aspect of HTN planning is added.
 A plan as the solution of the planning problem is therefore a task-tree, where each leaf node is a primitive task and each inner node is a compound task.
 To create a search tree for a HTN planning problem, solution states, i.e. solved or incomplete task-trees, as well as planning operations to solve an incomplete task-tree, i.e. selecting and applying decomposition rules, need to be represented with nodes and edges.\newline
@@ -97,7 +100,8 @@ The examples of HTN tasks in~\ref{sec:appraoch:selection:search} are given as in
 With a suitable formalization and corresponding data model, the HTN planning domain is adjustable and expandable for the exact use-case and for the case of the AutoML context it is possible to modify possible pipeline topologies and the set of pipeline components that are used for construction.\newline
 In a manual pipeline construction it is not possible to create arbitrary pipeline graphs because components often expect a certain type of input that can only be given by certain other components as an output.
 Additionally, the selection of some components implies the requirement of selecting certain other components.
-For example if an ensemble method was selected as a learning model, the components that are used to be the predictors of the ensemble must be learning model components and cannot be pre-processing models.\newline
+For example if an ensemble method was selected as a learning model, the components that are used to be the predictors of the ensemble must be learning model components and cannot be pre-processing models.
+
 To incorporate such constraints into tasks and decomposition rules, ML-Plan utilizes a simple type system in the form of required and provided interfaces.
 Each task has one or more type definitions which represents certain properties of the solution to the associated task.
 For example, the primitive task of using a Decision Tree as well as the compound task of creating an ensemble learning model out of several other learning models would both offer a solution in the form of a machine learning model.
@@ -119,43 +123,69 @@ A simple HTN planning space for a very small AutoML model selection space is ill
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Approach/HTNAutoML.pdf}
     \caption{A complete search graph of an AutoML problem visualized in the HTN context.
-    The primitive tasks are PCA, ICA, SVN and KNN.
+    The primitive tasks are PCA, ICA and SVN.
     All available compound tasks are Pipeline, Pre-Processor, Classifier, Feature Union, First Pre-Processor and Second Pre-Processor.}
     \label{fig:appraoch:htn-automl}
 \end{figure}
 
 \subsection{Multiple Optimization Algorithms as a Multi-Armed Bandit Problem}
 \label{sec:appraoch:selection:bandit}
-When all compound tasks are solved and therefore a leaf node $n^*$ of the search space is reached, all components of the pipeline are selected and for this node with its pipeline it can be deduced which parameters each component needs a configuration space and therefore which is the model configuration space.
-To enable an actual model configuration with one of the available optimization algorithms, or theoretically even different configurations of the same algorithms, $A = \{ a_1, ..., a_k \}$, one additional node for each $a_i \in A$ will be attached as a child of $n^*$.
-Therefore, the search tree $G=(V, E)$ of the HTN planning is extended for $A$ in the form of $V'=V \cup \{n^*_{a_1}, ..., n^*_{a_k}\}$, $E'=E \cup \{(n^*, n^*_{a_1}), ..., (n^*, n^*_{a_k})\}$, $G' = (V', E')$.
-An simplified illustration without the HTN planning aspects of this extended search tree can be seen in figure~\ref{fig:appraoch:search-graph}.
+All nodes, where every compound tasks is solved, are therefore leaf nodes and all of them together will be grouped in $N^*$.
+Each $n \in N^*$ has a completely constructed pipeline $p_n \in P$ represented with the internal task-tree of $n$, where $P$ is the set of all possible pipelines.
+For this $p$, it can be collected which parameters each included component required and therewith a optimization space for the model configuration can be deduced.\newline
+The approach requires a set of optimization algorithms, or alternatively differently configured variants of the one optimization algorithm, as an input.
+This forms the optimizer algorithms set  $A = \{ a_1, ..., a_k \}$.
+To enable the actual model configuration with one of the available optimization algorithms, one additional node for each $a_i \in A$ will be attached as a child to each model selection leaf node $n_j \in N^*$ in the form of $n_j^{a_i}$.
+All of these additional nodes for optimization that are child nodes of the model selection leaf nodes $N^*$ are in the node set $N^A = {n^{a_1}_{n^*_1}, ... , n^{a_k}_{n^*_l}}$.
+A node with an optimization algorithm $n^{a_i}_{n^*_j} \in N^A$ represents the node that is attached as a child to the model selection leaf node $n^*_j$ and uses the optimization algorithm $a_i$ to optimize a configuration for pipeline $p_{n^*_j}$.\newline
+Therefore, the search tree $G=(V, E)$ of the model selection HTN planning is extended for $N^A$ in the form of $V'=V \cup N^A$, $E'=E \cup \bigcup_{n^*_i \in N^*} \bigcup_{a_j \in A} n^{a_j}_{n^*_i}$, $G' = (V', E')$.
+Since the nodes in $N^*$ are now not longer leaf nodes of $G'$ they will now be referred to as \textit{Pipeline Nodes} and the newly added leaf nodes $N^A$ are the \textit{Optimizer Nodes.}
+An simplified illustration of a possible $G'$ without the HTN planning aspects of this extended search tree can be seen in figure~\ref{fig:appraoch:search-graph}.
+The pipeline nodes and the optimizer nodes are also marked for a better intuition of the extended search tree $G'$.
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Approach/SearchGraph.pdf}
-    \caption{A simplified illustration of the search tree. The root is drawn in blue, the inner nodes in white, a node with a fully constructed pipeline in green and the additional nodes for optimizing the parametrization of this pipeline in red.
-    The yellow box shows the configuration space of the pipeline.}
+    \caption{A simplified illustration of a possible extended search tree $G'$.
+    The root is drawn in blue, the inner nodes with unsolved task-trees in white, pipelines nodes in green and optimizer nodes in red.
+    The yellow box shows the configuration space of the pipeline that is represented by the task tree in that pipeline node.}
     \label{fig:appraoch:search-graph}
 \end{figure}
-Now, the challenge arises to select one of the optimization algorithms for the model configuration step of a pipeline $p$.
-But there exists no prior knowledge, which optimizer is the most suitable one for this configuration space.
-It is possible that for example $a_1$ is the best algorithm for optimizing the parametrization of this concrete $p$.
-Alternatively it could also be the case for this example that algorithm $a_2$ is the best choice for generally optimizing all possible configurations spaces of pipelines that contain an ICA component and therefore is the best optimizer choice for the complete sub-tree below the selection of the ICA component which could include this pipeline $p$ as well.\newline
-Until such knowledge is collected, there is no other choice but to try out different optimization algorithms for optimizing the parametrization of $p$ and examine their optimization results.
+
+Now, if a pipeline node is reached, the task arises to select one of the connected optimizer nodes.
+The set of optimizer nodes below a pipeline node $n^*_j$ forms the set $N^A_{n^*_j} = \bigcup_{a_i \in A} n^{a_i}_{n^*_j}$.
+But without prior knowledge it is impossible to reliably predict, which optimizer is ideally suited to optimize the configuration for the pipeline $p_{n^*_j}$, i.e. to select one node out of $N^A_{n^*_j}$ during a graph search.\newline
+A na\"ive approach is to randomly try out different optimization algorithms for optimizing the parametrization and examine their optimization results to gather knowledge successively.
 This try-and-error approach is also referred to as \textit{exploration}.
-During the collection of exploration results it will become more evident, which optimizer yields which score quality.
-But this score observations of one optimizer are equatable to an experiment that has an underlying random variable with an unknown distribution.
-Without a high number of observations it is not possible to factually assess an optimizers score quality for $p$ without uncertainty.
-Thus, the currently best scored algorithm could be not the overall best one and with further exploration of other optimizers the true best one could be found.
-But because there is a limited optimization budget, it is not a productive approach to solely explore the different candidates.
-From time to time the best optimizer explored up to that point should be utilized since it can perform the most promising optimization to the best of the collected knowledge.
-This utilization of the candidate with the best observed scores is also referred to as \textit{exploitation}.
-A balanced strategy between exploration and exploitation is the core concept of \textit{Multi-Armed Bandit} problems, which are the theoretical foundation of the model selection method and the selection of an model configuration optimizer in this appraoch.
+During the collection of exploration results it will become more evident, which optimizer yields which score quality.\newline
+Collecting a few sample scores for each optimizer is basically conducting an experiment since black-box optimization is often a probabilistic process.
+Based on the amount of experiment samples, the of optimization capability an optimizer can be estimated with a certain probability.
+After a sufficient amount of samples is gathered, the most suitable optimizer can be selected and utilized with a high certainty.
+Using one choice with the expectation of a good result is also named \textit{exploitation}.\newline
+The balance between both, exploration and exploitation, is a difficult challenge because of the optimization budget.
+With too much exploitation it can not be assured with a high probability that the exploited choice is the actual best one, since there is a lack of optimization score samples.
+But with too much exploration it may be possible to determine the probably best choice, but there is not enough budget left to actually utilize this choice to a higher extend.
+
+This balance between exploring and exploiting a set of choices, which have an unknown quality, is fundamental problem of the \textit{Multi-Armed Bandit} problem.
+\textbf{TODO: Add formalization of multi-armed bandits!}
 
 \subsection{Ensemble Interaction with a MCTS}
 \label{sec:appraoch:selection:mcts}
+If selection of an optimizer node out of $N^A_{n^*_j}$ for performing the model configuration of the pipeline $p_{n^*_j}$ is formalized as a multi-armed bandit problem, there are several existing algorithms to select one arm for each optimization step while balancing exploration and exploitation until the optimization budget is spent.
+Common choices are for example \textit{Thompson Sampling}~\cite{Thompson-Sampling} or the usage of \textit{Upper confidence bounds} (UCB) as for instance in the \textit{UCB1} algorithm~\cite{Auer-UCB1}.\newline
+With this very limited set of arms, one of this algorithms could be applied and with a high enough optimization budget, there is a high probability that the best suited one will be exploited enough to get a good parametrization for $p_{n^*_j}$.
+But since no actual model selection is done until now, there is no pipeline $p_{n^*_j}$ selected and therefore the set of arms cannot be limited to $N^A_{n^*_j}$.
+Instead, the set of arms would be the set of optimizer nodes $N^A$, i.e. the set of combinations of all possible pipelines with all algorithms.\newline
+For such a high number of arms, the multi-armed bandit algorithm would need a massive amount of steps, where exploration would be performed, until exploitation could take place.
+As an alternative, the tree structure of $G'$ should be utilized for a better selection mechanism.
 
-\Blindtext
+While formalizing the selection of an optimizer out of $A$ for optimizing a pipelines $p_{n^*_j}$ configuration as a multi-armed bandit problem in the form of the optimizer nodes $N^A_{n^*_j}$, it was utilized that most probably one of this optimizers $a_1$ will be the best suited one for the configuration optimization space of this particular pipeline.
+This suitability of an optimizer for a space is dependent on the structure of the space, i.e. the number of dimensions as well as the value sets of the different dimension, and the properties and landscape of the target function in this space.\newline
+But while $a_1$ is the best optimizer for the configuration space of this specific pipeline $p_{n^*_j}$, another optimizer $a_2$ could be the generally best optimizer for any pipeline that includes one certain component.
+In that case, all sub-trees below nodes where this component was selected would ideally use $a_2$ as the optimization algorithm.
+Because such hierarchical dependencies influence the best optimizer choice, the exploration and exploitation of a multi-armed bandit algorithm should utilized this dependencies.
+
+The aforementioned upper confidence bounds were successively applied to the possibly hierarchical dependencies of trees in the form of the \textit{UCB applied to trees} algorithm (UCT)~\cite{Kocsis-UCT}, which is often also referred to as \textit{Monte-Carlo tree search} (MCTS).
+\textbf{TODO: Explain MCTS!}
 
 \section{Model Configuration with Multiple Optimizers}
 \label{sec:approach:configuration}
