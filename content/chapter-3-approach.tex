@@ -119,6 +119,7 @@ For a better structure, they should be grouped by their provided interface types
 Pipeline topologies, like creating parallel pre-processing sub-pipelines can be for example achieved with a Feature Union pipeline component, which has one or more types of pre-processing components as required interfaces.
 Pipelines with a dynamic length can be achieved comparable to generating sequences with an unlimited length in a regular grammar, where a pipeline can either be decomposed into just a component or a component and a pipeline.
 A simple HTN planning space for a very small AutoML model selection space is illustrated in~\ref{fig:appraoch:htn-automl}.
+A more detailed AutoML HTN planning space described in a JSON format is given in Appendix~\ref{sec:appendix:htn-space}.
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Approach/HTNAutoML.pdf}
@@ -166,11 +167,24 @@ With too much exploitation it can not be assured with a high probability that th
 But with too much exploration it may be possible to determine the probably best choice, but there is not enough budget left to actually utilize this choice to a higher extend.
 
 This balance between exploring and exploiting a set of choices, which have an unknown quality, is fundamental problem of the \textit{Multi-Armed Bandit} problem.
-\textbf{TODO: Add formalization of multi-armed bandits!}
+A multi-armed bandit problem is usually considered in the context of time steps $t_1, t_2, .., T$, which are sometimes also called turns, where $T$ is the current turn of the ongoing series.
+For every turn one arm, i.e. one of the $K$ choices $C = \langle c_1, ..., c_K \rangle$, is selected by a selection strategy $s: t \rightarrow [1,K]$.\newline
+For a turn $t$ a random reward $r$ is received for selecting the choice $c_{s(t)}$.
+Each arm $c_i$ has an underlying probably distribution $D_{c_i}$ for the reward values, i.e. $r_{c_{s(t)}} \sim D_{c_{s(t)}}$.
+In the AutoML context, where each arm is one optimizer, this reward could be the test score a pipeline, which is configured with the best found parametrization of the chosen optimizer after a certain budget.\newline
+Of course, each distribution $D_{c_i}$ has a corresponding expected value $\mu_{c_i}$.
+Therefore, if for example the selection strategy is $s(t) = 1$ the accumulated expected reward is $\sum_{t=1}^T = \mu_{c_1}$.\newline
+An optimal strategy $s^*$ would always pick the choice with the highest expected reward $\mu^* = \underset{i \in [1,K]}{\mathrm{max}} \> \mu_{c_i}$, such that $s^*(t) =\underset{i \in [1,K]}{\mathrm{argmax}} \> \mu_{c_i}$.
+However, $s^*$ is unknown and has to be approximated by $s$ over time.\newline
+For every turn where $s(t) \neq s^*(t)$, the strategy looses $\mu^* - \mu_{c_{s(t)}}$ in expected reward.
+The exploration vs. exploitation balance problem is here noticeable, since the strategy has to find out the arm with $\mu^*$ by trying out every arm, but also wants to keep $\mu^* - \mu_{c_{s(t)}}$ as minimal as possible for every turn.
+This idea of keeping the expected reward loss minimal in the overall context of $\underset{T \rightarrow \infty}{\lim}$, such that the strategy has time to approximate $s^*$, is formulated in the form of the \textit{Total expected Regret}: $R_T = T \cdot \mu^* - \sum_{t=1}^{T} \mu_{c_{s(t)}}$.
+Different algorithms for creating such selection strategies $s$ can be compared by their respective expected total regret $R_T$, which should be as low as possible.
 
 \subsection{Ensemble Interaction with a MCTS}
 \label{sec:appraoch:selection:mcts}
-If selection of an optimizer node out of $N^A_{n^*_j}$ for performing the model configuration of the pipeline $p_{n^*_j}$ is formalized as a multi-armed bandit problem, there are several existing algorithms to select one arm for each optimization step while balancing exploration and exploitation until the optimization budget is spent.
+The selection of an optimizer node out of $N^A_{n^*_j}$ to perform the model configuration of the pipeline $p_{n^*_j}$ can be formalized as a multi-armed bandit problem.
+With that assumption, there are several existing algorithms to construct selection strategies for optimization nodes until the optimization budget is spent, which balance exploration and exploitation with the goal of keeping the total expected regret minimal.
 Common choices are for example \textit{Thompson Sampling}~\cite{Thompson-Sampling} or the usage of \textit{Upper confidence bounds} (UCB) as for instance in the \textit{UCB1} algorithm~\cite{Auer-UCB1}.\newline
 With this very limited set of arms, one of this algorithms could be applied and with a high enough optimization budget, there is a high probability that the best suited one will be exploited enough to get a good parametrization for $p_{n^*_j}$.
 But since no actual model selection is done until now, there is no pipeline $p_{n^*_j}$ selected and therefore the set of arms cannot be limited to $N^A_{n^*_j}$.
@@ -185,12 +199,56 @@ In that case, all sub-trees below nodes where this component was selected would 
 Because such hierarchical dependencies influence the best optimizer choice, the exploration and exploitation of a multi-armed bandit algorithm should utilized this dependencies.
 
 The aforementioned upper confidence bounds were successively applied to the possibly hierarchical dependencies of trees in the form of the \textit{UCB applied to trees} algorithm (UCT)~\cite{Kocsis-UCT}, which is often also referred to as \textit{Monte-Carlo tree search} (MCTS).
-\textbf{TODO: Explain MCTS!}
+Each node has an attached score, which is $ $ in the case of UCT.
+MCTS is usually defined as an algorithm with an iteration of four steps, which are listed in the following and additionally illustrated in figure~\ref{fig:appraoch:mcts}:
+\begin{enumerate}
+    \item \textbf{Selection}: The next node for expansion is chosen.
+    Commonly, each node has a value assigned and starting at the root node, the next node is the child node with the highest value until a not expanded node is reached.
+    \item \textbf{Expansion}: The node is expanded, i.e. each possible follow-up state of the state in the unexpanded node is constructed and a child node is attached for each.
+    \item \textbf{Simulation}: The new child nodes need some initial scores.
+    Since an inner nodes represent an incomplete state, they are hard to score directly and a heuristic scoring for the sub-tree below this inner node is necessary.
+    A set amount of Monte-Carlo Simulations, which are basically random walks down the search tree until a leaf node is reached, are performed.
+    The scores of the states in the found leaf nodes are used to approximate a score this sub-tree.
+    Thus, the scoring gets more accurate with a higher number of simulations per child node, since more different leaf nodes are reached and therefore more possible solution states are covered.
+    But with a higher number of simulations, a bigger portion of the optimization budget is spent each iteration and fewer iterations can be performed overall.
+    A careful trade-off is therefore necessary.
+    \item \textbf{Backpropagation}: The simulations returned for child node $n$ the scores $x_1, ..., x_k$.
+    Based on this scores $n$ will receive an initial scoring and afterwards, every node in the path from the root to $n$ will be updated to incorporate the newly gathered knowledge as well via backpropagation starting at $n$.
+    At first, $n$ is scored initially with the following formula $\frac{\frac{\sum_{i=1}^k x_i}{k}}{v_r} + f \cdot \sqrt{\frac{\mathrm{ln} (V_r)}{v_r}}$.
+    The formula consists of the following parts: $\frac{\sum_{i=1}^k x_i}{k}$ is the average of the simulation results, $f$ is a pre-defined weighting for the focus on exploration, $v_r$ is the amount of visits $n$ had after $r$ rounds of the MCTS loop via Monte-Carlo simulations before it was expanded or via previous backpropagation after it was expanded which is initially 1 since the node was just expanded and is receiving its first scoring, and $V_r$ is the $v_r$ value of the parent of $n$.
+    For the actual backpropagation, starting with the parent of $n$ which is referred to as $n'$ and continuing until the root is reached each nodes score is updated similar to the scoring of $n$.
+    At first, the $v_r$ counter of $n'$ is increased.
+    Let $w_{r-1}$ be the scoring of $n'$ of the previous round, it will be updated during the backpropagation of this round with a cumulative moving average $w_r=w_{r-1} + \frac{w_c - w_{r-1}}{r}$, where $w_c$ is the current node score of the child node previously updated during the backpropagation.
+    Now, the new score of $n'$ is $\frac{w_r}{v_r} + f \cdot \sqrt{\frac{\mathrm{ln} (V_r)}{v_r}}$.
+\end{enumerate}
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{gfx/Figures/Approach/MCTS.pdf}
+    \caption{Illustration of the four MCTS steps. Inner graph nodes are shown in blue and the leaf nodes that are found during Monte-Carlo simulations are shown in red.}
+    \label{fig:appraoch:mcts}
+\end{figure}
+
+To apply MCTS for a model selection in a search tree for example constructed with HTN planning, minor adjustments are necessary.
+After incorporating the following changes, this modified MCTS is the algorithmic foundation of the approach of this thesis:
+\begin{itemize}
+    \item Optimizer nodes are leafs and can not be further expanded. If a Monte-Carlo simulation terminates at one or if the overall search tree is expanded to such an extend that an optimizer node is chosen in the Selection phase, a mode configuration run with a certain optimization budget is started with the algorithm represented by this node.
+    \item The main MCTS loop does not run forever or for a fix amount of steps. It keeps track of the spent optimization budget during the search itself and during the optimizer runs and will stop after an iteration, if the budget limit is reached.
+\end{itemize}
+As inputs an implementation would require  some values:
+\begin{itemize}
+    \item The overall optimization budget $B$.
+    \item The budget a single optimizer run for a MCTS simulation can spent $b \ll B$.
+    \item The exploration factor $f$.
+    \item The amount of Monte-Carlo simulation starting at each new child node after expansion.
+\end{itemize}
+Additionally, the definition of the HTN planning space and the set of optimizers $A$ are required to construct the search tree.
+A complete formulation of the modified MCTS for the approach of this thesis can be found in appendix~\ref{sec:appendix:pseudo-code}.
 
 \section{Model Configuration with Multiple Optimizers}
 \label{sec:approach:configuration}
-
-\Blindtext
+With the modified MCTS, the model selection is conducted and additionally it is controlled when an optimizer is started for model configuration.
+But since the optimizers of the optimizer nodes $N^A_{n^*_j}$ below the pipeline node $n^*_j$, all try to optimize a configuration for pipeline $p_{n^*_j}$, they can utilize the fact they share the same optimization space.
+At first, it is explained in the following how previous candidate evaluations of the shared optimization space are stored and afterwards, how optimizers re-use this stored candidate scores for new optimization runs, which is often also referred to as warmstarting.
 
 \subsection{Shared Parameter Domain for Selected Models}
 \label{sec:appraoch:configuration:parameter}
