@@ -252,8 +252,19 @@ At first, it is explained in the following how previous candidate evaluations of
 
 \subsection{Shared Parameter Domain for Selected Models}
 \label{sec:appraoch:configuration:parameter}
+In every pipeline node $n^* \in N^*$, the optimization space for the model configuration of pipeline $p_{n^*}$ can be deduced.
+Therefore, $n^*$ can be the single point of contact for every subjacent optimizer node $n^{a}_{n^*} \in N^A_{n^*}$.
+With this centralized control instance it is possible to store and distribute knowledge from and to the optimizers.
 
-\Blindtext
+At first, every $n^{a}_{n^*} \in N^A_{n^*}$ can get the concrete model configuration space from $n^*$, as well as other helpful information like for example the default parametrization of certain pipeline components, which may be a good starting point for some optimization algorithms to start their optimization process at.
+Additionally, each optimizer can store their evaluated candidates together with the evaluation score at $n^*$.
+Although this requires additional storage, collecting and saving already evaluated candidates has the following advantages if a suitable datastructure is used, which outweigh the disadvantage of higher storage demands since storage is in general a comparably cheap hardware component:
+\begin{itemize}
+    \item If saved in a hashtable, candidates can be inserted with a generated key and retrieved with one as well. Therewith, it can be checked if a candidate was already evaluated before and if yes, return the existing score from $n^*$ to the optimizer instead of training and evaluating a pipeline on the dataset again.
+    The lookup complexity of a hashtable is constant, while training a machine learning model is very time consuming in comparison.
+    For example, is the complexity of training a SVM with SMO~\cite{Platt-SMO} between linear and quadratic, depending on the dataset.
+    \item If saved in a heap, retrieving the best candidates has a logarithmic complexity and thus, the best $n$ candidates from previous runs of the same or another optimizer from $N^A_{n^*}$ can efficiently be requested from $n^*$ as a starting point for a new optimization run.
+\end{itemize}
 
 \subsection{Warmstarting Versions of Optimization Algorithms}
 \label{sec:appraoch:configuration:warmstart}
