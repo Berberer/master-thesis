@@ -119,7 +119,8 @@ For a better structure, they should be grouped by their provided interface types
 Pipeline topologies, like creating parallel pre-processing sub-pipelines can be for example achieved with a Feature Union pipeline component, which has one or more types of pre-processing components as required interfaces.
 Pipelines with a dynamic length can be achieved comparable to generating sequences with an unlimited length in a regular grammar, where a pipeline can either be decomposed into just a component or a component and a pipeline.
 A simple HTN planning space for a very small AutoML model selection space is illustrated in~\ref{fig:appraoch:htn-automl}.
-A more detailed AutoML HTN planning space described in a JSON format is given in Appendix~\ref{sec:appendix:htn-space}.
+For a better understanding, an example of a more detailed and sophisticated AutoML HTN planning space is given in Appendix~\ref{sec:appendix:htn-space}.
+It is written in the JSON schema, which is defined in~\ref{sec:implementation:json}.
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Approach/HTNAutoML.pdf}
@@ -272,12 +273,33 @@ If the optimization budget is high enough, there is a high probability that the 
 Additionally, all candidate evaluation are stored in these pipeline nodes for the given model configuration optimization space.
 Hence, the optimization algorithms should utilize this advantage of prior collected data instead of performing the optimization anew every time.\newline
 Starting with a foundation of previously collected data instead of a completely unexplored optimization space ist called \textit{warmstarting} an optimizer.
-In the following it is explained how some of the different black-box optimization algorithms, which are presented in~\ref{sec:theory:optimization:search} up to~\ref{sec:theory:optimization:bayesian}, can be modified to be executed warmstarted:
+However, it is important to have a certain robustness against local optima, because without it an optimization algorithm could start in an local optimum, which was found in another optimization run, and would probably not get out of this local optima.
+In the following it is explained how some of the different black-box optimization algorithms, which are presented in~\ref{sec:theory:optimization:search} up to~\ref{sec:theory:optimization:bayesian}, can be modified to be executed warmstarted.
+They will therefore utilize an ordered list of pairs of the best candidates $l = \langle (c_1, s_1), ... (c_k, s_k) \rangle$, where $c_i$ is an already evaluated pipeline configuration and $s_i$ the corresponding score of this evaluation.
 
 \textbf{Random Search}:
+The first variant of a random search, where each candidate was drawn independent and at random, has no advantages from warmstarting besides not having to re-evaluate candidates that were already evaluated.\newline
+But the second variant of a random search, where a candidate is sampled out of the hypersphere around the current best candidate up until either the optimization budget is spent or no improvement happened for $i$ iterations, can profit from a modification to a warmstarted version.
+This version could use the top pair, or alternatively one randomly chosen pair of the top $n$ pairs for more variation, as a starting point.
+Now, the random search will start sampling candidates in the hypersphere around this starting point and has the chance to find a better neighboring configuration.\newline
+Of course the chosen starting point could be a local optimum, but this random search variant will use this hypersphere for at most $i$ iterations if no improvement is achieved, which can be an indicator for an optimum.
+In this case, it will select a new random starting point.
+Thus, not more than $i$ iterations are lost to a local optimum selected from $l$, which is depending on the optimization budget usually manageable, since random search is a comparably simplistic and therefore fast optimization algorithm.
 
 \textbf{Hyperband}:
+Hyperband is basically a method of treating multiple, parallel running random searches as a multi-armed bandit problem and stopping the less successful instances to have more optmization budget for the better performing instances.
+Therewith, if each random search instance is implemented as the warmstarted version from the previous explanation, Hyperband can profit from warmstarting a well.\newline
+The typical multi-armed bandit problem of balancing exploration and exploitation should be applied here as well.
+If Hyperband is configured to have $k$ parallel running instances, $\lfloor \sigma \cdot k \rfloor$ instances with $\sigma \in (0,1)$ should start at one of the top candidates from $l$ for exploitation, while $\lceil (1 - \sigma) \cdot k \rceil$ instances should start at new and randomly chosen configurations for a better exploration coverage of each Hyperband run.
 
 \textbf{Genetic Optimization}:
+A very important part of a genetic optimization algorithm, is the selection scheme from which individuals the next generation will be constructed.
+Such a selection can vary from simple approaches, like for example a random selection or the best individuals from the current generation, up to more sophisticated schemes like for example a \textit{Boltzmann Tournament Selection}~\cite{Goldberg-Boltzmann}.\newline
+With such an selection scheme in place, the warmstarting can be implemented straightforward.
+Instead of selecting individuals be a selection scheme from a previous generation, the selection scheme of the genetic algorithm will be applied on a subset of $l$.
 
 \textbf{SMAC}:
+For the Bayesian optimization implementation \textit{SMAC}, a warmstarting variant was developed by~\textcite{Lindauer-Smac-Warmstart}.
+During the optimization, SMAC trains a regression model, for instance a Random Forest, to predict the performance of a configuration before actually evaluating it.
+This regression model is then used to guide the selection of candidates that are actually evaluated to build the surrogate function model.
+Additionally to training this regression model progressively during the optimization, it can be trained beforehand with a subset of $l$ to have a more accurate model right from the start.
