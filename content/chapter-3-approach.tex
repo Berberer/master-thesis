@@ -268,5 +268,16 @@ Although this requires additional storage, collecting and saving already evaluat
 
 \subsection{Warmstarting Versions of Optimization Algorithms}
 \label{sec:appraoch:configuration:warmstart}
+If the optimization budget is high enough, there is a high probability that the MCTS will select a pipeline node more than once or alternatively the Monte-Carlo simulations will end in the pipeline nodes again.
+Additionally, all candidate evaluation are stored in these pipeline nodes for the given model configuration optimization space.
+Hence, the optimization algorithms should utilize this advantage of prior collected data instead of performing the optimization anew every time.\newline
+Starting with a foundation of previously collected data instead of a completely unexplored optimization space ist called \textit{warmstarting} an optimizer.
+In the following it is explained how some of the different black-box optimization algorithms, which are presented in~\ref{sec:theory:optimization:search} up to~\ref{sec:theory:optimization:bayesian}, can be modified to be executed warmstarted:
 
-\Blindtext
+\textbf{Random Search}:
+
+\textbf{Hyperband}:
+
+\textbf{Genetic Optimization}:
+
+\textbf{SMAC}:
