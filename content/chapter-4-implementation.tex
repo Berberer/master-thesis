@@ -2,7 +2,8 @@
 %
 \chapter{Implementation}
 \label{sec:implementation}
-For the approach of this thesis, describes in the previous chapter, a reference implementation in the \textit{Python} programming language is produced, which can be found here:~\url{https://github.com/Berberer/frankensteins-automl}.
+The approach of this thesis, described in the previous chapter, is realized as a reference implementation in the \textit{Python} programming language, which can be found here:~\url{https://github.com/Berberer/frankensteins-automl}.
+For simplicity and practicability reasons is this implementation restricted to time as the optimization budget, but other types of budgets can be added with minor modifications.
 
 This reference implementation serves two different reason:
 \begin{itemize}
@@ -23,10 +24,101 @@ Finally, the description schema of the AutoML optimization space definition is p
 
 \section{Utilized Python Libraries}
 \label{sec:implementation:libraries}
-
-\Blindtext
+This reference implementation relies on a few Open-Source Python libraries.
+In the following they are listed and their contribution to the functionality of the approach explained in combination with references to their repository and/or creators.
+\begin{itemize}
+    \item 
+\end{itemize}
 
 \section{Exemplaric File Format for defining the AutoML Optimization Space}
 \label{sec:implementation:json}
+To generate a HTN planning space for the model selection as well as to deduce a model configuration space for a constructed pipeline, a selection AutoML optimization space is required.
+This approach implementation has a definition structure for this space in the form of a JSON file in a certain format.\newline
+Since it is centered around the HTN planning tasks, which can be translated to pipeline component or pipeline construction steps, this JSON format is an array of components.
+Files for the component definitions have the following structure:
+\begin{verbatim}
+{
+    repository: String,
+    components: [
+        {
+            name: String,
+            providedInterface: [
+                String
+            ],
+            requiredInterfaces: [
+                {
+                    name: String,
+                    construction_key: String | Number
+                }
+            ],
+            parameter: [
+                {
+                    name: String,
+                    type: String,
+                    values ? : [
+                        String | Number
+                    ]
+                    min ? : Number,
+                    max ? : Number,
+                    default: String | Boolean | Number,
+                    construction_key: String | Number
+                }
+            ]
+        }
+    ]
+}
+\end{verbatim}
 
-\Blindtext
+The elements of the definition structure have the following semantic:
+\begin{itemize}
+	\item \texttt{repository}: It is allowed to split the definition of the AutoML space into multiple files, for example to separate pre-processing and learning model components. This string is not actually used in the implementation but can be understood as a identifier or an descriptor of the components of this file.
+	\item \texttt{components}: An array of the components defined in this file. They have each the following structure:
+		\begin{itemize}[label=\textbullet]
+			\item \texttt{name}: A unique identifier for this component. Parallel it is used to resolve the corresponding Python class/function and has therefore to include the Python module path as well as the actual name, like for example "\texttt{sklearn.naive\_bayes.GaussianNB}".
+			\item \texttt{providedInterfaces}: This array of string contains unique identifiers for each interface this component provides. With this provided interface and possibly more other provided interfaces, a compound task can be decomposed. 
+            \item \texttt{requiredInterfaces}: If this component is represented as a compound task and needs to be decomposed and solved to be instantiable, in this array are definitions for the required interfaces of the decomposition. Each has the following structure:
+            \begin{itemize}[label=\textbullet]
+                \item \texttt{name}: A unique identifier of a required interface to match valid components against for decomposition.
+                \item \texttt{construction\_key}: Since the resolved Python class constructor will be called to instantiate the current component that has this required interfaces, the parameter type signature of the constructor has to be met when calling.
+                    Since it will require the resulting component of the solved task of the provided interface matched for this required interface, the resulting component has to be placed an the correct position of the constructor call regarding to the type signature.
+                    The construction key can either be a integer to represent the position in the parameter list or a string in the case of a keyword parameter. 
+            \end{itemize}
+            \item \texttt{parameter}: Most components will require a parametrization if they are added to a pipeline. To deduce the model configuration space for a pipeline, here is a array with with a definition for each parameter the component requires with this structure:
+            \begin{itemize}[label=\textbullet]
+                \item \texttt{name}: An identifier for this parameter to be distinguishable from other parameters of this component. Hence, it has to be unique in this concrete parameter array.
+                \item \texttt{type}: The type of the parameter as a string. Valid values are "int" for integer numbers, "double" for numbers with potential decimal places, "cat" for categorical values(i.e. one out of a pre-defined set of values) and "bool" for a boolean value.
+                \item \texttt{values}: If the parameter has the type "cat" this is an array of strings or numbers with the allowed categorical values. If the parameter has another type, this field can be omitted.
+                \item \texttt{min} and \texttt{max}: For numerical parameters, i.e. parameters with type "int" or "double" a parameter range for valid values is defined with a minimum and a maximum. For another types, this two fields can be omitted.
+                \item \texttt{default}: If the implementation of the represented component has a suitable default value for this parameter, it is defined here as a string, number, or boolean, depending on the parameter type.
+                \item \texttt{construction\_key}: Same functionality as the construction key of a required interface. If the component is instantiated, here is defined at which position or with which keyword parameter the parameter value will be passed to the resolved class constructor of this component.
+            \end{itemize}
+        \end{itemize}
+\end{itemize}
+A complete and application-oriented example of an AutoML problem definition in this schema can be found in appendix~\ref{sec:appendix:htn-space}, but for presentation is here the the definition for a scikit-learn feature selection component named SelectPercentile, which can be included in the pre-processing part of a pipeline:
+\begin{verbatim}
+{
+    "name": "sklearn.feature_selection.SelectPercentile",
+    "providedInterface": [
+        "sklearn.feature_selection.SelectPercentile",
+        "FeatureSelection",
+        "AbstractPreprocessor",
+        "BasicPreprocessor"
+    ],
+    "requiredInterface": [
+        {
+            "name": "sklearn.feature_selection.f_classif",
+            "construction_key": 0
+        }
+    ],
+    "parameter": [
+        {
+            "name": "percentile",
+            "type": "int",
+            "default": 50,
+            "min": 1,
+            "max": 100,
+            "construction_key": "percentile"
+        }
+    ]
+}
+\end{verbatim}
