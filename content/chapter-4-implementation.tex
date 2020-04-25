@@ -3,7 +3,8 @@
 \chapter{Implementation}
 \label{sec:implementation}
 The approach of this thesis, described in the previous chapter, is realized as a reference implementation in the \textit{Python} programming language, which can be found here:~\url{https://github.com/Berberer/frankensteins-automl}.
-For simplicity and practicability reasons is this implementation restricted to time as the optimization budget, but other types of budgets can be added with minor modifications.
+For simplicity and practicability reasons this implementation has some minor restrictions regarding the expected input, but this can be changed or generalized to more inputs with minor modifications.
+As for the current implementation state, the optimization budget input is limited to time as the budget and the dataset input has to be in the \textit{ARFF} file format, popularized by \textit{WEKA}~\cite{Witten-Weka}.
 
 This reference implementation serves two different reason:
 \begin{itemize}
@@ -19,15 +20,40 @@ Finally, the description schema of the AutoML optimization space definition is p
 
 \section{Components of the Project and their Interaction}
 \label{sec:implementation:components}
+The components of the implementation and their architectural composition can be separated into three parts with regard to the subject matter and this separation will be used in the following to outline and explain the implementation.
+For the model selection, the search space needs to be constructed from the input optimization space definition.
+At first the components for this part of the implementation are explained.
+In the second part, the components for evaluating machine learning pipelines and handling the different optimizers are explicated.
+All components from this two parts are combined via a MCTS implementation into a overall AutoML program and all components for this are explained in the third part.
 
+\subsection{Model Selection Search Space Management}
+\label{sec:implementation:components:search-space}
+\Blindtext
+
+\subsection{Pipeline Evaluation and Optimizers for Model Configuration}
+\label{sec:implementation:components:optimization}
+\Blindtext
+
+\subsection{MCTS and Optimizer Integration}
+\label{sec:implementation:components:mcts}
 \Blindtext
 
 \section{Utilized Python Libraries}
 \label{sec:implementation:libraries}
 This reference implementation relies on a few Open-Source Python libraries.
 In the following they are listed and their contribution to the functionality of the approach explained in combination with references to their repository and/or creators.
+Libraries for development purposes that have not direct influence on the functionality, like for example libraries for unit-testing or code formatting, are omitted from this list but can be seen here:~\url{https://github.com/Berberer/frankensteins-automl/blob/master/requirements.txt}. 
 \begin{itemize}
-    \item 
+    \item \textit{LIAC-ARFF}\footnote{\url{https://github.com/renatopp/liac-arff}}: A parser for files in the ARFF format to access their data from a Python program.
+    \item \textit{NumPy}\footnote{\url{https://github.com/numpy/numpy}}: As a part of the \textit{SciPy} project~\cite{Virtanen-SciPy} for scientific computation, NumPy is an implementation for a wide range of mathematical functions, especially matrix calculation.
+    \item \textit{PyPubSub}\footnote{\url{https://github.com/schollii/pypubsub}}: Library for implementing a Publish-Subscribe-Pattern in python for event handling.
+    Therewith, if for different events of the AutoML workflow event publishers are added, it is easy to add additional functionality, like for example logging or visualization, as subscriber plug-ins in the form of event listeners, without having to add the plug-ins functionality at every location in the code, where a relevant event occurs.
+    \item \textit{scikit-learn}\footnote{\url{https://github.com/scikit-learn/scikit-learn}}: The solved task-trees from the model selection and parametrizations from the model configuration have to be instantiated as a executable machine learning pipeline for evaluation during the optimization and as the final result of the AutoML problem.
+    Scikit-learn~\cite{Pedregosa-Scikit-learn} is an established machine learning library with a variety of included components.
+    Most of the wanted components for the included components of an AutoML optimization space will be included here and can be referenced simply.
+    \item \textit{SMAC v3}\footnote{\url{https://github.com/automl/SMAC3}}: Current version of the official SMAC implementation. It already has new additions to the original approach, as for example warmstarting, included.
+    \item \textit{stopit}\footnote{\url{https://github.com/glenfant/stopit}}: Handling of timeouts for threads and sub-routines.
+    In the implementation, training and testing a resulting pipeline of the model selection and model configuration is constrained with a timeout, because even with a careful AutoML optimization space definition it is possible that the constructed pipeline will be faulty and will take either a long time or never finish training or testing.
 \end{itemize}
 
 \section{Exemplaric File Format for defining the AutoML Optimization Space}
