@@ -2,16 +2,39 @@
 %
 \chapter{Empirical Analysis and Evaluation}
 \label{sec:evaluation}
+After devising this approach for optimizer ensembles and implementing it as a reference implementation, it is essential to evaluate and asses this approach.
+This assessment is the goal of this chapter and the final step of this thesis before summing up and considering the outcomes of it.\newline
+To have a clear guided structure for this assessment, it is based on the research questions presented in~\ref{sec:intro:goal}, which is elucidated here in more detail at first with a focus on which data is required to answer them.
+Afterwards, this chapter answers the research questions with a series of Empirical evaluations in the form of experiments.\newline
+Therefore, the setup and configuration of the experiments is given as a starting point to subsequently analyze the results of the experiments and to deduce the answers to the research questions from them.
 
-\Blindtext
+\section{Research Questions in Detail}
+The first research question was about the feasibility about the approach, i.e. is it a viable idea to optimize an AutoML problem solution with an optimizer ensemble.
+This will be answered in two steps.\newline
+At first, are the solution scores of this approach similar or better than the scores of other state-of-the-art approaches for several different datasets?
+If they are not at all or not for a high number of datasets, this approach is not a competitor to the state-of-the-art approaches.
+In this case, there would be no progress in this scientific field and no motivation to utilize this approach.\newline
+Secondly, if there is an improvement in some scores, which component of the approach, the MCTS model selection and the warmstarted optimizer ensemble, has which influence on the improvements.
+To assess this influences, three versions of this approach are evaluated, where two of them have slight modifications:
+\begin{enumerate}
+    \item To evaluate the influence of a Model Selection via a MCTS, the approach does not utilize a optimizer ensemble in this version.
+    Every optimizer node represents the same optimizer, which will be SMAC for this evaluation.
+    \item To evaluate the influence of the ensembled optimizers, the approach does not utilize a MCTS selection.
+    The node selection on each level down the paths to the different optimizer nodes, will be random in each search iteration.
+    Therefore, it is basically a repeated random search.
+    \item Both components are included in the last version and the full approach is evaluated as described in the two previous chapter. 
+\end{enumerate}
+By comparing the scores of the tree variants for different datasets and different timeouts, data about the scores with and without one component can be gathered, which can be used to analyze the influence.
+
+As the second research question, the focus is on the utilization of the different optimizers.
+During each run of this approach, not for the variants with the modifications, it will be counted how many times each optimizer was selected by the MCTS and therewith started.
+Since the MCTS tries to find the best suited optimizer and to exploit it, this selection frequency is an indicator for the suitability of this optimizer to the input dataset.\newline
+The frequencies will be aggregated together with the AutoML time budget and the input dataset.
+Thus, it is possible to check if one or more optimizers were preferably selected in general or just an AutoML problem setting with a certain time budget or a input dataset with certain properties.
+Alternatively, there could be no significant difference and each optimizer was selected comparably often.
 
 \section{Experiment Setup}
 \label{sec:evaluation:setup}
-
-\Blindtext
-
-\section{Baselines}
-\label{sec:evaluation:baselines}
 
 \Blindtext
 

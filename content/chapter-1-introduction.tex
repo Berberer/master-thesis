@@ -3,8 +3,6 @@
 \chapter{Introduction}
 \label{sec:intro}
 
-\cleanchapterquote{You can’t do better design with a computer, but you can speed up your work enormously.}{Wim Crouwel}{(Graphic designer and typographer)}
-
 \section{Motivation}
 \label{sec:intro:motivation}
 
@@ -12,12 +10,22 @@
 
 \section{Thesis Goal and Research Questions}
 \label{sec:intro:goal}
-
-\blindtext
+In the context of this thesis, a feasible concept and algorithm for such optimizer ensembles will be devised and exemplarily realized as a reference implementation.
+This  implemented optimizer ensemble algorithm will be the test subject for a series of empirical evaluations.
+Overall, the goal of this thesis is to answer two research questions regarding this approach for optimizer ensembles in the focus of AutoML with the data gathered during the evaluations:
+\begin{enumerate}
+    \item Is the devised approach for optimizer ensembles feasible in the context of AutoML?
+    More precisely, is the result quality comparable or even better compared to other state-of-the-art approaches?
+    And if it is a feasible approach, what influence have the particular components of the approach?
+    \item Can knowledge about the optimization in the general AutoML context be extrapolated from this approach?
+    When the frequencies of utilizing certain optimizations algorithms during the execution of this approach are recorded, this may be indications regarding their capability for different AutoML problems, since this approach tries to find the best suited optimizer out of the ensemble for the input problem and exploit it.
+    Based on this frequencies, is every optimizer called an equal amount of times or is one or more optimization method favoured for the AutoML use case?
+    Does it depend on certain dataset properties or the timeout of the AutoML setting, whether an optimization method is used relatively often?
+\end{enumerate}
 
 \section{Thesis Structure}
 \label{sec:intro:structure}
-Following this introduction, this thesis iste structured into five chapters.
+Following this introduction, this thesis is structured into five chapters.
 The content and goals of each chapter are briefly explained here:
 
 \textbf{Chapter \ref{sec:theory}} \\[0.2em]
@@ -37,9 +45,9 @@ The technical details of an exemplaric implementation as a library developed wit
 
 \textbf{Chapter \ref{sec:evaluation}} \\[0.2em]
 In order to answer the previously listed research questions a series of empirical experiments is designed and conducted.
-This approach is matched up against simple AutoML baseline scores as well as state-of-the-art score of some of the related work approaches.
+This approach is matched up against state-of-the-art score of some of the related work approaches as well as altered versions of itself.
 Structured by the addressed research question, the experiments design and execution is explained.
-Subsequent to this explanations the results of the experiments are shown and interpreted with regard to the research questions.
+Subsequent to this explanations, the results of the experiments are shown and interpreted with regard to the research questions.
 
 \textbf{Chapter \ref{sec:conclusion}} \\[0.2em]
 Finally, the outcomes of the research questions are interpreted to compare this approach to other AutoML approaches.
