@@ -75,6 +75,7 @@ Files for the component definitions have the following structure:
                     construction_key: String | Number
                 }
             ],
+            function_pointer ? : Boolean,
             parameter: [
                 {
                     name: String,
@@ -95,10 +96,9 @@ Files for the component definitions have the following structure:
 
 The elements of the definition structure have the following semantic:
 \begin{itemize}
-	\item \texttt{repository}: It is allowed to split the definition of the AutoML space into multiple files, for example to separate pre-processing and learning model components. This string is not actually used in the implementation but can be understood as a identifier or an descriptor of the components of this file.
 	\item \texttt{components}: An array of the components defined in this file. They have each the following structure:
 		\begin{itemize}[label=\textbullet]
-			\item \texttt{name}: A unique identifier for this component. Parallel it is used to resolve the corresponding Python class/function and has therefore to include the Python module path as well as the actual name, like for example "\texttt{sklearn.naive\_bayes.GaussianNB}".
+			\item \texttt{name}: This value is used to resolve the corresponding Python class/function and has therefore to include the Python module path as well as the actual name, like for example "\texttt{sklearn.naive\_bayes.GaussianNB}".
 			\item \texttt{providedInterfaces}: This array of string contains unique identifiers for each interface this component provides. With this provided interface and possibly more other provided interfaces, a compound task can be decomposed. 
             \item \texttt{requiredInterfaces}: If this component is represented as a compound task and needs to be decomposed and solved to be instantiable, in this array are definitions for the required interfaces of the decomposition. Each has the following structure:
             \begin{itemize}[label=\textbullet]
@@ -107,6 +107,8 @@ The elements of the definition structure have the following semantic:
                     Since it will require the resulting component of the solved task of the provided interface matched for this required interface, the resulting component has to be placed an the correct position of the constructor call regarding to the type signature.
                     The construction key can either be a integer to represent the position in the parameter list or a string in the case of a keyword parameter. 
             \end{itemize}
+            \item \texttt{function\_pointer}: If this property exists and is set to true, the resolved Python function or constructor will not be actually called and the result returned after resolving the path.
+                Instead, a pointer to the resolved function itself will be returned, for the case that another component requires a function as a parameter.
             \item \texttt{parameter}: Most components will require a parametrization if they are added to a pipeline. To deduce the model configuration space for a pipeline, here is a array with with a definition for each parameter the component requires with this structure:
             \begin{itemize}[label=\textbullet]
                 \item \texttt{name}: An identifier for this parameter to be distinguishable from other parameters of this component. Hence, it has to be unique in this concrete parameter array.
