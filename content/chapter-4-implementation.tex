@@ -86,7 +86,7 @@ Files for the component definitions have the following structure:
                     min ? : Number,
                     max ? : Number,
                     default: String | Boolean | Number,
-                    construction_key: String | Number
+                    construction_key ? : String | Number
                 }
             ]
         }
@@ -116,7 +116,10 @@ The elements of the definition structure have the following semantic:
                 \item \texttt{values}: If the parameter has the type "cat" this is an array of strings or numbers with the allowed categorical values. If the parameter has another type, this field can be omitted.
                 \item \texttt{min} and \texttt{max}: For numerical parameters, i.e. parameters with type "int" or "double" a parameter range for valid values is defined with a minimum and a maximum. For another types, this two fields can be omitted.
                 \item \texttt{default}: If the implementation of the represented component has a suitable default value for this parameter, it is defined here as a string, number, or boolean, depending on the parameter type.
-                \item \texttt{construction\_key}: Same functionality as the construction key of a required interface. If the component is instantiated, here is defined at which position or with which keyword parameter the parameter value will be passed to the resolved class constructor of this component.
+                \item \texttt{construction\_key}: Same functionality as the construction key of a required interface.
+                    If the component is instantiated, here is defined at which position or with which keyword parameter the parameter value will be passed to the resolved class constructor of this component.
+                    Though, for parameters can this property be omitted.
+                    In this case it is assumed that the parameter is a keyword parameter and the \texttt{name} property will be used as the keyword.
             \end{itemize}
         \end{itemize}
 \end{itemize}
