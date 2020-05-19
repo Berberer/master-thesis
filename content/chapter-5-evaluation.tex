@@ -35,8 +35,44 @@ Alternatively, there could be no significant difference and each optimizer was s
 
 \section{Experiment Setup}
 \label{sec:evaluation:setup}
+To answer the first step of the first research question, this approach will be evaluated against different other competitor state-of-the-art approaches.
+The selection of this approaches are chosen to represent the difference optimization strategies.
+\textit{ML-Plan} for optimization via searching, \textit{TPOT} as a variant with a Genetic Algorithm, \textit{auto-sklearn} for Bayesian optimization, and finally \textit{Mosaic} as an approach that utilizes more than one optimization method via an optimization space transformation.\newline
+Since ML-Plan is the only approach out of this selection, which is not implemented in Python but in Java, it can not be integrated seamlessly in the same experimental setup as the remaining ones.
+Therefore, the scores for ML-Plan will be taken from the publication from~\textcite{Mohr-ML-Plan} and the other approaches will be evaluated in a unified Python experimental environment.
+It has to be noted, that this publication of ML-Plan is now at the point of this thesis two years old and the ML-Plan approach has received some improvements since, which are therewith not included here.
+A comparison with the current state of ML-Plan can be a starting point for further evaluations in the future.
 
-\Blindtext
+The experimental setup constraints from the original ML-Plan experiments, which are applied here as well for fairness, are the following:
+\begin{enumerate}
+    \item Each experiment will be conducted with 30 different random seeds to achieve a better statistical robustness against outliers in the evaluation scores.
+    \item The different approaches have be 32 Gb RAM and 8 CPU cores, Intel Xeon E5-2670 with 2.6 Ghz, as a hardware limitation.
+    \item A pipeline candidate evaluation during the AutoML process, i.e. constructing, training and testing a candidate, does not take longer than five minutes and will be terminated with a score of zero otherwise.
+    \item All AutoML approaches will utilize the model selection and configuration space from auto-sklearn. Thus, the actual accomplishments of the approaches can be evaluated and it can be excluded that one approach outperform another because his model selection space contains for example one component that the other approaches do not have.
+    \item Before the AutoML approaches are started, the dataset is separated into two stratified splits. The AutoML approach gets the 70\% split as an input and the resulting pipeline of the result will be evaluated with the other 30\% split to get a final score.
+\end{enumerate}
+In this first step of answering the first research question, the 4 state-of-the-art approaches as well as the approach of this thesis have a timeout of one hour for selecting and configuring a pipeline.
+For the dataset inputs in this first experiments, ten different datasets from the \textit{OpenML} platform~\cite{Vanschoren-OpenML} were selected:
+\begin{itemize}
+    \item AMAZON
+    \item CAR
+    \item CIFAR10SALL
+    \item DEXTER
+    \item DOROTHEA
+    \item KRVSKP
+    \item SEMEION
+    \item WAVEFORM
+    \item WINEQUALITY
+    \item YEAST
+\end{itemize}
+
+The second step, i.e. the comparison of the influence of the different components of this approach via the three modifications, has a similar setup.
+Again, the five experiment constraints are applied and the same ten datasets are given as inputs.
+But to evaluate if the different influences might change with a different timescale, this second experiment will have one hour, six hours and twelve hours as timeouts for the three variants.
+
+During the two experiment stages, this approach, only in the unmodified version for the second stage, will additionally count the frequencies of utilizing each type of optimizer.
+With this counting, there is aggregated data of the optimizer utilization for three different timeouts and ten different datasets.
+The properties of the ten datasets, for example number of classes or datapoints, balance of datapoints for each class, or types of attributes, will be evaluated in the context of the optimizer utilization frequencies to try to extrapolate knowledge about the suitability of the different optimizers for different dataset types to answer the second research question.
 
 \section{Results of the Experiments}
 \label{sec:evaluation:results}
