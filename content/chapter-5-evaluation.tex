@@ -48,9 +48,15 @@ The experimental setup constraints from the original ML-Plan experiments, which 
     \item Each experiment will be conducted with 30 different random seeds to achieve a better statistical robustness against outliers in the evaluation scores.
     \item The different approaches have be 32 Gb RAM and 8 CPU cores, Intel Xeon E5-2670 with 2.6 Ghz, as a hardware limitation.
     \item A pipeline candidate evaluation during the AutoML process, i.e. constructing, training and testing a candidate, does not take longer than five minutes and will be terminated with a score of zero otherwise.
-    \item All AutoML approaches will utilize the model selection and configuration space from auto-sklearn. Thus, the actual accomplishments of the approaches can be evaluated and it can be excluded that one approach outperform another because his model selection space contains for example one component that the other approaches do not have.
+    \item All AutoML approaches will utilize the model selection and configuration space from auto-sklearn.
     \item Before the AutoML approaches are started, the dataset is separated into two stratified splits. The AutoML approach gets the 70\% split as an input and the resulting pipeline of the result will be evaluated with the other 30\% split to get a final score.
 \end{enumerate}
+Restricting the optimization spaces to the auto-sklearn space means having at least pipelines of length three (data pre-processing, feature pre-processing, classification model/ensemble) as well as determining which components are allowed and which parameters of this components are included in the model configuration.
+Also this limits the capabilities of this approach, as well as ML-Plan and TPOT, because their are capable of constructing more complex pipelines, it is important for an informative and meaningfull evaluation.
+In this manner, the actual accomplishments of the approaches can be evaluated and compared to each other under fair conditions.
+It can be excluded that one approach outperforms another because his model selection space contains for example one component that the other approaches does not have for selection.\newline
+The adaptation of the auto-sklearn space in the JSON format of this approach, which is used by this approach for the evaluations, can be found in appendix~\ref{sec:appendix:htn-space} as well as a description of the limits this adaptation has in comparison to the original auto-sklearn search space.
+
 In this first step of answering the first research question, the 4 state-of-the-art approaches as well as the approach of this thesis have a timeout of one hour for selecting and configuring a pipeline.
 For the dataset inputs in this first experiments, ten different datasets from the \textit{OpenML} platform~\cite{Vanschoren-OpenML} were selected:
 \begin{itemize}
@@ -73,6 +79,15 @@ But to evaluate if the different influences might change with a different timesc
 During the two experiment stages, this approach, only in the unmodified version for the second stage, will additionally count the frequencies of utilizing each type of optimizer.
 With this counting, there is aggregated data of the optimizer utilization for three different timeouts and ten different datasets.
 The properties of the ten datasets, for example number of classes or datapoints, balance of datapoints for each class, or types of attributes, will be evaluated in the context of the optimizer utilization frequencies to try to extrapolate knowledge about the suitability of the different optimizers for different dataset types to answer the second research question.
+
+For both experiment stages, this approach was configured as the following:
+\begin{itemize}
+    \item When a node is expanded during the MCTS, each new child node is scored with the results of three Monte-Carlo simulations.
+    \item Each run of one of the optimizers in their leaf nodes has an optimization time budget of ten minutes.
+\end{itemize}
+These values were chosen after some initial experiments to balance the hardware workload accordingly to the experiment hardware and the solution quality.
+They may not be the best configuration values for every use-case and every input dataset.
+A more thorough survey of possible configurations for this approach can be a starting point for further research.
 
 \section{Results of the Experiments}
 \label{sec:evaluation:results}

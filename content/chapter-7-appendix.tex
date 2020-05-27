@@ -7,6 +7,14 @@
 
 \section{Example AutoML Optimization Space Definition}
 \label{sec:appendix:htn-space}
+This is an adaptation of the model selection and model configuration space of \textit{auto-sklearn}~\cite{Feurer-AutoSklearn} for the approach of this thesis.
+It is modelled in the JSON format described in~\ref{sec:implementation:json} for modelling AutoML HTN planning spaces.\newline
+Nevertheless, this modelling method is not capable of an exact one-to-one adaptation of the auto-sklearn space because their modelling given as Python code which is as a programming language more expressive than a data interchange language as JSON.
+With this modelling in Python, it is possible to create constraints and relationships between parameters of a component.
+For example something like if parameter $p_1$ has value $x$, $p_2$ cannot have value $y$, or $p_4$ will only be part of the model configuration if $p_3$ has value $z$.
+Additionally, it is possible to include logical processing steps for the selected values after the model configuration in the Python code, for example to change a configured value depending on properties of the actual input dataset.\newline
+Improving the modelling capacities of this JSON format can be a starting point for further research.
+However, it will not be possible to make it as expressive as the model configuration space definitions in a turing-complete programming language as Python.
 
 \Blindtext[1][1]
 
