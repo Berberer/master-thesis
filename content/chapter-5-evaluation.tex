@@ -3,31 +3,33 @@
 \chapter{Empirical Analysis and Evaluation}
 \label{sec:evaluation}
 After devising this approach for optimizer ensembles and implementing it as a reference implementation, it is essential to evaluate and asses this approach.
-This assessment is the goal of this chapter and the final step of this thesis before summing up and considering the outcomes of it.\newline
-To have a clear guided structure for this assessment, it is based on the research questions presented in~\ref{sec:intro:goal}, which is elucidated here in more detail at first with a focus on which data is required to answer them.
+This assessment is the goal of this chapter and the final step of this thesis before summing up and considering the outcomes of it.
+The evaluated reference implementation is nicknamed \textit{frankensteins-automl} and will henceforth be referenced by this name while describing the experiment setup as well as listing and evaluating the experiment results.
+
+To have a clear guided structure for this assessment of frankensteins-automl, it is based on the research questions presented in~\ref{sec:intro:goal}, which is elucidated here in more detail at first with a focus on which data is required to answer them.
 Afterwards, this chapter answers the research questions with a series of Empirical evaluations in the form of experiments.\newline
 Therefore, the setup and configuration of the experiments is given as a starting point to subsequently analyze the results of the experiments and to deduce the answers to the research questions from them.
 
 \section{Research Questions in Detail}
-The first research question was about the feasibility about the approach, i.e. is it a viable idea to optimize an AutoML problem solution with an optimizer ensemble.
+The first research question was about the feasibility of the approach, i.e. is it a viable idea to optimize an AutoML problem solution with an optimizer ensemble.
 This will be answered in two steps.\newline
 At first, are the solution scores of this approach similar or better than the scores of other state-of-the-art approaches for several different datasets?
-If they are not at all or not for a high number of datasets, this approach is not a competitor to the state-of-the-art approaches.
+If they are not at all or not for a high number of datasets, frankensteins-automl is not a competitor to the state-of-the-art approaches.
 In this case, there would be no progress in this scientific field and no motivation to utilize this approach.\newline
 Secondly, if there is an improvement in some scores, which component of the approach, the MCTS model selection and the warmstarted optimizer ensemble, has which influence on the improvements.
-To assess this influences, three versions of this approach are evaluated, where two of them have slight modifications:
+To assess this influences, three versions of frankensteins-automl are evaluated, where two of them have slight modifications:
 \begin{enumerate}
-    \item To evaluate the influence of a Model Selection via a MCTS, the approach does not utilize a optimizer ensemble in this version.
+    \item To evaluate the influence of a Model Selection via a MCTS, this modified version does not utilize a optimizer ensemble.
     Every optimizer node represents the same optimizer, which will be SMAC for this evaluation.
-    \item To evaluate the influence of the ensembled optimizers, the approach does not utilize a MCTS selection.
-    The node selection on each level down the paths to the different optimizer nodes, will be random in each search iteration.
+    \item To evaluate the influence of the ensembled optimizers, this modified version does not utilize a MCTS selection.
+    The node selection on each level down the paths to the different optimizer nodes, will be random for each search iteration.
     Therefore, it is basically a repeated random search.
-    \item Both components are included in the last version and the full approach is evaluated as described in the two previous chapter. 
+    \item Both components are included in this version, i.e. an unmodified instance of frankensteins-automl is evaluated as described in the two previous chapters.
 \end{enumerate}
 By comparing the scores of the tree variants for different datasets and different timeouts, data about the scores with and without one component can be gathered, which can be used to analyze the influence.
 
 As the second research question, the focus is on the utilization of the different optimizers.
-During each run of this approach, not for the variants with the modifications, it will be counted how many times each optimizer was selected by the MCTS and therewith started.
+During each run of frankensteins-automl, not for the variants with the modifications, it will be counted how many times each optimizer was selected by the MCTS and therewith started.
 Since the MCTS tries to find the best suited optimizer and to exploit it, this selection frequency is an indicator for the suitability of this optimizer to the input dataset.\newline
 The frequencies will be aggregated together with the AutoML time budget and the input dataset.
 Thus, it is possible to check if one or more optimizers were preferably selected in general or just an AutoML problem setting with a certain time budget or a input dataset with certain properties.
@@ -35,7 +37,7 @@ Alternatively, there could be no significant difference and each optimizer was s
 
 \section{Experiment Setup}
 \label{sec:evaluation:setup}
-To answer the first step of the first research question, this approach will be evaluated against different other competitor state-of-the-art approaches.
+To answer the first step of the first research question, frankensteins-automl will be evaluated against different other competitor state-of-the-art approaches.
 The selection of this approaches are chosen to represent the difference optimization strategies.
 \textit{ML-Plan} for optimization via searching, \textit{TPOT} as a variant with a Genetic Algorithm, \textit{auto-sklearn} for Bayesian optimization, and finally \textit{Mosaic} as an approach that utilizes more than one optimization method via an optimization space transformation.\newline
 Since ML-Plan is the only approach out of this selection, which is not implemented in Python but in Java, it can not be integrated seamlessly in the same experimental setup as the remaining ones.
@@ -51,36 +53,38 @@ The experimental setup constraints from the original ML-Plan experiments, which 
     \item All AutoML approaches will utilize the model selection and configuration space from auto-sklearn.
     \item Before the AutoML approaches are started, the dataset is separated into two stratified splits. The AutoML approach gets the 70\% split as an input and the resulting pipeline of the result will be evaluated with the other 30\% split to get a final score.
 \end{enumerate}
+TPOT, Mosaic, and auto-sklearn are configured to comply with this constraints but all configuration possibilities of the corresponding frameworks besides that are kept as their default configuration value.\newline
 Restricting the optimization spaces to the auto-sklearn space means having at least pipelines of length three (data pre-processing, feature pre-processing, classification model/ensemble) as well as determining which components are allowed and which parameters of this components are included in the model configuration.
-Also this limits the capabilities of this approach, as well as ML-Plan and TPOT, because their are capable of constructing more complex pipelines, it is important for an informative and meaningfull evaluation.
+Also this limits the capabilities of frankensteins-automl, as well as ML-Plan and TPOT, because they are capable of constructing more complex pipelines.
+But this limitations are important for an informative and meaningful evaluation.
 In this manner, the actual accomplishments of the approaches can be evaluated and compared to each other under fair conditions.
 It can be excluded that one approach outperforms another because his model selection space contains for example one component that the other approaches does not have for selection.\newline
-The adaptation of the auto-sklearn space in the JSON format of this approach, which is used by this approach for the evaluations, can be found in appendix~\ref{sec:appendix:htn-space} as well as a description of the limits this adaptation has in comparison to the original auto-sklearn search space.
+The adaptation of the auto-sklearn space in the JSON format of this approach, which is used by frankensteins-automl for the experiments, can be found in appendix~\ref{sec:appendix:htn-space} as well as a description of the limits this adaptation has in comparison to the original auto-sklearn search space.
 
-In this first step of answering the first research question, the 4 state-of-the-art approaches as well as the approach of this thesis have a timeout of one hour for selecting and configuring a pipeline.
+In a first step of answering the first research question, the 4 state-of-the-art approaches as well as frankensteins-automl have a timeout of one hour for selecting and configuring a pipeline.
 For the dataset inputs in this first experiments, ten different datasets from the \textit{OpenML} platform~\cite{Vanschoren-OpenML} were selected:
 \begin{itemize}
-    \item AMAZON
-    \item CAR
-    \item CIFAR10SALL
-    \item DEXTER
-    \item DOROTHEA
-    \item KRVSKP
-    \item SEMEION
-    \item WAVEFORM
-    \item WINEQUALITY
-    \item YEAST
+    \item AMAZON\footnote{\url{https://www.openml.org/d/1457}}
+    \item CAR\footnote{\url{https://www.openml.org/d/40975}}
+    \item CIFAR10SALL\footnote{\url{https://www.openml.org/d/40926}}
+    \item DEXTER\footnote{\url{https://www.openml.org/d/4136}}
+    \item DOROTHEA\footnote{\url{https://www.openml.org/d/4137}}
+    \item KRVSKP\footnote{\url{https://www.openml.org/d/3}}
+    \item SEMEION\footnote{\url{https://www.openml.org/d/1501}}
+    \item WAVEFORM\footnote{\url{https://www.openml.org/d/60}}
+    \item WINEQUALITY\footnote{\url{https://www.openml.org/d/40498}}
+    \item YEAST\footnote{\url{https://www.openml.org/d/181}}
 \end{itemize}
 
 The second step, i.e. the comparison of the influence of the different components of this approach via the three modifications, has a similar setup.
 Again, the five experiment constraints are applied and the same ten datasets are given as inputs.
 But to evaluate if the different influences might change with a different timescale, this second experiment will have one hour, six hours and twelve hours as timeouts for the three variants.
 
-During the two experiment stages, this approach, only in the unmodified version for the second stage, will additionally count the frequencies of utilizing each type of optimizer.
+During the two experiment stages, frankensteins-automl, only in the unmodified version for the second stage, will additionally count the frequencies of utilizing each type of optimizer.
 With this counting, there is aggregated data of the optimizer utilization for three different timeouts and ten different datasets.
 The properties of the ten datasets, for example number of classes or datapoints, balance of datapoints for each class, or types of attributes, will be evaluated in the context of the optimizer utilization frequencies to try to extrapolate knowledge about the suitability of the different optimizers for different dataset types to answer the second research question.
 
-For both experiment stages, this approach was configured as the following:
+For both experiment stages, frankensteins-automl is configured with the following:
 \begin{itemize}
     \item When a node is expanded during the MCTS, each new child node is scored with the results of three Monte-Carlo simulations.
     \item Each run of one of the optimizers in their leaf nodes has an optimization time budget of ten minutes.

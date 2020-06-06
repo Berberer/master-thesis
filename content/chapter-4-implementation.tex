@@ -3,8 +3,8 @@
 \chapter{Implementation}
 \label{sec:implementation}
 The approach of this thesis, described in the previous chapter, is realized as a reference implementation in the \textit{Python} programming language, which can be found here:~\url{https://github.com/Berberer/frankensteins-automl}.
-For simplicity and practicability reasons this implementation has some minor restrictions regarding the expected input, but this can be changed or generalized to more inputs with minor modifications.
-As for the current implementation state, the optimization budget input is limited to time as the budget and the dataset input has to be in the \textit{ARFF} file format, popularized by \textit{WEKA}~\cite{Witten-Weka}.
+For simplicity and practicability reasons, this implementation has some minor restrictions regarding the expected input, but this can be changed or generalized to more inputs with minor modifications.
+As for the current implementation state, the optimization budget input is limited to time as the budget type and the dataset input has to be either in the \textit{ARFF} file format, popularized by \textit{WEKA}~\cite{Witten-Weka}, or directly as \textit{NumPy} arrays.
 
 This reference implementation serves two different reason:
 \begin{itemize}
@@ -12,7 +12,7 @@ This reference implementation serves two different reason:
 	\item For the evaluation of this approach and the comparison against other approaches and some baseline values in chapter~\ref{sec:evaluation}, this approach must be provided as an executable program to get results for different experimental settings.
 \end{itemize}
 
-The implementation is explained in the following chapter, which is structured in three parts.
+The implementation is explained in the following chapter, which is structured into three parts.
 At first, the architectural composition of the implementation and the interaction of the included components is explained.
 With this overall perspective of the implementation, the codebase will be easier to understand and to navigate.
 Since the implementation was not done from scratch, the utilized Python libraries are listed and their functionality explained as a second part to pay respect to their creators as well as elucidate their contribution to the overall functionality.
