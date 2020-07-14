@@ -87,11 +87,15 @@ The properties of the ten datasets, for example number of classes or datapoints,
 For both experiment stages, frankensteins-automl is configured with the following:
 \begin{itemize}
     \item When a node is expanded during the MCTS, each new child node is scored with the results of three Monte-Carlo simulations.
-    \item Each run of one of the optimizers in their leaf nodes has an optimization time budget of ten minutes.
+    \item Each run of one of the optimizers in their leaf nodes has an optimization time budget of three minutes.
 \end{itemize}
 These values were chosen after some initial experiments to balance the hardware workload accordingly to the experiment hardware and the solution quality.
 They may not be the best configuration values for every use-case and every input dataset.
 A more thorough survey of possible configurations for this approach can be a starting point for further research.
+
+For a better reproducibility of this experiments, they are conducted as \textit{Singularity} container~\cite{Kurtzer-Singularity}.
+Hence, the results can be reproduced in every environment where Singularity is installed to verify the data or to conduct customized variants of these experiments.
+The Singularity image definition as well as some additional information regarding the setup can be found in appendix~\ref{sec:appendix:singularity}.
 
 \section{Results of the Experiments}
 \label{sec:evaluation:results}
