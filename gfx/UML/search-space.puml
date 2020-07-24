@@ -1,0 +1,66 @@
+@startuml SearchSpaceManagement
+
+abstract class GraphNode {
+    predecessor : GraphNode
+    successors : GraphNodes[ ]
+    node_id : String
+    {abstract} is_leaf_node() : boolean
+}
+
+abstract class GraphGenerator {
+    {abstract} get_root_node() : GraphNode
+    generate_successors(node : GraphNode) : GraphNode[ ]
+    {abstract} get_node_successors(node : GraphNode) : GraphNode[ ]
+}
+
+class SearchSpace {
+    get_components_by_name(component_name : String) : SearchSpaceComponent[ ]
+    get_components_providing_interface(interface_name : String) : SearchSpaceComponent[ ]
+}
+
+class SearchSpaceComponent {
+    name : String
+    id : String
+    provided_interfaces : String[ ]
+    required_interfaces : String[ ]
+    function_pointer : boolean
+    params : Map
+    create_default_parameter_config() : Map
+    draw_random_parameter_config() : Map
+    validate_parameter_config(config : Map) : boolean
+    create_construction_args_from_config(parameter_config : Map, required_interfaces : Map) : (List, Map)
+}
+
+class SearchSpaceComponentInstance {
+    parameter : Map
+    required_interfaces : Map
+    construct_pipeline_element() : Object
+}
+
+class SearchSpaceRestProblem {
+    required_interfaces : Map[ ]
+    component_mapping : Map
+    {static} from_previous_rest_problem(rest_problem : SearchSpaceRestProblem, satisfied_interface_component : SearchSpaceComponent) : SearchSpaceRestProblem
+    is_satisfied() : boolean
+    get_first_unsatisfied_required_interface() : String
+}
+
+class SearchSpaceGraphNode {
+    specified_interface : String
+    is_leaf_node() : boolean
+}
+
+class SearchSpaceGraphGenerator {
+    initial_component_name : String
+    get_root_node() : SearchSpaceGraphNode
+    get_node_successors(node : SearchSpaceGraphNode) : SearchSpaceGraphNode[ ]
+}
+
+SearchSpace "1" -- "0..*" SearchSpaceComponent : components >
+SearchSpaceComponent "1" -- "1" SearchSpaceComponentInstance : component <
+GraphNode ^-- SearchSpaceGraphNode
+SearchSpaceGraphNode "1" -- "1" SearchSpaceRestProblem : rest_problem >
+GraphGenerator ^-- SearchSpaceGraphGenerator
+SearchSpaceGraphGenerator "1" -- "1" SearchSpace : search_space >
+SearchSpaceGraphGenerator "1" -- "1" SearchSpaceGraphNode : root_node >
+@enduml

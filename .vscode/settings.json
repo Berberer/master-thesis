@@ -1,0 +1,4 @@
+{
+    "plantuml.diagramsRoot": "gfx/UML",
+    "plantuml.exportOutDir": "gfx/Figures/Implementation"
+}

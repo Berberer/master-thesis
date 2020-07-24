@@ -21,20 +21,67 @@ Finally, the description schema of the AutoML optimization space definition is p
 \section{Components of the Project and their Interaction}
 \label{sec:implementation:components}
 The components of the implementation and their architectural composition can be separated into three parts with regard to the subject matter and this separation will be used in the following to outline and explain the implementation.
-For the model selection, the search space needs to be constructed from the input optimization space definition.
+All explanations of the implementation will be accompanied by UML class diagrams of the corresponding sources to support the description of the functionality.
+These diagrams only depict the relevant core mechanics of the respective classes, while getter and setter methods as well as minor utility methods are omitted.\newline 
+For the model selection as the first of the three components, the search space needs to be constructed from the input optimization space definition.
 At first the components for this part of the implementation are explained.
 In the second part, the components for evaluating machine learning pipelines and handling the different optimizers are explicated.
 All components from this two parts are combined via a MCTS implementation into a overall AutoML program and all components for this are explained in the third part.
 
 \subsection{Model Selection Search Space Management}
 \label{sec:implementation:components:search-space}
-\Blindtext
+Since the model selection is reduced to a graph search problem, the search space is managed as a graph as shown in~\ref{fig:implementation:uml:search-space}.
+Because in other components basic graph modelling functionality is needed as well, abstract base classes for graph nodes and a graph generator are created.
+Each \texttt{GraphNode} is identified by a unique id and knows its predecessor nodes as well as the successor nodes.
+Depending on the use-case for the graph node, the abstract method \texttt{is\_leaf\_node} has to be implemented with the respected logic of the use-case.\newline
+The associated \texttt{GraphGenerator} class has abstract methods for \texttt{get\_root\_node} and \texttt{get\_node\_successors}, which have to be implemented domain-specific as well.
+Nevertheless, \texttt{get\_node\_successors} is not intended for general usage in other classes.
+Instead, the method \texttt{generate\_successors} shall be used.
+It performs checks if the parameter node is either a leaf node or already has a reference to its successor nodes.
+Only if neither is the case, the abstract method \texttt{get\_node\_successors} is used to get new successors from scratch with the use-case specific logic.
+
+For this specific case of having a HTN planning graph for model selection, the \texttt{SearchSpace}, \texttt{SearchSpaceComponent} and \texttt{SearchSpaceRestProblem} classes are the underlying data structure for modelling the HTN planning problem.\newline
+Basically, \texttt{SearchSpaceComponent} is a wrapper class for components of the AutoML search space definition, which are given as input in a schema defined in~\ref{sec:implementation:json}.
+Additionally, this class has some helper methods for handling parameters.
+It can create the default parametrization or alternatively draw a random parametrization of this component.
+For a given parametrization, it can check the validity, i.e. exists a value for each parameter and are all values valid for the corresponding parameter.
+And finally, it can split a given parametrization into positional and keyword parameter for utilizing them for a concrete Python function call.\newline
+With the \texttt{SearchSpace} class, all components defined in the input are managed and can accessed either by their name of by an interface they provide.\newline
+Each step in a HTN planning process has a rest problem, i.e. which interfaces are satisfied and which are open.
+The corresponding \texttt{SearchSpaceRestProblem} is utilized to store this information.
+It saves all required interfaces that are present in the current plan and if they are already satisfied.
+Additionally is has a mapping, which satisfied required interface is satisfied with which component that provides this interface.
+For using this problem representation for a graph search, it has the methods \texttt{is\_satisfied}, which returns true if all required interfaces have a suitable mapped provided interface, and \texttt{get\_first\_unsatisfied\_required\_interface} to pick the next interface for progressing the planning.
+Each graph node for the HTN planning graph represents, that one interface has been satisfied and therefore the class has an additional static method \texttt{from\_previous\_rest\_problem} to create a rest problem from another one by satisfying one required interface.
+
+When all required interfaces of the considered HTN task tree are satisfied and a parametrization is generated, a concrete \texttt{SearchSpaceComponentInstance} can be created for a \texttt{SearchSpaceComponent} with this interface to component mapping and the parametrization.
+With the method \texttt{construct\_pipeline\_element}, the actual pipeline element which is represented by the component can be instantiated and configured with the parameters and if necessary the pipeline elements of required interfaces.
+
+Finally, the \texttt{GraphNode} and \texttt{GraphGenerator} classes are inherited for the use-case of model selection HTN planning via a graph search with the \texttt{SearchSpaceGraphNode} and \texttt{SearchSpaceGraphGenerator} classes.
+The abstract methods of the base classes are implemented in the following manner:
+\begin{itemize}
+    \item \texttt{GraphNode.is\_leaf\_node}: Each \texttt{SearchSpaceNode} represents one specific rest problem.
+    This node can be considered a leaf node of the planning graph if the \texttt{SearchSpaceRestProblem.is\_satisfied} returns true.
+    \item \texttt{GraphGenerator.get\_root\_node}: The \texttt{SearchSpaceGraphGenerator} has the name of the start component of the planning problem as an initial input.
+    It can get the corresponding component from the \texttt{SearchSpace} instance, construct a \texttt{SearchSpaceRestProblem} for this initial component and create the root node with it.
+    \item \texttt{GraphGenerator.get\_node\_successors}: The rest problem of the node, provided as a parameter of this method, will return one specific unsatisfied interface with its \texttt{get\_first\_unsatisfied\_required\_interface} method.
+    By calling \texttt{SearchSpace.get\_components\_providing\_interface} with the name of this first unsatisfied interface, all suitable components are found and afterwards calling \texttt{SearchSpaceRestProblem.from\_previous\_rest\_problem} for each of this components, will generate the rest problems for the successor nodes.
+\end{itemize}
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{gfx/Figures/Implementation/search-space/SearchSpaceManagement.png}
+    \caption{A simplified illustration of a possible extended search tree $G'$.
+    The root is drawn in blue, the inner nodes with unsolved task-trees in white, pipelines nodes in green and optimizer nodes in red.
+    The yellow box shows the configuration space of the pipeline that is represented by the task tree in that pipeline node.}
+    \label{fig:implementation:uml:search-space}
+\end{figure}
 
 \subsection{Pipeline Evaluation and Optimizers for Model Configuration}
 \label{sec:implementation:components:optimization}
 \Blindtext
 
-\subsection{MCTS and Optimizer Integration}
+\subsection{MCTS and Optimizer Integration for AutoML}
 \label{sec:implementation:components:mcts}
 \Blindtext
 
