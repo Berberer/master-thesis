@@ -71,15 +71,20 @@ The abstract methods of the base classes are implemented in the following manner
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Implementation/search-space/SearchSpaceManagement.png}
-    \caption{A simplified illustration of a possible extended search tree $G'$.
-    The root is drawn in blue, the inner nodes with unsolved task-trees in white, pipelines nodes in green and optimizer nodes in red.
-    The yellow box shows the configuration space of the pipeline that is represented by the task tree in that pipeline node.}
+    \caption{A simplified overview of the implementation components for managing the search space and enabling HTN planning in this space.}
     \label{fig:implementation:uml:search-space}
 \end{figure}
 
 \subsection{Pipeline Evaluation and Optimizers for Model Configuration}
 \label{sec:implementation:components:optimization}
 \Blindtext
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{gfx/Figures/Implementation/optimization/PipelineOptimization.png}
+    \caption{A simplified overview of the implementation components for storing the information about a model configuration optimization space and how the different optimizers approach this space.}
+    \label{fig:implementation:uml:optimization}
+\end{figure}
 
 \subsection{MCTS and Optimizer Integration for AutoML}
 \label{sec:implementation:components:mcts}

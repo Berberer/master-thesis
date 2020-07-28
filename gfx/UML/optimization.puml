@@ -1,0 +1,120 @@
+@startuml PipelineOptimization
+
+
+class SearchSpaceRestProblem {
+    ...
+    ---
+    ...
+}
+
+class PipelineEvaluator {
+    start_component_name : String
+    data_x : NumpyArray
+    data_y: NumpyArray
+    evaluate_pipeline(pipeline_parameter_config : Map, timeout : float)
+}
+
+class OptimizationParameterDomain {
+    component_mapping : Map
+    parameter_descriptions : Map
+    min_vector : NumpyArray
+    max_vector : NumpyArray
+    results : Heap
+    id_to_scores_mapping : Map
+    id_to_vecor_mapping : Map
+    vector_string_to_id_mapping : Map
+    get_default_config() : NumpyArray
+    draw_random_config() : NumpyArray
+    add_result(vector : NumpyArray, score : float)
+    get_top_results(top_n : int) : NumpyArray[ ]
+    get_random_result() : NumpyArray
+    get_score_of_result() : (float, NumpyArray)
+    config_to_vector(config : Map) : NumpyArray
+    config_from_vector(vector : NumpyArray) : Map
+}
+
+abstract class AbstractOptimizer {
+    {abstract} perform_optimization(optimization_time_budget : float) : (Map, float)
+    _score_candidate(candidate : NumpyArray) : float
+    _random_transform_candidate(candidate : NumpyArray, number_of_changes : int) : NumpyArray
+}
+
+class SMAC {
+    perform_optimization(optimization_time_budget : float) : (Map, float)
+    _create_configuration_space() : ConfigurationSpace
+    _create_run_history() : RunHistory
+}
+
+class GeneticAlgorithm {
+    perform_optimization(optimization_time_budget : float) : (Map, float)
+    _init_first_generation() : NumpyArray[ ]
+    _generate_next_generation(generation : NumpyArray[ ]) : NumpyArray[ ]
+    _one_point_crossover(individual_1 : NumpyArray, individual_2 : NumpyArray) : (NumpyArray, NumpyArray)
+}
+
+class Hyperband {
+    perform_optimization(optimization_time_budget : float) : (Map, float)
+    _select_hyperband_candidates() : NumpyArray
+}
+
+class HyperbandRunner {
+    ...
+    ---
+    ...
+}
+
+class RandomSearch {
+    perform_optimization(optimization_time_budget : float) : (Map, float)
+}
+
+class DiscretizationSearch {
+    perform_optimization(optimization_time_budget : float) : (Map, float)
+}
+
+abstract class GraphNode {
+    ...
+    ---
+    ...
+}
+
+abstract class GraphGenerator {
+    ...
+    ---
+    ...
+}
+class DiscretizationGraphNode {
+    covered : boolean
+    best_successor_score : float
+    backpropagate()
+    is_leaf_node() : boolean
+}
+
+class DiscretizationGraphGenerator {
+    get_root_node() : DiscretizationGraphNode
+    get_node_successors(node : DiscretizationGraphNode) : DiscretizationGraphNode[ ]
+}
+
+class Discretization {
+    parameter_lits : Map[ ]
+    selected_values : Object[ ]
+    refinement_index : int
+    {static} from_previous_discretization_by_refinement(discretization : Discretization, refinement : Object) : Discretization
+    {static} from_previous_discretization_by_split(discretization : Discretization, new_split : Map) : Discretization
+    is_atomic() : boolean
+}
+
+PipelineEvaluator "1" -up- "1" SearchSpaceRestProblem : satisfied_rest_problem >
+AbstractOptimizer "1" -up- "1" OptimizationParameterDomain : parameter_domain >
+AbstractOptimizer "1" -up- "1" PipelineEvaluator : pipeline_evaluator >
+AbstractOptimizer ^-left- SMAC
+AbstractOptimizer ^-right- GeneticAlgorithm
+AbstractOptimizer ^-down- Hyperband
+Hyperband "1" -down- "1" HyperbandRunner : hyperband_runner > 
+AbstractOptimizer ^-down- RandomSearch
+AbstractOptimizer ^-down- DiscretizationSearch
+GraphNode ^-left- DiscretizationGraphNode
+GraphGenerator ^-right- DiscretizationGraphGenerator
+DiscretizationSearch "1" -down- "1" DiscretizationGraphGenerator : graph_generator >
+DiscretizationGraphGenerator "1" -- "1" DiscretizationGraphNode : root_node >
+DiscretizationGraphNode "1" -- "1" Discretization : discretization >
+@enduml
