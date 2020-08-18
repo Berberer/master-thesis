@@ -1,9 +1,7 @@
 % !TEX root = ../my-thesis.tex
 %
-\chapter{Example Appendix}
+\chapter{Appendix}
 \label{sec:appendix}
-
-\Blindtext[1][1]
 
 \section{Example AutoML Optimization Space Definition}
 \label{sec:appendix:htn-space}
@@ -16,7 +14,1168 @@ Additionally, it is possible to include logical processing steps for the selecte
 Improving the modelling capacities of this JSON format can be a starting point for further research.
 However, it will not be possible to make it as expressive as the model configuration space definitions in a turing-complete programming language as Python.
 
-\Blindtext[1][1]
+In this case it was required for simulating the auto-sklearn search space to have a classifier component and an optional data pre-processor as well as an optional feature pre-procesor.
+This concrete search space is split into four parts:
+\begin{itemize}
+    \item Pipeline Topologies
+    \item Data Pre-Processing
+    \item Feature Pre-Processing
+    \item Classifier
+\end{itemize}
+
+\subsection{Pipeline Topologies}
+\begin{Verbatim}[fontsize=\scriptsize]
+{
+  "components": [
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.build_topology",
+            "providedInterface": ["MLPipeline"],
+            "requiredInterface": [
+                {
+                    "name": "Topology",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["Topology"],
+            "requiredInterface": [
+                {
+                    "name": "PreProcessingTopology",
+                    "construction_key": 0
+                },
+                {
+                    "name": "AbstractClassifier",
+                    "construction_key": 1
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["Topology"],
+            "requiredInterface": [
+                {
+                    "name": "AbstractClassifier",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["PreProcessingTopology"],
+            "requiredInterface": [
+                {
+                    "name": "AbstractDataPreProcessor",
+                    "construction_key": 0
+                },
+                {
+                    "name": "AbstractFeaturePreProcessor",
+                    "construction_key": 1
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["PreProcessingTopology"],
+            "requiredInterface": [
+                {
+                    "name": "AbstractDataPreProcessor",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["PreProcessingTopology"],
+            "requiredInterface": [
+                {
+                    "name": "AbstractFeaturePreProcessor",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        }
+    ]
+}
+\end{Verbatim}
+
+\subsection{Data Pre-Processing}
+\begin{Verbatim}[fontsize=\scriptsize]
+{
+    "components": [
+        {
+            "name": "sklearn.preprocessing.OneHotEncoder",
+            "providedInterface": ["AbstractDataPreProcessor"],
+            "requiredInterface": [],
+            "parameter": []
+        },
+        {
+            "name": "sklearn.feature_selection.VarianceThreshold",
+            "providedInterface": ["AbstractDataPreProcessor"],
+            "requiredInterface": [],
+            "parameter": []
+        },
+        {
+            "name": "sklearn.impute.SimpleImputer",
+            "providedInterface": ["AbstractDataPreProcessor"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "strategy",
+                    "type": "cat",
+                    "default": "mean",
+                    "values": ["mean", "median", "most_frequent", "constant"]
+                }
+            ]
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["AbstractDataPreProcessor"],
+            "requiredInterface": [
+                {
+                    "name": "DataRescaler",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "sklearn.preprocessing.StandardScaler",
+            "providedInterface": ["DataRescaler"],
+            "requiredInterface": [],
+            "parameter": []
+        },
+        {
+            "name": "sklearn.preprocessing.MinMaxScaler",
+            "providedInterface": ["DataRescaler"],
+            "requiredInterface": [],
+            "parameter": []
+        },
+        {
+            "name": "sklearn.preprocessing.RobustScaler",
+            "providedInterface": ["DataRescaler"],
+            "requiredInterface": [],
+            "parameter": []
+        },
+        {
+            "name": "sklearn.preprocessing.Normalizer",
+            "providedInterface": ["DataRescaler"],
+            "requiredInterface": [],
+            "parameter": []
+        },
+        {
+            "name": "sklearn.preprocessing.QuantileTransformer",
+            "providedInterface": ["DataRescaler"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "n_quantiles",
+                    "type": "int",
+                    "default": 1000,
+                    "min": 10,
+                    "max": 2000
+                },
+                {
+                    "name": "output_distribution",
+                    "type": "cat",
+                    "default": "uniform",
+                    "values": ["uniform", "normal"]
+                }
+            ]
+        }
+    ]
+}
+\end{Verbatim}
+
+\subsection{Feature Pre-Processing}
+\begin{Verbatim}[fontsize=\scriptsize]
+{
+    "components": [
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.preprocessor_union",
+            "providedInterface": ["AbstractFeaturePreProcessor"],
+            "requiredInterface": [
+                {
+                    "name": "SingleAbstractFeaturePreProcessor",
+                    "construction_key": 0
+                },
+                {
+                    "name": "SingleAbstractFeaturePreProcessor",
+                    "construction_key": 1
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["AbstractFeaturePreProcessor", "SingleAbstractFeaturePreProcessor"],
+            "requiredInterface": [
+                {
+                    "name": "DecompositionPreProcessor",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["AbstractFeaturePreProcessor", "SingleAbstractFeaturePreProcessor"],
+            "requiredInterface": [
+                {
+                    "name": "FeatureSelectionPreProcessor",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["AbstractFeaturePreProcessor", "SingleAbstractFeaturePreProcessor"],
+            "requiredInterface": [
+                {
+                    "name": "KernelApproximationPreProcessor",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["AbstractFeaturePreProcessor", "SingleAbstractFeaturePreProcessor"],
+            "requiredInterface": [
+                {
+                    "name": "MiscPreProcessor",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "sklearn.decomposition.TruncatedSVD",
+            "providedInterface": ["DecompositionPreProcessor"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "n_components",
+                    "type": "int",
+                    "default": 100,
+                    "min": 2,
+                    "max": 256
+                }
+            ]
+        },
+        {
+            "name": "sklearn.decomposition.FastICA",
+            "providedInterface": ["DecompositionPreProcessor"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "n_components",
+                    "type": "int",
+                    "default": 100,
+                    "min": 10,
+                    "max": 2000
+                },
+                {
+                    "name": "algorithm",
+                    "type": "cat",
+                    "default": "parallel",
+                    "values": ["parallel", "deflation"]
+                },
+                {
+                    "name": "whiten",
+                    "type": "bool",
+                    "default": false
+                },
+                {
+                    "name": "fun",
+                    "type": "cat",
+                    "default": "logcosh",
+                    "values": ["logcosh", "exp", "cube"]
+                }
+            ]
+        },
+        {
+            "name": "sklearn.decomposition.PCA",
+            "providedInterface": ["DecompositionPreProcessor"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "n_components",
+                    "type": "double",
+                    "default": 0.9999,
+                    "min": 0.5,
+                    "max": 0.9999
+                },
+                {
+                    "name": "whiten",
+                    "type": "bool",
+                    "default": false
+                }
+            ]
+        },
+        {
+            "name": "sklearn.decomposition.KernelPCA",
+            "providedInterface": ["DecompositionPreProcessor"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "n_components",
+                    "type": "int",
+                    "default": 100,
+                    "min": 10,
+                    "max": 2000
+                },
+                {
+                    "name": "kernel",
+                    "type": "cat",
+                    "default": "rbf",
+                    "values": ["poly", "rbf", "sigmoid", "cosine"]
+                },
+                {
+                    "name": "gamma",
+                    "type": "double",
+                    "default": 1.0,
+                    "min": 3.0517578125e-05,
+                    "max": 8.0
+                },
+                {
+                    "name": "degree",
+                    "type": "int",
+                    "default": 3,
+                    "min": 2,
+                    "max": 5
+                },
+                {
+                    "name": "coef0",
+                    "type": "double",
+                    "default": 0,
+                    "min": -1,
+                    "max": 1
+                }
+            ]
+        },
+        {
+            "name": "sklearn.feature_selection.SelectFromModel",
+            "providedInterface": ["FeatureSelectionPreProcessor"],
+            "requiredInterface": [
+                {
+                    "name": "SelectFromModelEstimator",
+                    "construction_key": "estimator"
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "sklearn.feature_selection.GenericUnivariateSelect",
+            "providedInterface": ["FeatureSelectionPreProcessor"],
+            "requiredInterface": [
+                {
+                    "name": "FeatureSelectionScoreFunction",
+                    "construction_key": "score_func"
+                }
+            ],
+            "parameter": [
+                {
+                    "name": "mode",
+                    "type": "cat",
+                    "default": "fpr",
+                    "values": ["fpr", "fdr", "fwe"]
+                },
+                {
+                    "name": "param",
+                    "type": "double",
+                    "default": 0.1,
+                    "min": 0.01,
+                    "max": 0.5
+                }
+            ]
+        },
+        {
+            "name": "sklearn.feature_selection.SelectPercentile",
+            "providedInterface": ["FeatureSelectionPreProcessor"],
+            "requiredInterface": [
+                {
+                    "name": "FeatureSelectionScoreFunction",
+                    "construction_key": "score_func"
+                }
+            ],
+            "parameter": [
+                {
+                    "name": "percentile",
+                    "type": "int",
+                    "default": 50,
+                    "min": 1,
+                    "max": 99
+                }
+            ]
+        },
+        {
+            "name": "sklearn.feature_selection.chi2",
+            "providedInterface": ["FeatureSelectionScoreFunction"],
+            "requiredInterface": [],
+            "function_pointer": true,
+            "parameter": []
+        },
+        {
+            "name": "sklearn.feature_selection.f_classif",
+            "providedInterface": ["FeatureSelectionScoreFunction"],
+            "requiredInterface": [],
+            "function_pointer": true,
+            "parameter": []
+        },
+        {
+            "name": "sklearn.feature_selection.mutual_info_classif",
+            "providedInterface": ["FeatureSelectionScoreFunction"],
+            "requiredInterface": [],
+            "function_pointer": true,
+            "parameter": []
+        },
+        {
+            "name": "sklearn.kernel_approximation.RBFSampler",
+            "providedInterface": ["KernelApproximationPreProcessor"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "gamma",
+                    "type": "double",
+                    "default": 1.0,
+                    "min": 3.0517578125e-05,
+                    "max": 8.0
+                },
+                {
+                    "name": "n_components",
+                    "type": "int",
+                    "default": 100,
+                    "min": 50,
+                    "max": 10000
+                }
+            ]
+        },
+        {
+            "name": "sklearn.kernel_approximation.Nystroem",
+            "providedInterface": ["KernelApproximationPreProcessor"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "gamma",
+                    "type": "double",
+                    "default": 0.1,
+                    "min": 3.0517578125e-05,
+                    "max": 8.0
+                },
+                {
+                    "name": "n_components",
+                    "type": "int",
+                    "default": 100,
+                    "min": 50,
+                    "max": 10000
+                },
+                {
+                    "name": "kernel",
+                    "type": "cat",
+                    "default": "rbf",
+                    "values": ["poly", "rbf", "sigmoid", "cosine", "chi2"]
+                },
+                {
+                    "name": "degree",
+                    "type": "int",
+                    "default": 3,
+                    "min": 2,
+                    "max": 5
+                },
+                {
+                    "name": "coef0",
+                    "type": "double",
+                    "default": 0,
+                    "min": -1,
+                    "max": 1
+                }
+            ]
+        },
+        {
+            "name": "sklearn.cluster.FeatureAgglomeration",
+            "providedInterface": ["MiscPreProcessor"],
+            "requiredInterface": [
+                {
+                    "name": "PoolingFunction",
+                    "construction_key": "pooling_func"
+                }
+            ],
+            "parameter": [
+                {
+                    "name": "n_clusters",
+                    "type": "int",
+                    "default": 25,
+                    "min": 2,
+                    "max": 400
+                },
+                {
+                    "name": "affinity",
+                    "type": "cat",
+                    "default": "euclidean",
+                    "values": ["euclidean", "manhattan", "cosine"]
+                },
+                {
+                    "name": "linkage",
+                    "type": "cat",
+                    "default": "ward",
+                    "values": ["ward", "complete", "average"]
+                }
+            ]
+        },
+        {
+            "name": "numpy.mean",
+            "providedInterface": ["PoolingFunction"],
+            "requiredInterface": [],
+            "function_pointer": true,
+            "parameter": []
+        },
+        {
+            "name": "numpy.median",
+            "providedInterface": ["PoolingFunction"],
+            "requiredInterface": [],
+            "function_pointer": true,
+            "parameter": []
+        },
+        {
+            "name": "numpy.max",
+            "providedInterface": ["PoolingFunction"],
+            "requiredInterface": [],
+            "function_pointer": true,
+            "parameter": []
+        },
+        {
+            "name": "sklearn.preprocessing.PolynomialFeatures",
+            "providedInterface": ["MiscPreProcessor"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "degree",
+                    "type": "int",
+                    "default": 2,
+                    "min": 2,
+                    "max": 3
+                },
+                {
+                    "name": "interaction_only",
+                    "type": "bool",
+                    "default": false
+                },
+                {
+                    "name": "include_bias",
+                    "type": "bool",
+                    "default": true
+                }
+            ]
+        },
+        {
+            "name": "sklearn.ensemble.RandomTreesEmbedding",
+            "providedInterface": ["MiscPreProcessor"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "n_estimators",
+                    "type": "int",
+                    "default": 10,
+                    "min": 10,
+                    "max": 100
+                },
+                {
+                    "name": "max_depth",
+                    "type": "int",
+                    "default": 5,
+                    "min": 2,
+                    "max": 10
+                },
+                {
+                    "name": "min_samples_split",
+                    "type": "int",
+                    "default": 2,
+                    "min": 2,
+                    "max": 20
+                },
+                {
+                    "name": "min_samples_leaf",
+                    "type": "int",
+                    "default": 1,
+                    "min": 1,
+                    "max": 20
+                }
+            ]
+        }
+    ]
+}
+\end{Verbatim}
+
+\subsection{Classifier}
+\begin{Verbatim}[fontsize=\scriptsize]
+{
+    "components": [
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["AbstractClassifier"],
+            "requiredInterface": [
+                {
+                    "name": "EnsembleClassifier",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["AbstractClassifier"],
+            "requiredInterface": [
+                {
+                    "name": "BayesClassifier",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["AbstractClassifier"],
+            "requiredInterface": [
+                {
+                    "name": "TreeClassifier",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["AbstractClassifier"],
+            "requiredInterface": [
+                {
+                    "name": "LinearClassifier",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["AbstractClassifier"],
+            "requiredInterface": [
+                {
+                    "name": "DiscriminantClassifier",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "frankensteins_automl.machine_learning.pipeline.pipeline_constructor.topology_union",
+            "providedInterface": ["AbstractClassifier"],
+            "requiredInterface": [
+                {
+                    "name": "SupportVectorClassifier",
+                    "construction_key": 0
+                }
+            ],
+            "parameter": []
+        },
+        {
+            "name": "sklearn.neighbors.KNeighborsClassifier",
+            "providedInterface": ["AbstractClassifier", "SimpleClassifier"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "n_neighbors",
+                    "type": "int",
+                    "default": 1,
+                    "min": 1,
+                    "max": 100
+                },
+                {
+                    "name": "p",
+                    "type": "int",
+                    "default": 1,
+                    "min": 1,
+                    "max": 2
+                },
+                {
+                    "name": "weights",
+                    "type": "cat",
+                    "default": "uniform",
+                    "values": ["uniform", "distance"]
+                }
+            ]
+        },
+        {
+            "name": "sklearn.ensemble.AdaBoostClassifier",
+            "providedInterface": ["EnsembleClassifier"],
+            "requiredInterface": [
+                {
+                    "name": "SimpleClassifier",
+                    "construction_key": "base_estimator"
+                }
+            ],
+            "parameter": [
+                {
+                    "name": "n_estimators",
+                    "type": "int",
+                    "default": 50,
+                    "min": 50,
+                    "max": 500
+                },
+                {
+                    "name": "learning_rate",
+                    "type": "double",
+                    "default": 0.1,
+                    "min": 0.01,
+                    "max": 2.0
+                },
+                {
+                    "name": "algorithm",
+                    "type": "cat",
+                    "default": "SAMME.R",
+                    "values": ["SAMME.R", "SAMME"]
+                }
+            ]
+        },
+        {
+            "name": "sklearn.ensemble.ExtraTreesClassifier",
+            "providedInterface": ["EnsembleClassifier", "SelectFromModelEstimator"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "criterion",
+                    "type": "cat",
+                    "default": "gini",
+                    "values": ["gini", "entropy"]
+                },
+                {
+                    "name": "max_features",
+                    "type": "double",
+                    "default": 0.5,
+                    "min": 0.0,
+                    "max": 1.0
+                },
+                {
+                    "name": "min_samples_split",
+                    "type": "int",
+                    "default": 2,
+                    "min": 2,
+                    "max": 20
+                },
+                {
+                    "name": "min_samples_leaf",
+                    "type": "int",
+                    "default": 1,
+                    "min": 1,
+                    "max": 20
+                },
+                {
+                    "name": "bootstrap",
+                    "type": "bool",
+                    "default": false
+                }
+            ]
+        },
+        {
+            "name": "sklearn.ensemble.HistGradientBoostingClassifier",
+            "providedInterface": ["EnsembleClassifier"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "learning_rate",
+                    "type": "double",
+                    "default": 0.1,
+                    "min": 0.01,
+                    "max": 1.0
+                },
+                {
+                    "name": "min_samples_leaf",
+                    "type": "int",
+                    "default": 20,
+                    "min": 1,
+                    "max": 200
+                },
+                {
+                    "name": "max_leaf_nodes",
+                    "type": "int",
+                    "default": 31,
+                    "min": 3,
+                    "max": 2047
+                },
+                {
+                    "name": "l2_regularization",
+                    "type": "double",
+                    "default": 1E-10,
+                    "min": 1E-10,
+                    "max": 1.0
+                },
+                {
+                    "name": "n_iter_no_change",
+                    "type": "int",
+                    "default": 10,
+                    "min": 1,
+                    "max": 20
+                },
+                {
+                    "name": "validation_fraction",
+                    "type": "double",
+                    "default": 0.1,
+                    "min": 0.01,
+                    "max": 0.4
+                }
+            ]
+        },
+        {
+            "name": "sklearn.ensemble.RandomForestClassifier",
+            "providedInterface": ["EnsembleClassifier"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "criterion",
+                    "type": "cat",
+                    "default": "gini",
+                    "values": ["gini", "entropy"]
+                },
+                {
+                    "name": "max_features",
+                    "type": "double",
+                    "default": 0.5,
+                    "min": 0.0,
+                    "max": 1.0
+                },
+                {
+                    "name": "min_samples_split",
+                    "type": "int",
+                    "default": 2,
+                    "min": 2,
+                    "max": 20
+                },
+                {
+                    "name": "min_samples_leaf",
+                    "type": "int",
+                    "default": 1,
+                    "min": 1,
+                    "max": 20
+                },
+                {
+                    "name": "bootstrap",
+                    "type": "bool",
+                    "default": false
+                }
+            ]
+        },
+        {
+            "name": "sklearn.naive_bayes.BernoulliNB",
+            "providedInterface": ["BayesClassifier", "SimpleClassifier"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "alpha",
+                    "type": "double",
+                    "default": 1.0,
+                    "min": 1e-2,
+                    "max": 100.0
+                },
+                {
+                    "name": "fit_prior",
+                    "type": "bool",
+                    "default": true
+                }
+            ]
+        },
+        {
+            "name": "sklearn.naive_bayes.GaussianNB",
+            "providedInterface": ["BayesClassifier"],
+            "requiredInterface": [],
+            "parameter": []
+        },
+        {
+            "name": "sklearn.naive_bayes.MultinomialNB",
+            "providedInterface": ["BayesClassifier"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "alpha",
+                    "type": "double",
+                    "default": 1.0,
+                    "min": 1e-2,
+                    "max": 100.0
+                },
+                {
+                    "name": "fit_prior",
+                    "type": "bool",
+                    "default": true
+                }
+            ]
+        },
+        {
+            "name": "sklearn.tree.DecisionTreeClassifier",
+            "providedInterface": ["TreeClassifier", "SimpleClassifier"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "criterion",
+                    "type": "cat",
+                    "default": "gini",
+                    "values": ["gini", "entropy"]
+                },
+                {
+                    "name": "max_depth",
+                    "type": "int",
+                    "default": 5,
+                    "min": 1,
+                    "max": 64
+                },
+                {
+                    "name": "min_samples_split",
+                    "type": "int",
+                    "default": 2,
+                    "min": 2,
+                    "max": 20
+                },
+                {
+                    "name": "min_samples_leaf",
+                    "type": "int",
+                    "default": 1,
+                    "min": 1,
+                    "max": 20
+                }
+            ]
+        },
+        {
+            "name": "sklearn.linear_model.SGDClassifier",
+            "providedInterface": ["LinearClassifier", "SimpleClassifier"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "loss",
+                    "type": "cat",
+                    "default": "log",
+                    "values": ["hinge", "log", "modified_huber", "squared_hinge", "perceptron"]
+                },
+                {
+                    "name": "penalty",
+                    "type": "cat",
+                    "default": "l2",
+                    "values": ["l1", "l2", "elasticnet"]
+                },
+                {
+                    "name": "alpha",
+                    "type": "double",
+                    "default": 0.0001,
+                    "min": 1e-7,
+                    "max": 1e-1
+                },
+                {
+                    "name": "l1_ratio",
+                    "type": "double",
+                    "default": 0.15,
+                    "min": 1e-9,
+                    "max": 1.0
+                },
+                {
+                    "name": "tol",
+                    "type": "double",
+                    "default": 1e-4,
+                    "min": 1e-5,
+                    "max": 1e-1
+                },
+                {
+                    "name": "epsilon",
+                    "type": "double",
+                    "default": 1e-4,
+                    "min": 1e-5,
+                    "max": 1e-1
+                },
+                {
+                    "name": "learning_rate",
+                    "type": "cat",
+                    "default": "invscaling",
+                    "values": ["optimal", "invscaling", "constant"]
+                },
+                {
+                    "name": "eta0",
+                    "type": "double",
+                    "default": 0.01,
+                    "min": 1e-7,
+                    "max": 1e-1
+                },
+                {
+                    "name": "power_t",
+                    "type": "double",
+                    "default": 0.5,
+                    "min": 1e-5,
+                    "max": 1.0
+                },
+                {
+                    "name": "average",
+                    "type": "bool",
+                    "default": false
+                }
+            ]
+        },
+        {
+            "name": "sklearn.linear_model.PassiveAggressiveClassifier",
+            "providedInterface": ["LinearClassifier"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "C",
+                    "type": "double",
+                    "default": 1.0,
+                    "min": 1e-5,
+                    "max": 10.0
+                },
+                {
+                    "name": "loss",
+                    "type": "cat",
+                    "default": "hinge",
+                    "values": ["hinge", "squared_hinge"]
+                },
+                {
+                    "name": "tol",
+                    "type": "double",
+                    "default": 1e-4,
+                    "min": 1e-5,
+                    "max": 1e-1
+                },
+                {
+                    "name": "average",
+                    "type": "bool",
+                    "default": false
+                }
+            ]
+        },
+        {
+            "name": "sklearn.discriminant_analysis.QuadraticDiscriminantAnalysis",
+            "providedInterface": ["DiscriminantClassifier", "SimpleClassifier"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "reg_param",
+                    "type": "double",
+                    "default": 0.0,
+                    "min": 0.0,
+                    "max": 1.0
+                }
+            ]
+        },
+        {
+            "name": "sklearn.discriminant_analysis.LinearDiscriminantAnalysis",
+            "providedInterface": ["DiscriminantClassifier"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "shrinkage",
+                    "type": "double",
+                    "default": 0.5,
+                    "min": 0.0,
+                    "max": 1.0
+                },
+                {
+                    "name": "n_components",
+                    "type": "int",
+                    "default": 10,
+                    "min": 1,
+                    "max": 250
+                },
+                {
+                    "name": "tol",
+                    "type": "double",
+                    "default": 1e-4,
+                    "min": 1e-5,
+                    "max": 1e-1
+                }
+            ]
+        },
+        {
+            "name": "sklearn.svm.SVC",
+            "providedInterface": ["SupportVectorClassifier", "SimpleClassifier"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "C",
+                    "type": "double",
+                    "default": 1.0,
+                    "min": 0.03125,
+                    "max": 32768
+                },
+                {
+                    "name": "kernel",
+                    "type": "cat",
+                    "default": "rbf",
+                    "values": ["rbf", "poly", "sigmoid"]
+                },
+                {
+                    "name": "degree",
+                    "type": "int",
+                    "default": 3,
+                    "min": 2,
+                    "max": 5
+                },
+                {
+                    "name": "coef0",
+                    "type": "int",
+                    "default": 0,
+                    "min": -1,
+                    "max": 1
+                },
+                {
+                    "name": "shrinking",
+                    "type": "bool",
+                    "default": true
+                },
+                {
+                    "name": "tol",
+                    "type": "double",
+                    "default": 1e-3,
+                    "min": 1e-5,
+                    "max": 1e-1
+                }
+            ]
+        },
+        {
+            "name": "sklearn.svm.LinearSVC",
+            "providedInterface": ["SupportVectorClassifier", "SelectFromModelEstimator"],
+            "requiredInterface": [],
+            "parameter": [
+                {
+                    "name": "C",
+                    "type": "double",
+                    "default": 1.0,
+                    "min": 0.03125,
+                    "max": 32768
+                },
+                {
+                    "name": "penalty",
+                    "type": "cat",
+                    "default": "l2",
+                    "values": ["l1", "l2"]
+                },
+                {
+                    "name": "loss",
+                    "type": "cat",
+                    "default": "hinge",
+                    "values": ["hinge", "squared_hinge"]
+                },
+                {
+                    "name": "tol",
+                    "type": "double",
+                    "default": 1e-4,
+                    "min": 1e-5,
+                    "max": 1e-1
+                }
+            ]
+        }
+    ]
+}
+\end{Verbatim}
 
 \section{Ensemble Optimizer AutoML in Pseudo-Code}
 \label{sec:appendix:pseudo-code}
@@ -30,11 +1189,12 @@ It requires a definition of all possible input parameters for one experiment run
 Experiment executions themselves, are orchestrated via one central database.
 The experiment runner will select one possible parametrization of the allowed input parameter values, check via the database if this parametrization was already evaluated and perform the evaluation of the parametrization otherwise.
 With this experiment management via a single database, the actual experiment execution can be parallelized arbitrarily.
-Further details about the libraries setup and functionality can be found in the corresponding repository\footnote{\url{https://github.com/Berberer/python-experimenter}}.
+Further details about the libraries setup and functionality can be found in the corresponding repository\footnote{\url{https://github.com/Berberer/python-experimenter}}.\newline
+Every time a certain file name is assumed for the setup it is given as well, but this can of course be customized as well for a different setup.
 
 The experiment runner has to be configured with the information regarding the database connection and the values for possible parametrization and expected results.
-For example in the case of the experiments with the timeout of one hour to compare the different approaches regarding their accuracy scores and additionally to count the optimizer runs of frankenstein, the experiment configuration file could look like the following:
-\begin{verbatim}
+For example in the case of the experiments with the timeout of one hour to compare the different approaches regarding their accuracy scores and additionally to count the optimizer runs of frankenstein, the experiment configuration file(\texttt{experiment.properties}) could look like the following:
+\begin{Verbatim}[fontsize=\scriptsize]
 keyfields = timeout,seed,dataset,algorithm
 resultfields = score,random_count,hyperband_count,genetic_count,
     smac_count,discretization_count
@@ -54,11 +1214,11 @@ db.username = experimenter
 db.password = password123
 db.database = experiments
 db.table = automl
-\end{verbatim}
+\end{Verbatim}
 Here, the datasets have a number attached to their name, to indicate the index of the column with the prediction target class.
 
-This experiment configuration file is given as an input to the following Python script that defines how the experiments for a single parametrization are actually conducted and then starts the execution of experiments:
-\begin{lstlisting}[language=Python]
+This experiment configuration file is given as an input to the following Python script(\texttt{experiment.py}) that defines how the experiments for a single parametrization are actually conducted and then starts the execution of experiments:
+\begin{lstlisting}[language=Python,basicstyle=\scriptsize]
 import resource
 from python_experimenter.experiment_runner import ExperimentRunner
 from tpot import TPOTClassifier
@@ -197,12 +1357,12 @@ def automl_experiment(keyfields):
 runner = ExperimentRunner(automl_experiment, "experiment.properties")
 runner.run()
 \end{lstlisting}
-This experiment script can be used for the experiments of all research questions of this thesis with an appropriate configuration in the corresponding \texttt{experiment.properties} file.
+This experiment script can be used for the experiments of all research questions of this thesis with an appropriate configuration in the corresponding \texttt{experiment.properties} file like for example the one aforementioned.
 
 At last, this script has to be executed in a reproducible Python environment.
 For instance, this can be achieved with Singularity containers~\cite{Kurtzer-Singularity}.
 The Singularity recipe for the container of this experiments is the following:
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize]
 BootStrap: library
 From: ubuntu:20.04
 
@@ -258,7 +1418,37 @@ From: ubuntu:20.04
     pip install auto-sklearn
     pip install git+https://github.com/herilalaina/mosaic@0.1
     pip install git+https://github.com/herilalaina/mosaic_ml
-\end{verbatim}
+\end{Verbatim}
 This recipe assumes that the image is build in a directory where the reference implementation of the approach of this thesis is located in a folder called \texttt{frankensteins-automl} to allow direct changes and customizations of the code.
-Alternatively, this can be easily changed in the recipe to directly clone it from GitHub.\newline
-After building the image, the experiments can be started for example via \texttt{singularity exec experiment.sif python3 experiment.py}.
+Alternatively, this can be easily changed in the recipe to directly clone it from GitHub.
+
+After building the image(\texttt{experiment.sif}), the experiments can be started for example via \texttt{singularity exec experiment.sif python3 experiment.py}.\newline
+This execution assumes the following file setup in the same directory where the built container is located and used:
+\dirtree{%
+    .1 /. 
+    .2 experiment.properties. 
+    .2 experiment.py. 
+    .2 experiment.sif. 
+    .2 res. 
+    .3 config. 
+    .4 logging.conf. 
+    .3 searchspace. 
+    .4 frankensteins\_automl\_classifiers.json. 
+    .4 frankensteins\_automl\_data\_preprocessors.json. 
+    .4 frankensteins\_automl\_feature\_preprocessors.json. 
+    .4 frankensteins\_automl\_topologies.json. 
+    .3 datasets. 
+    .4 amazon.arff. 
+    .4 dorothea.arff. 
+    .4 wine.arff. 
+    .4 car.arff. 
+    .4 krvskp.arff. 
+    .4 yeast.arff. 
+    .4 cifar.arff. 
+    .4 semeion.arff. 
+    .4 dexter.arff. 
+    .4 waveform.arff. 
+}
+The \texttt{res/searchspace/*.json} files are given in~\ref{sec:appendix:htn-space}, but can be downloaded from \url{https://github.com/Berberer/frankensteins-automl/tree/master/res/search_space}.
+Additionally, \texttt{res/logging/logging.conf} is used to configure the logging of frankensteins-automl with the usual Python logging configuration and can be set to the desired values.
+Finally, \texttt{res/datasets/*.arff} are the dataset files listed in~\ref{sec:evaluation:setup}.
