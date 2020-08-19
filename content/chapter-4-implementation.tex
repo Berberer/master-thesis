@@ -70,18 +70,43 @@ The abstract methods of the base classes are implemented in the following manner
 
 \begin{figure}[ht!]
     \centering
-    \includegraphics[width=\textwidth]{gfx/Figures/Implementation/search-space/SearchSpaceManagement.png}
+    \includegraphics[angle=90,origin=c,width=\textwidth,height=0.7\textheight,keepaspectratio]{gfx/Figures/Implementation/search-space/SearchSpaceManagement.png}
     \caption{A simplified overview of the implementation components for managing the search space and enabling HTN planning in this space.}
     \label{fig:implementation:uml:search-space}
 \end{figure}
 
 \subsection{Pipeline Evaluation and Optimizers for Model Configuration}
 \label{sec:implementation:components:optimization}
-\Blindtext
+Once the model selection procedure has created a pipeline topology in the form of a satisfied \textit{SearchSpaceRestProblem}, the model configuration has to optimize a parametrization for the components of this topology.\newline
+For each created pipeline topology of the model selection, i.e. one for each Pipeline Node, one \texttt{OptimizationParameterDomain} object is created and attached.
+It can manage the component and the corresponding parameter space of this pipeline as well as all already evaluated parametrization configuration.
+The configurations are considered from two points of view: For creating actual pipeline objects for evaluation with a component mapping, where the parameters are stored in a map to have them associated to their component, and for optimizing this configurations, which is done in the more generalized form of NumPy arrays, i.e. basically vectors.
+Between this two perspectives, the \texttt{OptimizationParameterDomain} can perform transformations between both formats.\newline
+As a starting point for optimization runs the domain can create the default configuration and random configurations.
+Afterwards during the optimization, the domain keeps track of all results in both a heap as well as a mapping from a hashed parametrization id to the scores.
+This duplicate storing has the downside of a higher memory consumption, but the upside of faster access in two different use-cases:
+\begin{enumerate}
+    \item Retrieving the top $n$ results from all already evaluated results via the heap, if one optimization method needs this for a warmstart.
+    \item Checking if one found parametrization was already evaluated and if yes to retrieve the score to prevent a repeated evaluation via the map.
+\end{enumerate}
+
+The core functionality that each optimizer needs is provided in the \texttt{AbstractOptimizer} base class, which provides the following mechanics:
+\begin{itemize}
+    \item \texttt{\_score\_candidate}: Check in the domain, if the parametrization has already been evaluated and return this result if yes.
+    Otherwise, utilize the attached \texttt{PipelineEvaluator} class to construct a pipeline from a satisfied rest problem, which is provided from the pipeline node, and evaluate the accuracy of the pipeline in a detached process for a better parallelization and add this new score to the domain.
+    \item \texttt{\_random\_transform\_candidate}: Changes $n$ random elements of the candidate parametrization vector by a small random value.
+    This is used for the search step in the random search and therewith Hyperband as well and the mutations of the Genetic Algorithm.
+\end{itemize}
+Each optimization algorithm now has to implement the abstract \texttt{perform\_optimization} method, which is given the optimization time budget as an input, to perform the corresponding optimization logic of this algorithm.
+
+In this current reference implementation are five optimization algorithms implemented:
+\begin{itemize}
+    \item 
+\end{itemize}
 
 \begin{figure}[ht!]
     \centering
-    \includegraphics[width=\textwidth]{gfx/Figures/Implementation/optimization/PipelineOptimization.png}
+    \includegraphics[angle=90,origin=c,width=\textwidth,height=0.9\textheight,keepaspectratio]{gfx/Figures/Implementation/optimization/PipelineOptimization.png}
     \caption{A simplified overview of the implementation components for storing the information about a model configuration optimization space and how the different optimizers approach this space.}
     \label{fig:implementation:uml:optimization}
 \end{figure}
