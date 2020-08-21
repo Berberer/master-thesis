@@ -6,7 +6,31 @@
 \section{Motivation}
 \label{sec:intro:motivation}
 
-\blindtext
+Since machine learning is present in a fast growing part of everyday life, economy and science, the number of people who want to use machine learning and apply it to their use case is equally fast growing.
+The problem is that using machine learning beyond simple examples and tutorials requires theoretical domain knowledge as well as solid programming skills.\newline
+Applying a machine learning approach includes the selection of a suitable learning model or even multiple models and other components combined to a complex pipeline.
+The cautious choice of machine learning algorithms for each problem or use-case is crucial to have a suitable and well performing model.
+Each selected machine learning algorithm may expose hyperparameters in return and the configuration of these parameters is a second necessary step for the application of machine learning.
+Finally, the selected model or pipeline with the configured parameters must be actually implemented with a suitable programming language within a machine learning framework or toolbox, which are usually comparably big and complex components.
+Therefore, caused by these three necessary steps there is a learning and knowledge barrier that prevents interested people with a non-technical background from using machine learning.
+
+In the last years, different approaches were developed, which can take this barrier off their shoulders and empower nearly everyone to use machine learning for datasets of their domain or setting.
+These approaches allow this by automating this algorithm configuration problem, consisting of the described sub-problems: Selecting models, respectively components of pipelines, configuring all required parameters and constructing a usable implementation.
+All the end-user has to do is to provide their data in a suitable dataset format and usually specify a resource or time budget for the solver of the algorithm configuration problem.\newline
+Within this budget, the best pipeline can be searched regarding a metric, as for example the predictive accuracy.
+Hence, this problem of finding a machine learning pipeline for a dataset can be considered an optimization problem.
+Solving this optimization problem is the challenge of a research area called \textit{Automated Machine Learning} or short \textit{AutoML}.
+
+AutoML received much attention in the scientific machine learning community and a broad spectrum of different methods were developed and published.
+The majority of these approaches and the plethora of different strategies they utilize, have usually one thing in common.
+They see the model selection and the model configuration as a joint optimization problem and therewith solve this two problems within a single optimization space with a single optimization algorithm.\newline
+However, recently a few new approaches were published that separate this two optimization spaces and utilize different optimization methods for the two respective spaces.
+But this can application of more than one optimization algorithm can be extended two three or more optimizers and in theory, this should show an improvement because of the \textit{No-free-lunch Theorems for optimization}.
+It states that when an optimization algorithm performs superior for one problem or class of problems it has to pay for this by performing inferior for other problems.
+In the context of AutoML this would imply that one optimization approach, can not yield the best solution across all datasets and domains.\newline
+Combining multiple optimization methods into an ensemble of optimizers would allow this ensemble to optimize each possible pipeline with the most suitable optimization algorithm with respect to the parameter space of this pipeline and the properties of the dataset.
+Therewith, the most suitable optimization algorithm out of the ensemble could be identified and exploited to the given AutoML problem setting.\newline
+For creating and utilizing this optimizer ensembles in the context of AutoML, a novel approach is required and will be the topic of this thesis. 
 
 \section{Thesis Goal and Research Questions}
 \label{sec:intro:goal}
