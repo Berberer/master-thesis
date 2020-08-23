@@ -51,7 +51,7 @@ For example, simple using a Decision tree as the only component as well as many 
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Approach/ComplexPipeline.pdf}
-    \caption{An example of a complex machine learning pipeline with a higher length and a non-linear topology. Input dataset and output prediction data are shown in green, pre-processing components in orange and the machine learning components constructing the machine learning model in blue.}
+    \caption[An example of a complex machine learning pipeline with a higher length and a non-linear topology.]{An example of a complex machine learning pipeline with a higher length and a non-linear topology. Input dataset and output prediction data are shown in green, pre-processing components in orange and the machine learning components constructing the machine learning model in blue.}
     \label{fig:appraoch:complex-pipeline}
 \end{figure}
 Since ReinBo and Mosaic solve their model selection tasks by defining a fix pipeline length and creating a model selection tree containing every combinatorial possible combination from a few different component types, these approaches do not allow complex pipelines.\newline
@@ -82,8 +82,7 @@ The representation of one simple incomplete task tree and two applicable decompo
 \begin{figure}[ht!]
     \centering
     \includegraphics[height=0.5\textheight]{gfx/Figures/Approach/HTN.pdf}
-    \caption{An example of a partial HTN planning search tree for a simple planning problem.
-    Each node is illustrated with the task-tree for the partially solved plan up to this point in its upper half, where compound task nodes are blue and primitive task nodes are green.
+    \caption[An example of a partial HTN planning search tree for a simple planning problem.]{An example of a partial HTN planning search tree for a simple planning problem. Each node is illustrated with the task-tree for the partially solved plan up to this point in its upper half, where compound task nodes are blue and primitive task nodes are green.
     In the lower half are all involved compound tasks listed in the utilized ordering.
     If any decomposition rule was already applied for a compound task, it is listed here as well.
     The first node on the left has already utilized a decomposition for compound task $c_1$ into $c_2$ and $c_3$.
@@ -124,8 +123,7 @@ It is written in the JSON schema, which is defined in~\ref{sec:implementation:js
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Approach/HTNAutoML.pdf}
-    \caption{A complete search graph of an AutoML problem visualized in the HTN context.
-    The primitive tasks are PCA, ICA and SVN.
+    \caption[A complete search graph of an AutoML problem visualized in the HTN context.]{A complete search graph of an AutoML problem visualized in the HTN context. The primitive tasks of this problem are PCA, ICA and SVN.
     All available compound tasks are Pipeline, Pre-Processor, Classifier, Feature Union, First Pre-Processor and Second Pre-Processor.}
     \label{fig:appraoch:htn-automl}
 \end{figure}
@@ -147,8 +145,7 @@ The pipeline nodes and the optimizer nodes are also marked for a better intuitio
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Approach/SearchGraph.pdf}
-    \caption{A simplified illustration of a possible extended search tree $G'$.
-    The root is drawn in blue, the inner nodes with unsolved task-trees in white, pipelines nodes in green and optimizer nodes in red.
+    \caption[A simplified illustration of a possible extended search tree $G'$.]{A simplified illustration of a possible extended search tree $G'$. The root is drawn in blue, the inner nodes with unsolved task-trees in white, pipelines nodes in green and optimizer nodes in red.
     The yellow box shows the configuration space of the pipeline that is represented by the task tree in that pipeline node.}
     \label{fig:appraoch:search-graph}
 \end{figure}
@@ -225,7 +222,7 @@ MCTS is usually defined as an algorithm with an iteration of four steps, which a
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Approach/MCTS.pdf}
-    \caption{Illustration of the four MCTS steps. Inner graph nodes are shown in blue and the leaf nodes that are found during Monte-Carlo simulations are shown in red.}
+    \caption[Illustration of the four MCTS steps.]{Illustration of the four MCTS steps. Inner graph nodes are shown in blue and the leaf nodes that are found during Monte-Carlo simulations are shown in red.}
     \label{fig:appraoch:mcts}
 \end{figure}
 

@@ -81,7 +81,7 @@ Once the model selection procedure has created a pipeline topology in the form o
 For each created pipeline topology of the model selection, i.e. one for each Pipeline Node, one \texttt{OptimizationParameterDomain} object is created and attached.
 It can manage the component and the corresponding parameter space of this pipeline as well as all already evaluated parametrization configuration.
 The configurations are considered from two points of view: For creating actual pipeline objects for evaluation with a component mapping, where the parameters are stored in a map to have them associated to their component, and for optimizing this configurations, which is done in the more generalized form of NumPy arrays, i.e. basically vectors.
-Between this two perspectives, the \texttt{OptimizationParameterDomain} can perform transformations between both formats.\newline
+Between this two perspectives, the optimization domain \texttt{OptimizationParameterDomain} can perform transformations between both formats.\newline
 As a starting point for optimization runs the domain can create the default configuration and random configurations.
 Afterwards during the optimization, the domain keeps track of all results in both a heap as well as a mapping from a hashed parametrization id to the scores.
 This duplicate storing has the downside of a higher memory consumption, but the upside of faster access in two different use-cases:
@@ -99,9 +99,38 @@ The core functionality that each optimizer needs is provided in the \texttt{Abst
 \end{itemize}
 Each optimization algorithm now has to implement the abstract \texttt{perform\_optimization} method, which is given the optimization time budget as an input, to perform the corresponding optimization logic of this algorithm.
 
-In this current reference implementation are five optimization algorithms implemented:
+In this current reference implementation, five optimization algorithms are implemented:
 \begin{itemize}
-    \item 
+    \item \texttt{RandomSearch}: This random search implementation is based on the second variant from~\ref{sec:theory:optimization:search}, i.e. it warmstarts with the best candidate so far from the optimization domain of this pipeline topology, if one exists, as the current candidate and takes the default configuration as an alterative if no parametrization was evaluated yet.
+    Afterwards, a random point from a small hypersphere surrounding the current candidate is selected and evaluated.
+    If this newly selected candidate shows an improvement, it is selected as the next current candidate for the next search step iteration.
+    Otherwise, the last current candidate is kept.
+    This is repeated until the optimization budget is spent.
+    \item \texttt{Hyperband}: This Hyperband implementation is based on an existing open-source implementation~\footnote{\url{https://github.com/zygmuntz/hyperband}}.
+    The existing implementation is utilized in the \texttt{HyperbandRunner} class which is called by the \texttt{Hyperband} optimizer class as a part of the common integration concept via the \texttt{AbstractOptimizer} class.
+    It is warmstarted by selecting the top 50 configurations from the optimization domain, or alternatively all existing if there are less then 50, and fill the list of starting points with random configurations up until 100 starting points for the Hyperband random searches.
+    \item \texttt{GeneticAlgorithm}: For this reference implementation, the genetic algorithm implementation was modelled after \textit{TPOT}, since this approach has shown good results for tackling AutoML problems with genetic algorithms.
+    Therefore, the following operations are applied to each produce the generation from an existing generation of 100 individuals:
+        \begin{enumerate}
+            \item Selected the top 20 individuals.
+            \item Create 5 copies of each individual to get back to a population size of 100 for the next generation.
+            \item Select 10 random offsprings out of this 100 offsprings and create 10 new offsprings out of them via one-point crossovers of random pairs of this 10.
+            \item The remaining 90 candidates are modified in the form of point mutations.
+        \end{enumerate}
+    The warmstarted initial generation of 100 individuals for each genetic algorithm run is initiated similar to Hyperband, but with the exception of the best 20 configurations and 80 random configurations.
+    \item \texttt{SMAC}: This is a wrapper class for the official \textit{SMAC} implementation.
+    As in the Hyperband integration, it is warmstarted with the top 50 candidates, if so many exist, and additional random configurations to get 100 starting point configurations.
+    \item \texttt{DiscretizationSearch}: This optimizer approach was inspired by \textit{ML-Plan}, but instead of creating a search graph for the complete AutoML problem solution space, it is here solely applied on hyperparameter optimization.
+    In the optimization domain an order is set for the parameter of the pipeline topology and this order is also applied for creating the parameter value space for the discretizations.
+    For parameters of type boolean or categorical, a single node is sufficient where each child node represents true or false, or alternatively each categorical value.
+    In the case of integer or real numbers, the minimum and maximum can be really far apart and creating a child node with a high coverage of the values in between will blow up the degree of the graph enormously.
+    Instead, numeric parameters are split by half and one child node is attached for each half until each half consists only of a single number in the case of integers, or the lower and upper bound of the halves are smaller then $\varepsilon \cdot (\max(p) - min(p))$ of the range of parameter $p$, in which case this node represents th value $\frac{\max(p) - min(p)}{2}$.\newline
+    For creating this discretizations dependent on the type, the \textit{Discretization} class and especially its static methods are used.
+    Once more, subclasses of \texttt{GraphNode} and \texttt{GraphGenerator} are created where each node represents one discretization down to the leaf nodes where, the the last parameter value is discretized as far as possible and therewith the actual value selected. 
+    Here, the discretization is atomic.\newline
+    The graph that is created with this mechanism is searched via a best-first search, where each node is scored via the best result of three Monte-Carlo simulations.
+    If all child nodes of a node were visited during the search, this node is marked as \texttt{covered} and will be ignored from this point on.
+    Hence, it can occur for small parameter spaces and large optimization budgets, that this approach fill finish before the optimization budget is spent because of the discretized view of a continuos space.
 \end{itemize}
 
 \begin{figure}[ht!]

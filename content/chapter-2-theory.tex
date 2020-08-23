@@ -56,7 +56,7 @@ This inputs and outputs of an conceptual AutoML tool are illustrated in figure~\
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Theory/AutoMLTool.pdf}
-    \caption{High level view of a conceptual AutoML tool. }
+    \caption{High level view of a conceptual AutoML tool.}
 	\label{fig:theory:conceptualAutoMLTool}
 \end{figure}
 The general workflow of an AutoML tool is also numbered and illustrated in the figure and can be generalized with the following steps:
@@ -91,7 +91,7 @@ An example for such a more complex pipeline is illustrated in figure~\ref{fig:th
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Theory/ComplexPipeline.pdf}
-    \caption{Example for a more complex pipeline with four pre-processing components in blue: A One-hot Encoder, a Feature Union of a PCA and a LSA. The learning model in green is a Majority Voter as an aggregation of a Decision Tree, a SVM and a Logistic Regression Classifier. }
+    \caption[Example for a more complex pipeline with four pre-processing components.]{Example for a more complex pipeline with four pre-processing components. The components are shown in blue: A One-hot Encoder, a Feature Union of a PCA and a LSA. The learning model in green is a Majority Voter as an aggregation of a Decision Tree, a SVM and a Logistic Regression Classifier. }
 	\label{fig:theory:complexPipeline}
 \end{figure}
 
@@ -133,7 +133,7 @@ An example for a concrete parametrization drawn from a three dimensional paramet
         \node [above right] at (axis cs:0.4,10,1) {$(0.4,10,\textrm{true})$};
         \end{axis}
     \end{tikzpicture}
-    \caption{A parameter configuration with the values $(0.4,10,\textrm{true})$ inside the parameter space with the dimensions $[0..20]$, $[0, 1)$ and $\{\textrm{true}, \textrm{false}\}$ }
+    \caption[An exemplaric parameter configuration space.]{An exemplaric parameter configuration space. One concrete configuration with the values $(0.4,10,\textrm{true})$ inside the parameter space was selected. The overall space has the dimensions $[0..20]$, $[0, 1)$ and $\{\textrm{true}, \textrm{false}\}$.}
 	\label{fig:theory:parameterSpace}
 \end{figure}
 
@@ -241,7 +241,7 @@ This function is defined in $\mathbb{R}^2$ and has one global minimum.
     \begin{subfigure}{0.48\textwidth}
         \includegraphics[width=\textwidth]{gfx/Figures/Theory/OptimizationTargetFunctionContour.png}
     \end{subfigure}
-    \caption[.]{A two dimensional target function with a global minimum at \ensuremath{\begin{bmatrix} 0\\0 \end{bmatrix}}. On the right as a surface plot and on the left as a contour plot.}
+    \caption[A two dimensional optimization target function.]{A two dimensional optimization target function. It has a global minimum at \ensuremath{\begin{bmatrix} 0\\0 \end{bmatrix}}. Displayed as a surface plot on the right and on the left as a contour plot.}
     \label{fig:theory:target-function}
 \end{figure}
 
@@ -282,7 +282,7 @@ In the context of Hyperband, selecting the search instances which will not be st
     \begin{subfigure}{0.48\textwidth}
         \includegraphics[width=\textwidth]{gfx/Figures/Theory/RandomSearchHypersphere.pdf}
     \end{subfigure}
-    \caption{On the left is the first variant with a few randomly selected candidates. On the right are six possible first iterations of the second variant. The hypersphere is only shown for the first candidate.}
+    \caption[Visualization of different variants of Random Search strategies.]{Visualization of different variants of Random Search strategies. On the left is the first variant with a few randomly selected candidates. On the right are six possible first iterations of the second variant. The hypersphere is only shown for the first candidate.}
     \label{fig:theory:random-search}
 \end{figure}
 
@@ -326,7 +326,7 @@ The set of nodes, consisting of the unexplored neighbors of already visited and 
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Theory/GraphSearchFront.pdf}
-    \caption{After a few iterations of a search algorithm beginning at the root node, a few nodes are already explored and expanded, here illustrated in blue. The expanded child nodes of the searched area(blue) are the search front(grey nodes) and one of them will be explored and expanded in the next search iteration.}
+    \caption[Search graph of a graph search in the middle of an ongoing search.]{Search graph of a graph search in the middle of an ongoing search. After a few iterations of a search algorithm beginning at the root node, a few nodes are already explored and expanded, here illustrated in blue. The expanded child nodes of the searched area(blue) are the search front(grey nodes) and one of them will be explored and expanded in the next search iteration.}
     \label{fig:theory:graph-search-front}
 \end{figure}
 Some search algorithms select nodes out of the search front  based on the point in time, where they were added to the search front, like for example a Depth-First Search or a Breadth-First Search.
@@ -537,8 +537,8 @@ A graphical intuition for the concept of acquisition functions is given in figur
             There the expected value of the surrogate regression is already low and the credible interval is additionally broad.
         }
     \end{subfigure}
-    \caption[.]{
-        Simple illustration to give an intuition of acquisition functions for the running example of minimizing $f_0 \left( \begin{bmatrix}x\\y \end{bmatrix} \right) = x^2 + y^2$.
+    \caption[Simple illustration of acquisition functions for Bayesian optimization.]{Simple illustration of acquisition functions for Bayesian optimization.
+        It is applied to the running example of minimizing \ensuremath{f_0 \left( \begin{bmatrix}x\\y \end{bmatrix} \right) = x^2 + y^2}.
         For simplicity will the Bayesian optimization only be used to minimize on the x-dimension and y will be set to 0, but in theory can this approach be extended to any number of dimensions.
         (a) shows a slice of the target function in green.
         (b) shows in red the already evaluated samples, the estimated surrogate function model and the credible intervals.
@@ -629,7 +629,7 @@ Accordingly, such a child node for a $s_p \in S_p$ has a child node itself for e
 An illustration of the previous example optimization space can be seen in figure~\ref{fig:theory:reinbo-model-selection}.
 \begin{figure}[ht!]
     \centering
-    \includegraphics[height=\textheight,keepaspectratio]{gfx/Figures/Theory/ReinBoModelSelection.pdf}
+    \includegraphics[width=\textwidth,height=0.7\textheight,keepaspectratio]{gfx/Figures/Theory/ReinBoModelSelection.pdf}
     \caption{Simple visualization of the underlying concepts of the three layer ReinBo model selection candidate space.}
     \label{fig:theory:reinbo-model-selection}
 \end{figure}
