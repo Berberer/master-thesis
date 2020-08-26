@@ -1,0 +1,106 @@
+@startuml MctsAutoML
+
+class FrankensteinsAutoMLConfig {
+    timeout_in_seconds : float
+    timeout_for_optimizers_in_seconds : float
+    timeout_for_pipeline_evaluation : float
+    simulation_runs_amount : int
+    random_seed : int
+    optimizers : Class<AbstractOptimizer>[]
+    data_input_from_arff_file(data_path : String, data_target_column_index : int) : void
+    direct_data_input(data_x : NumpyArray, data_y : NumpyArray) : void
+}
+
+class FrankensteinsAutoML {
+    run() : void
+}
+
+class MctsSearch {
+    search_space : SearchSpace
+    run_search() : void
+}
+
+
+class MctsSearchConfig {
+    search_timeout : float
+    optimization_time_budget : float
+    timeout_for_pipeline_evaluation : float
+    optimizer_classes : Class<AbstractOptimizer>[]
+    pipeline_evaluator_class : Class<PipelineEvaluator>
+    start_component_name : String
+    simulation_runs_amount : int
+    data_x : NumpyArray
+    data_y : NumpyArray
+    seed : int 
+}
+
+class MctsGraphNode {
+    node_value : float
+    simulation_visits : float
+    score_avg : float
+    is_search_space_leaf_node() : boolean
+    is_leaf_node() : boolean
+    recalculate_node_value(new_result : float) : void
+    perform_optimization(time_budget : float) : (Map, float)    
+}
+
+class AbstractOptimizer {
+    ...
+    ---
+    ...
+}
+
+class OptimizationParameterDomain {
+    ...
+    ---
+    ...
+}
+
+class MctsGraphGenerator {
+    pipeline_evaluator_class : Class<PipelineEvaluator>
+    optimizer_classes : Class<AbstractOptimizer>[]
+    timeout_for_pipeline_evaluation : float
+    data_x : NumpyArray
+    data_y : NumpyArray
+    seed : int
+    get_node_successors(node : MctsGraphNode) : MctsGraphNode[]
+}
+
+class SearchSpaceGraphGenerator {
+    ...
+    ---
+    ...
+}
+
+class SearchSpaceGraphNode {
+    ...
+    ---
+    ...
+}
+
+class MonteCarloSimulationRunner {
+    runs_amount : int
+    graph_generator : MctsGraphGenerator
+    run(timeout : float) : (MctsGraphNode, float)[]
+}
+
+class RandomSearchRun {
+    start_node : MctsGraphNode
+    graph_generator : MctsGraphGenerator
+    leaf_score_timeout : float
+    run() : void
+}
+
+FrankensteinsAutoML "1" -right- "1" FrankensteinsAutoMLConfig : config >
+FrankensteinsAutoML "1" -down- "1" MctsSearch : search >
+MctsSearch "1" -right- "1" MctsSearchConfig : config >
+MctsSearch "1" -down- "1" MctsGraphNode : root_node >
+MctsSearch "1" -left- "1" MctsGraphGenerator : graph_generator >
+SearchSpaceGraphGenerator ^-right- MctsGraphGenerator
+SearchSpaceGraphNode ^-right- MctsGraphNode
+MonteCarloSimulationRunner "1" -left- "n" MctsGraphNode : start_nodes >
+MonteCarloSimulationRunner "1" -down- "n" RandomSearchRun : runs >
+Thread ^-left- RandomSearchRun
+MctsGraphNode "1" -- "0..1" AbstractOptimizer : optimizer >
+MctsGraphNode "1" -- "0..1" OptimizationParameterDomain : parameter_domain >
+@enduml
