@@ -104,6 +104,102 @@ The Singularity image recipe as well as some additional information regarding th
 
 \Blindtext
 
+\begin{sidewaystable}
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \caption[Results of the benchmark experiments for comparing frankenstein with other state-of-the-art AutoML approaches.]{
+        Results of the benchmark experiments for comparing frankenstein with other state-of-the-art AutoML approaches.
+        The individual cells have the following format: $\text{average} \pm \text{standard deviation} (\text{amount of successful experiment runs})$.
+        Additionally, there is a $\uparrow$ or $\downarrow$ if the score of the compared AutoML approach is significantly better or significantly worse compared to frankenstein.
+        This statistical significance is tested via two-sample \textit{t}-tests with $p = 0.05$.
+        If the AutoML approach had not a single successful experiments run for the corresponding dataset, the cell is filled with an $\mathbin{/}$.
+    }
+    \label{table:benchmark-results}
+    \begin{tabular}{l|ccccc}
+        & \texttt{frankenstein}  & \texttt{autosklearn}  & \texttt{mlplan}  & \texttt{mosaic}  & \texttt{tpot} \\
+        \hline
+        \texttt{amazon} & $ 0.9735 \pm 0.0049 (30) $ & $ 0.9752 \pm 0.0018 (29) \phantom{\downarrow}$ & $ 0.7301 \pm 0.0384 (20) \downarrow$ & $ \mathbin{/}   \phantom{\downarrow}$ & $ 0.9753 \pm 0.0024 (29) \phantom{\downarrow}$\\
+        \texttt{car} & $ 0.9789 \pm 0.0426 (30) $ & $ 0.9874 \pm 0.0065 (26) \phantom{\downarrow}$ & $ 0.4430 \pm 0.2452 (19) \downarrow$ & $ 0.9777 \pm 0.0145 (09) \phantom{\downarrow}$ & $ 0.9900 \pm 0.0092 (30) \phantom{\downarrow}$\\
+        \texttt{cifar} & $ 0.3077 \pm 0.0622 (25) $ & $ 0.3997 \pm 0.0068 (28) \uparrow$ & $ 0.4226 \pm 0.0080 (20) \uparrow$ & $ 0.3663 \pm 0.0086 (27) \uparrow$ & $ 0.2815 \pm 0.0404 (23) \phantom{\downarrow}$\\
+        \texttt{dexter} & $ 0.9004 \pm 0.0453 (28) $ & $ 0.9263 \pm 0.0189 (30) \uparrow$ & $ 0.9447 \pm 0.0170 (20) \uparrow$ & $ 0.9509 \pm 0.0165 (22) \uparrow$ & $ 0.9289 \pm 0.0231 (30) \uparrow$\\
+        \texttt{dorothea} & $ 0.9229 \pm 0.0130 (27) $ & $ 0.9332 \pm 0.0085 (30) \uparrow$ & $ \mathbin{/}   \phantom{\downarrow}$ & $ 0.9469 \pm 0.0124 (28) \uparrow$ & $ 0.9275 \pm 0.0117 (26) \phantom{\downarrow}$\\
+        \texttt{krvskp} & $ 0.9933 \pm 0.0023 (27) $ & $ 0.9925 \pm 0.0034 (25) \phantom{\downarrow}$ & $ 0.5017 \pm 0.0171 (19) \downarrow$ & $ 0.9932 \pm 0.0022 (03) \phantom{\downarrow}$ & $ 0.9934 \pm 0.0024 (30) \phantom{\downarrow}$\\
+        \texttt{semeion} & $ 0.9235 \pm 0.0588 (30) $ & $ 0.9468 \pm 0.0125 (29) \uparrow$ & $ 0.1538 \pm 0.0375 (20) \downarrow$ & $ 0.9423 \pm 0.0102 (12) \phantom{\downarrow}$ & $ 0.9356 \pm 0.0129 (30) \phantom{\downarrow}$\\
+        \texttt{waveform} & $ 0.8412 \pm 0.0278 (29) $ & $ 0.8588 \pm 0.0074 (29) \uparrow$ & $ 0.8645 \pm 0.0079 (17) \uparrow$ & $ 0.8686 \pm 0.0079 (05) \uparrow$ & $ 0.8606 \pm 0.0075 (30) \uparrow$\\
+        \texttt{wine} & $ 0.5292 \pm 0.1629 (28) $ & $ 0.6329 \pm 0.0096 (29) \uparrow$ & $ 0.6601 \pm 0.0123 (20) \uparrow$ & $ 0.6446 \pm 0.0116 (17) \uparrow$ & $ 0.6614 \pm 0.0127 (30) \uparrow$\\
+        \texttt{yeast} & $ 0.5752 \pm 0.0592 (30) $ & $ 0.6009 \pm 0.0169 (30) \uparrow$ & $ 0.2987 \pm 0.0623 (20) \downarrow$ & $ 0.6126 \pm 0.0044 (02) \phantom{\downarrow}$ & $ 0.6048 \pm 0.0180 (30) \uparrow$\\
+        \hline
+    \end{tabular}
+\end{sidewaystable}
+
+\begin{table}
+    \caption[Results of the experiments for comparing the three frankenstein variants over longer timeouts.]{
+        Results of the experiments for comparing the three frankenstein variants over longer timeouts.
+        The individual cells have the same layout as in the previous table.
+    }
+    \label{table:influence-results}
+    \renewcommand{\arraystretch}{1.25}
+    \begin{subtable}{1\textwidth}
+        \centering
+        \caption{Timeout: 1h}
+        \begin{tabular}{l|ccc}
+            & \texttt{frankenstein}  & \texttt{frankenstein-rs}  & \texttt{frankenstein-mcts} \\
+            \hline
+            \texttt{amazon} & $ 0.9735 \pm 0.0049 (30) \phantom{\downarrow}$ & $ 0.9752 \pm 0.0026 (28) \phantom{\downarrow}$ & $ 0.9748 \pm 0.0020 (28) \phantom{\downarrow}$\\
+            \texttt{car} & $ 0.9789 \pm 0.0426 (30) \phantom{\downarrow}$ & $ 0.9871 \pm 0.0148 (30) \phantom{\downarrow}$ & $ 0.9633 \pm 0.0674 (30) \phantom{\downarrow}$\\
+            \texttt{cifar} & $ 0.3140 \pm 0.0621 (28) \phantom{\downarrow}$ & $ 0.2841 \pm 0.0632 (28) \phantom{\downarrow}$ & $ 0.2664 \pm 0.0768 (30) \downarrow$\\
+            \texttt{dexter} & $ 0.9004 \pm 0.0453 (28) \phantom{\downarrow}$ & $ 0.9020 \pm 0.0552 (28) \phantom{\downarrow}$ & $ 0.9090 \pm 0.0426 (29) \phantom{\downarrow}$\\
+            \texttt{dorothea} & $ 0.9245 \pm 0.0136 (30) \phantom{\downarrow}$ & $ 0.9183 \pm 0.0235 (29) \phantom{\downarrow}$ & $ 0.9197 \pm 0.0140 (29) \phantom{\downarrow}$\\
+            \texttt{krvskp} & $ 0.9933 \pm 0.0023 (27) \phantom{\downarrow}$ & $ 0.9872 \pm 0.0301 (30) \phantom{\downarrow}$ & $ 0.9931 \pm 0.0025 (29) \phantom{\downarrow}$\\
+            \texttt{semeion} & $ 0.9235 \pm 0.0588 (30) \phantom{\downarrow}$ & $ 0.9317 \pm 0.0452 (30) \phantom{\downarrow}$ & $ 0.9221 \pm 0.0533 (30) \phantom{\downarrow}$\\
+            \texttt{waveform} & $ 0.8412 \pm 0.0278 (29) \phantom{\downarrow}$ & $ 0.8420 \pm 0.0313 (30) \phantom{\downarrow}$ & $ 0.8124 \pm 0.1066 (30) \phantom{\downarrow}$\\
+            \texttt{wine} & $ 0.5292 \pm 0.1629 (28) \phantom{\downarrow}$ & $ 0.5709 \pm 0.1327 (27) \phantom{\downarrow}$ & $ 0.6218 \pm 0.0890 (29) \uparrow$\\
+            \texttt{yeast} & $ 0.5752 \pm 0.0592 (30) \phantom{\downarrow}$ & $ 0.5594 \pm 0.0822 (28) \phantom{\downarrow}$ & $ 0.5323 \pm 0.0933 (29) \downarrow$\\
+            \hline
+        \end{tabular}
+    \end{subtable}
+    \par\bigskip
+    \begin{subtable}{1\textwidth}
+        \centering
+        \caption{Timeout: 6h}
+        \begin{tabular}{l|ccc}
+            & \texttt{frankenstein}  & \texttt{frankenstein-rs}  & \texttt{frankenstein-mcts} \\
+            \hline
+            \texttt{amazon} & $ 0.9736 \pm 0.0087 (29) \phantom{\downarrow}$ & $ 0.9716 \pm 0.0125 (29) \phantom{\downarrow}$ & $ 0.9743 \pm 0.0043 (29) \phantom{\downarrow}$\\
+            \texttt{car} & $ 0.9714 \pm 0.0577 (30) \phantom{\downarrow}$ & $ 0.9926 \pm 0.0068 (30) \phantom{\downarrow}$ & $ 0.9729 \pm 0.0602 (30) \phantom{\downarrow}$\\
+            \texttt{cifar} & $ 0.3048 \pm 0.0652 (30) \phantom{\downarrow}$ & $ 0.3025 \pm 0.0682 (29) \phantom{\downarrow}$ & $ 0.3210 \pm 0.0542 (30) \phantom{\downarrow}$\\
+            \texttt{dexter} & $ 0.8904 \pm 0.1030 (29) \phantom{\downarrow}$ & $ 0.9044 \pm 0.0600 (29) \phantom{\downarrow}$ & $ 0.9222 \pm 0.0255 (29) \phantom{\downarrow}$\\
+            \texttt{dorothea} & $ 0.9094 \pm 0.1078 (29) \phantom{\downarrow}$ & $ 0.9086 \pm 0.1108 (30) \phantom{\downarrow}$ & $ 0.9218 \pm 0.0173 (30) \phantom{\downarrow}$\\
+            \texttt{krvskp} & $ 0.9930 \pm 0.0022 (29) \phantom{\downarrow}$ & $ 0.9920 \pm 0.0086 (30) \phantom{\downarrow}$ & $ 0.9926 \pm 0.0022 (30) \phantom{\downarrow}$\\
+            \texttt{semeion} & $ 0.9070 \pm 0.1576 (30) \phantom{\downarrow}$ & $ 0.9487 \pm 0.0206 (30) \phantom{\downarrow}$ & $ 0.9093 \pm 0.0860 (30) \phantom{\downarrow}$\\
+            \texttt{waveform} & $ 0.8500 \pm 0.0241 (30) \phantom{\downarrow}$ & $ 0.8480 \pm 0.0322 (29) \phantom{\downarrow}$ & $ 0.8362 \pm 0.0423 (30) \phantom{\downarrow}$\\
+            \texttt{wine} & $ 0.6293 \pm 0.0985 (29) \phantom{\downarrow}$ & $ 0.6510 \pm 0.0403 (28) \phantom{\downarrow}$ & $ 0.6326 \pm 0.0612 (30) \phantom{\downarrow}$\\
+            \texttt{yeast} & $ 0.5759 \pm 0.0758 (30) \phantom{\downarrow}$ & $ 0.5697 \pm 0.0892 (30) \phantom{\downarrow}$ & $ 0.5850 \pm 0.0648 (29) \phantom{\downarrow}$\\
+            \hline
+        \end{tabular}
+    \end{subtable}
+    \par\bigskip
+    \begin{subtable}{1\textwidth}
+        \centering
+        \caption{Timeout: 12h}
+        \begin{tabular}{l|ccc}
+            & \texttt{frankenstein}  & \texttt{frankenstein-rs}  & \texttt{frankenstein-mcts} \\
+            \hline
+            \texttt{amazon} & $ 0.9752 \pm 0.0022 (30) \phantom{\downarrow}$ & $ 0.9737 \pm 0.0039 (30) \phantom{\downarrow}$ & $ 0.9756 \pm 0.0015 (30) \phantom{\downarrow}$\\
+            \texttt{car} & $ 0.9838 \pm 0.0187 (30) \phantom{\downarrow}$ & $ 0.9940 \pm 0.0057 (30) \uparrow$ & $ 0.9766 \pm 0.0556 (30) \phantom{\downarrow}$\\
+            \texttt{cifar} & $ 0.3316 \pm 0.0467 (30) \phantom{\downarrow}$ & $ 0.3319 \pm 0.0497 (30) \phantom{\downarrow}$ & $ 0.3069 \pm 0.0645 (30) \phantom{\downarrow}$\\
+            \texttt{dexter} & $ 0.9265 \pm 0.0154 (30) \phantom{\downarrow}$ & $ 0.9296 \pm 0.0128 (30) \phantom{\downarrow}$ & $ 0.9285 \pm 0.0127 (29) \phantom{\downarrow}$\\
+            \texttt{dorothea} & $ 0.9303 \pm 0.0136 (30) \phantom{\downarrow}$ & $ 0.9003 \pm 0.1494 (30) \phantom{\downarrow}$ & $ 0.9242 \pm 0.0205 (30) \phantom{\downarrow}$\\
+            \texttt{krvskp} & $ 0.9928 \pm 0.0042 (30) \phantom{\downarrow}$ & $ 0.9933 \pm 0.0025 (29) \phantom{\downarrow}$ & $ 0.9904 \pm 0.0113 (30) \phantom{\downarrow}$\\
+            \texttt{semeion} & $ 0.9501 \pm 0.0173 (30) \phantom{\downarrow}$ & $ 0.9411 \pm 0.0346 (30) \phantom{\downarrow}$ & $ 0.9498 \pm 0.0236 (30) \phantom{\downarrow}$\\
+            \texttt{waveform} & $ 0.8547 \pm 0.0106 (30) \phantom{\downarrow}$ & $ 0.8575 \pm 0.0165 (30) \phantom{\downarrow}$ & $ 0.8551 \pm 0.0095 (30) \phantom{\downarrow}$\\
+            \texttt{wine} & $ 0.6574 \pm 0.0404 (30) \phantom{\downarrow}$ & $ 0.6508 \pm 0.0793 (30) \phantom{\downarrow}$ & $ 0.6491 \pm 0.0764 (30) \phantom{\downarrow}$\\
+            \texttt{yeast} & $ 0.6028 \pm 0.0213 (30) \phantom{\downarrow}$ & $ 0.5995 \pm 0.0209 (29) \phantom{\downarrow}$ & $ 0.5981 \pm 0.0245 (30) \phantom{\downarrow}$\\
+            \hline
+        \end{tabular}
+    \end{subtable}
+\end{table}
+
 \section{Analysis of the Experiment Outcomes}
 \label{sec:evaluation:analysis}
 
