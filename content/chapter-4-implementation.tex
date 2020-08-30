@@ -77,7 +77,8 @@ The abstract methods of the base classes are implemented in the following manner
 
 \subsection{Pipeline Evaluation and Optimizers for Model Configuration}
 \label{sec:implementation:components:optimization}
-Once the model selection procedure has created a pipeline topology in the form of a satisfied \textit{SearchSpaceRestProblem}, the model configuration has to optimize a parametrization for the components of this topology.\newline
+Once the model selection procedure has created a pipeline topology in the form of a satisfied \textit{SearchSpaceRestProblem}, the model configuration has to optimize a parametrization for the components of this topology.
+This is the task of the optimizer ensembles, which are implemented as illustrated in~\ref{fig:implementation:uml:optimization}.\newline
 For each created pipeline topology of the model selection, i.e. one for each Pipeline Node, one \texttt{OptimizationParameterDomain} object is created and attached.
 It can manage the component and the corresponding parameter space of this pipeline as well as all already evaluated parametrization configuration.
 The configurations are considered from two points of view: For creating actual pipeline objects for evaluation with a component mapping, where the parameters are stored in a map to have them associated to their component, and for optimizing this configurations, which is done in the more generalized form of NumPy arrays, i.e. basically vectors.
@@ -142,14 +143,39 @@ In this current reference implementation, five optimization algorithms are imple
 
 \subsection{MCTS and Optimizer Integration for AutoML}
 \label{sec:implementation:components:mcts}
+After setting up the model selection as an HTN planning problem with a suitable graph search space and embedding the model configuration via the optimizer ensembles in the leaf nodes with satisfied planning states by attaching additional optimizer nodes, this combined search space has to be actually searched for a functioning AutoML tool.
+Additionally, it needs a user-facing interface for such that anyone can start an AutoML process with their custom dataset.
+This two functionalities are illustrated in~\ref{fig:implementation:uml:mcts} and outlined in the following.\newline
+A user should start with creating a \texttt{FrankensteinsAutoMLConfig}.
+They can customize all configuration values as wanted, but all have suitable default values such that this can be omitted as well.
+The only requirement is a dataset as the AutoML problem input, which can either be given as a \texttt{*.arff} file in combination with the index of the target class column or alternatively as two NumPy arrays.
+With such an configuration object, the actual AutoML runner \texttt{FrankensteinsAutoML} can be instantiated and started.
 
-\Blindtext
+After the start, it will create a \texttt{MctsSearchConfig} accordingly to the user provided \texttt{FrankensteinsAutoMLConfig} and start a \texttt{MctsSearch} with it.
+This search object will create the HTN \texttt{SearchSpace} object with the search space definition files of the AutoML optimization space, which is the basis for the MCTS graph.\newline
+For the concrete use-case of a MCTS the \texttt{SearchSpaceGraphGenerator} and the \texttt{SearchSpaceGraphNode} are extended with additional functionality to support a MCTS and to integrate the optimizer ensembles into the HTN planning graph.
+The graph generation works for the most part identical to the graph generation for the HTN planning but will generate the extended search graph $G'$ instead of the HTN planning graph $G$.
+It will attach an \texttt{OptimizationParameterDomain} instance to the pipeline nodes, i.e. the model selection leaf nodes $n^*_j \in N^*$, which is the parameter domain for this concrete model selection pipeline outcome.
+The graph generator receives a list of \texttt{AbstractOptimizer} classes as an input, such that it can create the additional optimizer nodes $N^A_j$ as child nodes to $n^*_j$ for all given optimizer classes.\newline
+Thus, there can be three possible types of a \texttt{MctsGraphNode}:
+\begin{enumerate}
+    \item It is an inner node, where the HTN planning state is not satisfied yes. It has neither a parameter domain nor an optimizer attached.
+    \item It is a pipeline node, where the HTN planning state is satisfied the the pipeline selection finalized. Therewith, a parameter domain can be created and is attached to the node.
+    \item It is an optimizer node, where one of the ensembles optimizers is attached to optimize in the parameter domain, which is attached to this nodes parent node, i.e. the corresponding pipeline node.
+\end{enumerate}
+
+The \texttt{MctsSearch} class follows the usual MCTS loop, where the UCT values are stored and updated on \texttt{MctsGraphNode} level which is the basis for selecting the search paths.
+Every time a node at the current end of such a path is expanded during this loop, i.e. the child nodes are generated, each new node is scored with Monte-Carlo simulations.\newline
+For this scoring mechanism, a list of all new nodes is given to an instance of a \texttt{MonteCarloSimulationRunner} as well as the amount of runs that will be started for each new node.
+The single simulations are random searches that extend Threads via the class \texttt{RandomSearchRun} to parallelize the search for optimizer nodes.
+Once all random searches reached an optimizer node, the optimizers in the corresponding optimizer nodes are started with the given timeout as an optimization budget and when all optimizers terminate with their best result of this optimization run after the budget is spent, the simulation runner will return a list of node and score tuples.
+With this tuple list, the scores can be backpropagated from the corresponding optimizer nodes and the next loop iteration can be started.
 
 \begin{figure}[ht!]
     \centering
     \includegraphics[angle=90,origin=c,width=\textwidth,height=0.7\textheight,keepaspectratio]{gfx/Figures/Implementation/mcts/MctsAutoML.png}
-    \caption{A simplified overview of the implementation components for integrating the optimizer ensembles via a MCTS in a unified AutoML tool.}
-    \label{fig:implementation:uml:optimization}
+    \caption{A simplified overview of the implementation components for searching HTN planning space with the integrated optimizer ensembles via a MCTS in a unified AutoML tool.}
+    \label{fig:implementation:uml:mcts}
 \end{figure}
 
 \section{Utilized Python Libraries}
