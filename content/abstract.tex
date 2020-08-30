@@ -3,12 +3,21 @@
 \pdfbookmark[0]{Abstract}{Abstract}
 \chapter*{Abstract}
 \label{sec:abstract}
-\vspace*{-10mm}
+\vspace*{-15mm}
 
-\blindtext
+State-of-the-art approaches for Automated Machine Learning have combined their model selection and model configuration spaces into a joint optimization space, which is hence only optimized with one optimizer.
+Recent publications have extended this joint space method by separating model selection and model configuration into two spaces and approaching them with two different optimization algorithms.
+However, for all possible outcomes of the model selection and all possible input datasets, the model configuration is always optimized with the same algorithm.
+According to the No-Free-Lunch Theorem for Optimization, one single optimization algorithm cannot be optimal for all problem classes in a constrained environment, like for example a limited time budget.
+This thesis proposes an idea for tackling the model configuration with an ensemble of several optimizers, such that the most suitable optimizer for the current result of the model selection and the input dataset can be identified and utilized.
+An initial simple reference implementation of this idea showed partially competitive scores against current state-of-the-art AutoML tools in a comprehensive experimental evaluation.
+\vspace*{10mm}
 
-\vspace*{20mm}
-
-{\usekomafont{chapter}Zusammenfassung}\label{sec:abstract-ger} \\
-
-\blindtext
+{\usekomafont{chapter}Zusammenfassung}\label{sec:abstract-ger}
+\vspace*{5mm}\\
+Ansätze für Automatisiertes Maschinelles Lernen aus dem aktuellen Stand der Forschung kombinieren gängigerweise das Auswählen des Modells and das darauffolgende konfigurieren ebenjenes Modells in einem vereineten Optimierungsraums, welcher deshalb auch nur von einem einzelnen Optimierer untersucht wird.
+Jüngste Publikationen haben diese gängige Methode jedoch erweitert und den vereinten Optimierungsraum in zwei Räume für die Modellauswahl und Modellkonfiguration, die dann auch von zwei unterschiedlichen Optimierungsalgorithmen bearbeitet werden.
+Jedoch haben diese Ansätze immer noch für jedes mögliche Ergebnis der Modellauswahl und für jeden möglichen Eingabe-Datensatz ein und den selben Algorithmus zur Optimierung der Modellkonfiguration verwendet.
+Nach dem No-Free-Lunch Theorem für Optimierung ist es jedoch nicht möglich, dass ein einzelner Optimierungsalgorithmus für alle Problemklassen die optimale Lösung findet, solange er unter Beschränkungen arbeitet, wie zum Beispiel einem Zeitbudget.
+Diese Abschlussarbeit entwickelt einen Ansatz, in dem die Modellkonfiguration mit einem Ensemble aus verschiedenen Optimierern angegangen wird, sodass es möglich ist den Optimierungsalgorithmus herauszufinden, der am besten geeignet ist für das aktuelle Ergebnis der Modellauswahl und den konkreten Eingabe-Datensatz, und diesen Optimierungsalgorithmus zu verwenden.
+Eine erste, einfache Referenzimplementierung dieses Ansatzes konnte zum Teil konkurrenzfähige Ergebnisse in einer umfassenden Experimentreihe gegen die derzeit im Stand der Forschung etablierten Ansätze erzielen.
