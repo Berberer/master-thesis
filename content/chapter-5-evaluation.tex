@@ -4,7 +4,8 @@
 \label{sec:evaluation}
 After devising this approach for optimizer ensembles and implementing it as a reference implementation, it is essential to evaluate and asses this approach.
 This assessment is the goal of this chapter and the final step of this thesis before summing up and considering the outcomes of it.
-The evaluated reference implementation is nicknamed \textit{frankensteins-automl} and will henceforth be referenced by this name, or alternatively with the shorter version \textit{frankenstein}, while describing the experiment setup as well as listing and evaluating the experiment results.
+The evaluated reference implementation is nicknamed \textit{frankensteins-automl}, because this AutoML approach is metaphorically stitched together from different optimizers like Frankenstein's Monster.
+It will henceforth be referenced by this name, or alternatively with the shorter version \textit{frankenstein}, while describing the experiment setup as well as listing and evaluating the experiment results.
 
 To have a clear guided structure for this assessment of frankensteins-automl, it is based on the research questions presented in~\ref{sec:intro:goal}, which is elucidated here in more detail at first with a focus on which data is required to answer them.
 Afterwards, this chapter answers the research questions with a series of Empirical evaluations in the form of experiments.\newline
@@ -101,10 +102,17 @@ The Singularity image recipe as well as some additional information regarding th
 
 \section{Results of the Experiments}
 \label{sec:evaluation:results}
+ The results of these experiments are presented and assessed in the following, before they are evaluated in more detail and used to answer the research questions in the following chapter.
 
-\Blindtext
+ At first, table~\ref{table:benchmark-results} shows the benchmark results of frankensteins-automl against the state-of the art approaches.
+ The experiment runs were only classified as successful and used in the results, if the AutoML approach was able to return a valid pipeline in one hour plus an additional 15 minutes range of tolerance and without throwing an exception or error.
+ None of the approaches was able to achieve successful runs for all 30 seeds across all ten datasets.
+ But especially Mosaic was very unstable and was not able to achieve at least results for half of the seeds for six out of the ten datasets.
+ Hence, the significance of the comparison to Mosaic is very problematic.\newline
+ Nevertheless, a check for significant improvement or deterioration in comparison to the scores of frankenstein were executed via a two-sample \textit{t}-tests with $p = 0.05$..
+ The absolute frequencies how often the approaches were significantly better, significantly worse or without a significant difference out of the ten datasets are shown in table~\ref{table:significanse-counts}.
 
-\begin{sidewaystable}
+\begin{sidewaystable}[ht]
     \renewcommand{\arraystretch}{1.5}
     \centering
     \caption[Results of the benchmark experiments for comparing frankenstein with other state-of-the-art AutoML approaches.]{
@@ -132,14 +140,147 @@ The Singularity image recipe as well as some additional information regarding th
     \end{tabular}
 \end{sidewaystable}
 
-\begin{table}
+\begin{table}[ht]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \caption[Absolute frequencies of significant improvements or deterioration.]{Absolute frequencies of significant improvements or deterioration of the different benchmark approaches compared to frankenstein for the different datasets. For the two cases, where the benchmark approach was not able to produce a single result, this was counted as \textit{Significantly worse} compared to frankenstein, because no valid result is basically a score of $0$.}
+    \label{table:significanse-counts}
+    \begin{tabular}{l|ccc}
+        & \textit{Significantly better} & \textit{Significantly worse} & \textit{No significant difference} \\
+        \hline
+        \texttt{autosklearn} & $7$ & $0$ & $3$ \\
+        \texttt{mlplan} & $4$ & $6$ & $0$ \\
+        \texttt{mosaic} & $5$ & $1$ & $4$ \\
+        \texttt{tpot} & $4$ & $0$ & $6$ \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Additionally, the approach of this thesis was evaluated by itself in more detail.
+The first evaluated aspect of frankensteins-automl was the usage of the different optimization algorithms of the ensemble.\newline
+Table~\ref{table:optmizer-calls} show the relative frequency of the optimizers in the context of corresponding datasets as well a Visualization of this frequencies as a heatmap.
+Here, the data was deliberately only considered relatively because the data was aggregated among all three different timeouts (1h, 6h, 12).
+Therefore, absolute values are less meaningful because with different timeouts the amount of MCTS iterations and thus the amount of optimization runs differs greatly.
+
+\begin{table}[ht]
+    \caption{The relative frequency of optimizer calls for the different datasets.}
+    \label{table:optmizer-calls}
+    \begin{subtable}{\textwidth}
+        \centering
+        \caption[Numerical values with four decimal places.]{Numerical values with four decimal places. RS = Random Search, HB = Hyperband, GA = Genetic Algorithm, DS = Discretization Search}
+        \renewcommand{\arraystretch}{1.5}
+        \begin{tabular}{l|ccccc}
+            & \textit{RS} & \textit{HB} & \textit{GA} & \textit{SMAC} & \textit{DS} \\
+            \hline
+            \texttt{amazon} & $0.0669$ & $0.1811$ & $0.2732$ & $0.3840$ & $0.0947$ \\
+            \texttt{car} & $0.0679$ & $0.2185$ & $0.2194$ & $0.4202$ & $0.0740$ \\
+            \texttt{cifar} & $0.1545$ & $0.1591$ & $0.1640$ & $0.3721$ & $0.1501$ \\
+            \texttt{dexter} & $0.0780$ & $0.1052$ & $0.2991$ & $0.4396$ & $0.0781$ \\
+            \texttt{dorothea} & $0.1470$ & $0.1502$ & $0.2415$ & $0.3153$ & $0.1460$ \\
+            \texttt{krvskp} & $0.0717$ & $0.1835$ & $0.3036$ & $0.3666$ & $0.0746$ \\
+            \texttt{semeion} & $0.0860$ & $0.1596$ & $0.2913$ & $0.3748$ & $0.0884$ \\
+            \texttt{waveform} & $0.0708$ & $0.1291$ & $0.2918$ & $0.4294$ & $0.0789$ \\
+            \texttt{wine} & $0.0692$ & $0.2622$ & $0.2524$ & $0.3419$ & $0.0742$ \\
+            \texttt{yeast} & $0.0701$ & $0.3560$ & $0.1434$ & $0.3636$ & $0.0669$ \\
+            \hline
+        \end{tabular}
+    \end{subtable}
+    \par\bigskip
+    \begin{subfigure}{\textwidth}
+        \centering
+        \caption{Visualization of the frequencies as a heatmap.}
+        \includegraphics[width=\textwidth,keepaspectratio]{gfx/Figures/Evaluation/OptimizerCallsHeatmap.pdf}
+    \end{subfigure}
+\end{table}
+
+After listing the relative optimizer utilization frequency, this optimizer utilization is considered in the context of the different datasets and their properties in table~\ref{table:optmizer-call-correlations}.
+The following general dataset properties were gathered from OpenML for each dataset:
+\begin{itemize}
+    \item \textit{Instances}: The number of instances of the dataset.
+    \item \textit{Features}: The number of features that each instance has.
+    \item \textit{Classes}: The number of available target classes the instances are classified into.
+    \item \textit{Dimensionality}: The relationship between features and instances that is calculated via \textit{Features} divided by \textit{Instances}.
+    \item \textit{Autocorrelation}: After assigning consecutive numbers to the classes, the average difference of the classes successive instances.
+    \item \textit{Minority Class}: How much percent of \textit{Instances} is classified by the minority class.
+    \item \textit{Majority Class}: How much percent of \textit{Instances} is classified by the majority class.
+    \item \textit{Class Entropy}: Information theoretic entropy value of the class values.
+\end{itemize}
+These values were examined in terms of a correlation with the optimizer utilization of the five different optimization algorithms.
+For the sake of completeness, this was here not only done for the relative frequency but also for the absolute frequency and for the the rank of the five optimizer utilization values as well.\newline
+Because linearity and an underlying normal distribution cannot be ensured, since the datasets were deliberately chosen to be very different from one another, the correlations with relative and absolute frequency as well as rank have to be calculated with the non-parametric Spearman's rank correlation coefficient $\rho$.
+
+\begin{table}[ht]
+    \caption[Analysis of possible correlations between optimizer utilization and dataset properties.]{Analysis of possible correlations between optimizer utilization and dataset properties via the Spearman's rank correlation coefficient $\rho$. RS = Random Search, HB = Hyperband, GA = Genetic Algorithm, DS = Discretization Search}
+    \label{table:optmizer-call-correlations}
+    \renewcommand{\arraystretch}{1.25}
+    \begin{subtable}{\textwidth}
+        \centering
+        \caption{Relative utilization frequency.}
+        \begin{tabular}{l|ccccc}
+            & \textit{RS} & \textit{HB} & \textit{GA} & \textit{SMAC} & \textit{DS} \\
+            \hline
+            \textit{Instances} & $\phantom{-}0.0223$ & $\phantom{-}0.0051$ & $\phantom{-}0.0044$ & $\phantom{-}0.0080$ & $\phantom{-}0.0294$ \\
+            \textit{Features} & $\phantom{-}0.2286$ & $-0.0560$ & $\phantom{-}0.1109$ & $\phantom{-}0.0087$ & $\phantom{-}0.2091$ \\
+            \textit{Classes} & $-0.0275$ & $\phantom{-}0.0899$ & $-0.0780$ & $-0.0165$ & $-0.0208$ \\
+            \textit{Dimensionality} & $\phantom{-}0.2027$ & $-0.0323$ & $\phantom{-}0.0903$ & $\phantom{-}0.0053$ & $\phantom{-}0.1799$ \\
+            \textit{Autocorrelation} & $-0.0906$ & $-0.0621$ & $\phantom{-}0.0002$ & $-0.0508$ & $-0.0746$ \\
+            \textit{Minority Class} & $\phantom{-}0.0643$ & $-0.1615$ & $\phantom{-}0.1050$ & $\phantom{-}0.0496$ & $\phantom{-}0.0494$ \\
+            \textit{Majority Class} & $\phantom{-}0.0039$ & $-0.0224$ & $\phantom{-}0.0359$ & $-0.0081$ & $\phantom{-}0.0060$ \\
+            \textit{Class Entropy} & $-0.0315$ & $\phantom{-}0.0476$ & $-0.0587$ & $-0.0053$ & $-0.0250$ \\
+            \hline
+        \end{tabular}
+    \end{subtable}
+    \par\bigskip
+    \begin{subtable}{\textwidth}
+        \centering
+        \caption{Absolute utilization frequency.}
+        \begin{tabular}{l|ccccc}
+            & \textit{RS} & \textit{HB} & \textit{GA} & \textit{SMAC} & \textit{DS} \\
+            \hline
+            \textit{Instances} & $\phantom{-}0.0188$ & $\phantom{-}0.0155$ & $\phantom{-}0.0038$ & $\phantom{-}0.0179$ & $\phantom{-}0.0284$ \\
+            \textit{Features} & $\phantom{-}0.0724$ & $-0.1501$ & $-0.0533$ & $-0.0782$ & $\phantom{-}0.0563$ \\
+            \textit{Classes} & $\phantom{-}0.0349$ & $\phantom{-}0.1146$ & $\phantom{-}0.0026$ & $\phantom{-}0.0328$ & $\phantom{-}0.0482$ \\
+            \textit{Dimensionality} & $\phantom{-}0.0660$ &$ -0.1232$ & $-0.0531$ & $-0.0714$ & $\phantom{-}0.0464$ \\
+            \textit{Autocorrelation} & $\phantom{-}0.0084$ & $-0.0103$ & $\phantom{-}0.0254$ & $-0.0214$ & $\phantom{-}0.0075$ \\
+            \textit{Minority Class} & $\phantom{-}0.0184$ & $-0.1662$ & $\phantom{-}0.0001$ & $-0.0006$ & $\phantom{-}0.0075$ \\
+            \textit{Majority Class} & $-0.0730$ & $-0.0694$ & $-0.0276$ & $-0.0574$ & $-0.0762$ \\
+            \textit{Class Entropy} & $\phantom{-}0.0496$ & $\phantom{-}0.0938$ & $\phantom{-}0.0214$ & $\phantom{-}0.0499$ & $\phantom{-}0.0619$ \\
+            \hline
+        \end{tabular}
+    \end{subtable}
+    \par\bigskip
+    \begin{subtable}{\textwidth}
+        \centering
+        \caption{Optimizer utilization rank.}
+        \begin{tabular}{l|ccccc}
+            & \textit{RS} & \textit{HB} & \textit{GA} & \textit{SMAC} & \textit{DS} \\
+            \hline
+            \textit{Instances} & $-0.0259$ & $\phantom{-}0.0030$ & $\phantom{-}0.0171$ & $\phantom{-}0.0202$ & $-0.0319$ \\
+            \textit{Features} & $-0.01634$ & $\phantom{-}0.1286$ & $\phantom{-}0.0418$ & $\phantom{-}0.0279$ & $-0.0750$ \\
+            \textit{Classes} & $-0.0043$ & $-0.0894$ & $\phantom{-}0.0673$ & $\phantom{-}0.0168$ & $-0.0065$ \\
+            \textit{Dimensionality} & $-0.1409$ & $\phantom{-}0.0989$ & $\phantom{-}0.0432$ & $\phantom{-}0.0190$ & $-0.0520$ \\
+            \textit{Autocorrelation} & $\phantom{-}0.0167$ & $\phantom{-}0.0548$ & $-0.0415$ & $-0.0074$ & $-0.0219$ \\
+            \textit{Minority Class} & $-0.0745$ & $\phantom{-}0.1617$ & $-0.0381$ & $-0.0449$ & $-0.0273$ \\
+            \textit{Majority Class} & $\phantom{-}0.0485$ & $\phantom{-}0.0253$ & $-0.0613$ & $\phantom{-}0.0047$ & $\phantom{-}0.0113$ \\
+            \textit{Class Entropy} & $\phantom{-}0.0191$ & $-0.0541$ & $\phantom{-}0.0598$ & $\phantom{-}0.0043$ & $-0.0153$ \\
+            \hline
+        \end{tabular}
+    \end{subtable}
+\end{table}
+
+The second evaluated aspect of frankensteins mechanics was the influence study of the two main components, i.e. model selection via MCTS and model configuration via the warmstarted optimizer ensembles.\newline
+This was evaluated via the three variants of frankensteins automl for three different timeouts in the context of 30 random seeds and the same ten datasets.
+An analysis for significant improvement or deterioration within one timeout value, was here done in the form of a two-sample \textit{t}-tests with $p = 0.05$ as well.\newline
+All accuracy score averages as well as the significance analysis results can be seen in table~\ref{table:influence-results}.
+
+\begin{table}[ht]
     \caption[Results of the experiments for comparing the three frankenstein variants over longer timeouts.]{
         Results of the experiments for comparing the three frankenstein variants over longer timeouts.
-        The individual cells have the same layout as in the previous table.
+        The individual cells have the same layout as in table~\ref{table:benchmark-results}.
     }
     \label{table:influence-results}
     \renewcommand{\arraystretch}{1.25}
-    \begin{subtable}{1\textwidth}
+    \begin{subtable}{\textwidth}
         \centering
         \caption{Timeout: 1h}
         \begin{tabular}{l|ccc}
@@ -159,7 +300,7 @@ The Singularity image recipe as well as some additional information regarding th
         \end{tabular}
     \end{subtable}
     \par\bigskip
-    \begin{subtable}{1\textwidth}
+    \begin{subtable}{\textwidth}
         \centering
         \caption{Timeout: 6h}
         \begin{tabular}{l|ccc}
@@ -179,7 +320,7 @@ The Singularity image recipe as well as some additional information regarding th
         \end{tabular}
     \end{subtable}
     \par\bigskip
-    \begin{subtable}{1\textwidth}
+    \begin{subtable}{\textwidth}
         \centering
         \caption{Timeout: 12h}
         \begin{tabular}{l|ccc}
