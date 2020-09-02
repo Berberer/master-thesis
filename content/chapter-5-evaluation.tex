@@ -34,9 +34,9 @@ By comparing the scores of the tree variants for different datasets and differen
 As the second research question, the focus is on the utilization of the different optimizers.
 During each run of frankensteins-automl, not for the variants with the modifications, it will be counted how many times each optimizer was selected by the MCTS and therewith an optimization run with this optimizer started.
 Since the MCTS tries to find the best suited optimizer and to exploit it, this selection frequency is an indicator for the suitability of this optimizer to the input dataset.\newline
-The frequencies will be aggregated together with the AutoML time budget and the input dataset.
-Thus, it is possible to check if one or more optimizers were preferably selected in general for all settings or just in an AutoML problem setting with a certain time budget or a input dataset with certain properties.
-Alternatively, there could be no significant difference and each optimizer was selected comparably often across all observed AutoML settings.
+The frequencies will be aggregated together with properties of the AutoML input dataset.
+Thus, it is possible to check if one or more optimizers were preferably selected in general for all settings, i.e. for all datasets, or just in an AutoML problem setting with a certain input dataset that has certain properties.
+Alternatively, there could be no significant difference and each optimizer was selected comparably often across all observed AutoML settings or one or more optimizer were used primarily unrelated to the dataset.
 
 \section{Experiment Setup}
 \label{sec:evaluation:setup}
@@ -158,13 +158,13 @@ The Singularity image recipe as well as some additional information regarding th
 
 Additionally, the approach of this thesis was evaluated by itself in more detail.
 The first evaluated aspect of frankensteins-automl was the usage of the different optimization algorithms of the ensemble.\newline
-Table~\ref{table:optmizer-calls} show the relative frequency of the optimizers in the context of corresponding datasets as well a Visualization of this frequencies as a heatmap.
+Table~\ref{table:optimizer-calls} show the relative frequency of the optimizers in the context of corresponding datasets as well a Visualization of this frequencies as a heatmap.
 Here, the data was deliberately only considered relatively because the data was aggregated among all three different timeouts (1h, 6h, 12).
 Therefore, absolute values are less meaningful because with different timeouts the amount of MCTS iterations and thus the amount of optimization runs differs greatly.
 
 \begin{table}[ht]
     \caption{The relative frequency of optimizer calls for the different datasets.}
-    \label{table:optmizer-calls}
+    \label{table:optimizer-calls}
     \begin{subtable}{\textwidth}
         \centering
         \caption[Numerical values with four decimal places.]{Numerical values with four decimal places. RS = Random Search, HB = Hyperband, GA = Genetic Algorithm, DS = Discretization Search}
@@ -193,7 +193,7 @@ Therefore, absolute values are less meaningful because with different timeouts t
     \end{subfigure}
 \end{table}
 
-After listing the relative optimizer utilization frequency, this optimizer utilization is considered in the context of the different datasets and their properties in table~\ref{table:optmizer-call-correlations}.
+After listing the relative optimizer utilization frequency, this optimizer utilization is considered in the context of the different datasets and their properties in table~\ref{table:optimizer-call-correlations}.
 The following general dataset properties were gathered from OpenML for each dataset:
 \begin{itemize}
     \item \textit{Instances}: The number of instances of the dataset.
@@ -211,7 +211,7 @@ Because linearity and an underlying normal distribution cannot be ensured, since
 
 \begin{table}[ht]
     \caption[Analysis of possible correlations between optimizer utilization and dataset properties.]{Analysis of possible correlations between optimizer utilization and dataset properties via the Spearman's rank correlation coefficient $\rho$. RS = Random Search, HB = Hyperband, GA = Genetic Algorithm, DS = Discretization Search}
-    \label{table:optmizer-call-correlations}
+    \label{table:optimizer-call-correlations}
     \renewcommand{\arraystretch}{1.25}
     \begin{subtable}{\textwidth}
         \centering
@@ -256,7 +256,7 @@ Because linearity and an underlying normal distribution cannot be ensured, since
             & \textit{RS} & \textit{HB} & \textit{GA} & \textit{SMAC} & \textit{DS} \\
             \hline
             \textit{Instances} & $-0.0259$ & $\phantom{-}0.0030$ & $\phantom{-}0.0171$ & $\phantom{-}0.0202$ & $-0.0319$ \\
-            \textit{Features} & $-0.01634$ & $\phantom{-}0.1286$ & $\phantom{-}0.0418$ & $\phantom{-}0.0279$ & $-0.0750$ \\
+            \textit{Features} & $-0.0163$ & $\phantom{-}0.1286$ & $\phantom{-}0.0418$ & $\phantom{-}0.0279$ & $-0.0750$ \\
             \textit{Classes} & $-0.0043$ & $-0.0894$ & $\phantom{-}0.0673$ & $\phantom{-}0.0168$ & $-0.0065$ \\
             \textit{Dimensionality} & $-0.1409$ & $\phantom{-}0.0989$ & $\phantom{-}0.0432$ & $\phantom{-}0.0190$ & $-0.0520$ \\
             \textit{Autocorrelation} & $\phantom{-}0.0167$ & $\phantom{-}0.0548$ & $-0.0415$ & $-0.0074$ & $-0.0219$ \\
@@ -343,5 +343,61 @@ All accuracy score averages as well as the significance analysis results can be 
 
 \section{Analysis of the Experiment Outcomes}
 \label{sec:evaluation:analysis}
+This collected data is now analysed in more detail and used to answer the two main research questions of this thesis.
 
-\Blindtext
+\subsection{Feasibility of AutoML via an Optimizer Ensembles}
+\label{sec:evaluation:analysis:feasibility}
+The first research question is about the feasibility of this optimizer ensembles approach for AutoML problems.\newline
+As observed in the  tables~\ref{table:benchmark-results} and~\ref{table:significanse-counts}, this approach is partially competitive to the compared state-of-the-art approaches.
+It appears for the evaluated datasets inferior to auto-sklearn and TPOT, where it was only able to achieve competitive scores without a significant deterioration for three respectively six datasets but no significant improvements.
+Compared to ML-Plan and Mosaic, the benchmark appears more balanced.
+It shows a minor advantage compared to ML-Plan with significant improvements for six datasets and minor disadvantages compared Mosaic with significant improvements for only one dataset.\newline
+Based on this results, the current reference implementation of the approach of this thesis shows no improvements against the established state-of-the-art approaches auto-sklearn and TPOT.
+However, it was able to yield partially competitive results and this could indicate the ability to close up to the current state-of-the-art with further developments, refinements and future work.
+
+As part of the feasibility question, it is also evaluated which influence the two core components of this approach, i.e. model selection and optimizer selection as a Bandit problem tackled via MCTS as well as model configuration approached with warmstarted optimizer ensembles, have on the results.
+The results of this evaluation can be found in table~\ref{table:influence-results}.\newline
+For this experiments, one of the components was replaced with a alternative default behavior.
+At first, a random search instead of MCTS but all optimizers included.
+Second, only Bayesian optimization but reached via a MCTS.
+Both were seen as competitors to the unmodified approach with a MCTS and all optimizers.\newline
+Unfortunately, across all three evaluated timeouts there are only four occurrences of one of the modified variants having significant different scores compared to the unmodified and complete variant.
+Additionally, these four significant differences do not suggest any kind of pattern and are most likely just outliers.
+Therefore, based on the evaluated datasets and timeouts, the approach appears to be powered by a combination of both components and is not clearly influenced by one more than the other.
+
+All in all, the current reference implementation does not indicate a feasibility of the optimizer ensemble approaches.
+It has to be noted that auto-sklearn and TPOT haven been in development for a significantly longer time.
+But the results were at least partially competitive, such that it is not completely ruled out, that this idea can become feasible with additional research after this reference implementation reaching a comparable degree of maturity and optimization as the two highlighted state-of-the-art approaches.\newline
+The apparently similar influence of both components on the overall behavior does not give a clear suggestion, on which of these two components this future research should be focussed.
+More evaluations and experimentation with modifications and additions in both components will be necessary.
+
+\subsection{Optimizer Utilization Frequencies}
+\label{sec:evaluation:analysis:optimizer}
+Since a MCTS as a method to tackle an Multi-Armed Bandit problem it used to select the optimizer, it will try to explore the most suitable optimizer for each problem class/instance and exploit it.+
+Hence, if the timeout is long enough and MCTS was able to perform a sufficient exploration, there should be a clearly visible trend towards one or more optimizer for the problem class, i.e. an input dataset.\newline
+This inherent mechanism of gathering indications about the suitability of an optimization algorithm towards the optimization of parametrizations of constructed pipelines for different datasets was the basis for the second research question.
+It should be examined it there are recognizable trends or tendencies towards one or more optimization algorithm across all datasets or otherwise, if it is correlated to properties of the corresponding dataset which optimizer was utilized with which frequency.
+
+As presented in table~\ref{table:optimizer-calls}, SMAC, i.e. a implementation of Bayesian optimization, was utilized most often for each of the datasets.
+Although Hyperband and the Genetic Algorithm came more or less close regarding the relative utilization frequency, they appear to be selected less favorably by the MCTS.
+Both Random Search as well as Discretization Search trail significantly far behind the other three and have really low utilization frequency with a maximum around $15\%$.\newline
+If a ranking is created along the five overall relative utilizations it would look like the following:
+\begin{enumerate}
+    \item SMAC
+    \item Genetic Algorithm
+    \item Hyperband
+    \item Discretization Search
+    \item Random Search
+\end{enumerate}
+This ranking is interesting in two ways.
+First, since Hyperband is more or less a more sophisticated Random Search, the three least suitable optimization algorithms are all three based on search algorithms.
+Second, auto-sklearn uses internally SMAC, TPOT a Genetic Algorithm and ML-Plan a more complex form of Discretization Search.
+When this ranking is now compared to the results of this three AutoML approaches in table~\ref{table:benchmark-results} there is a similarity as auto-sklearn and TPOT being at the top with comparable scores, but clearly superior to ML-Plan for the evaluated datasets in this experiment series.
+But this is probably all in all solely a coincidence and not caused by the actual choice of optimizer, because the three perform more competitive in other benchmark evaluations~\cite{Mohr-ML-Plan} then in this evaluation.
+
+Since there is a clear trend recognizable regarding the most favorable optimizer choices of the MCTS across all datasets of this experiment, the evaluation regarding correlations between dataset properties and optimizer utilization becomes less relevant, but was done nevertheless.
+As presented in table~\ref{table:influence-results}, there are only weak correlations coefficients between all dataset properties and optimizer utilizations across all three utilization metrics.
+The correlation coefficients are overall in the range $-0.1662 \leq \rho \leq 0.2286$, which does not suggest any significant correlation altogether.
+
+This results suggest that SMAC is the most suitable choice of optimization algorithm across all regarded datasets independently of the eight evaluated dataset properties.
+If this is a trend beyond this evaluation, has to be controlled in a evaluation with a much higher amount of datasets.
