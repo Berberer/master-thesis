@@ -1179,8 +1179,47 @@ This concrete search space is split into four parts:
 
 \section{Ensemble Optimizer AutoML in Pseudo-Code}
 \label{sec:appendix:pseudo-code}
+Here follows a description of the approach of this thesis in very high-level pseudo-code.
+For a more detailed version, an implementation in Python can be found here: \url{https://github.com/Berberer/frankensteins-automl}.
+In this simplified version it expects the overall AutoML timeout, the timeout for each single optimization run, a searchspace created beforehand from searchspace definition files, and the dataset in the format instances $x$ and classes $\hat{y}$ as an input.
 
-\Blindtext[1][1]
+\begin{algorithm}[H]
+    \caption{frankensteins-automl}
+    \SetAlgoLined
+    \DontPrintSemicolon
+    \KwResult{Best found pipeline and corresponding score.}
+    \KwData{Timeout, OptimizerTimeout, Searchspace, $x$, $\hat{y}$}
+    \BlankLine
+    bestPipeline $\leftarrow$ null\;
+    bestScore $\leftarrow$ 0\;
+    graphGenerator $\leftarrow$ new MCTSGraphGenerator(Searchspace, $x$, $\hat{y}$)\;
+    rootNode $\leftarrow$ graphGenerator.getRootNode()\;
+    \While{ $\lnot$ Timeout is spent}{
+        n $\leftarrow$ rootNode\;
+        \While{n is expanded $\wedge \, \lnot$ n is leaf node}{
+            n $\leftarrow \underset{c \, \in \, \mathrm{n.getChildNodes()}}{\mathrm{argmax}} $ c.getNodeValue()\;
+        }
+        \BlankLine
+        startNodes $\leftarrow \, \{\}$\;
+        \eIf{n is leaf node}{
+            startNodes $\leftarrow$ startnodes $\cup$ n\;
+        }{
+            graphGenerator.expand(n)\;
+            startNodes $\leftarrow$ startnodes $\cup$ n.getChildNodes())\;
+        }
+        \BlankLine
+        (reachedLeafNodes, results) $\leftarrow$ monteCarloSimulations(startNodes, OptimizerTimeout)\;
+        backpropagate(reachedLeafNodes, results)\;
+        \BlankLine
+        \For{(pipeline, score) $\in$ results}{
+            \If{score $>$ bestScore}{
+                bestScore $\leftarrow$ score\;
+                bestPipeline $\leftarrow$ pipeline\;
+            }
+        }
+    }
+    return (bestPipeline, bestScore)\;
+\end{algorithm}
 
 \section{Setup and Singularity Definition File of the Experiments}
 \label{sec:appendix:singularity}
