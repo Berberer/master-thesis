@@ -15,8 +15,8 @@ An initial simple reference implementation of this idea showed partially competi
 
 {\usekomafont{chapter}Zusammenfassung}\label{sec:abstract-ger}
 \vspace*{5mm}\\
-Ansätze für Automatisiertes Maschinelles Lernen aus dem aktuellen Stand der Forschung kombinieren gängigerweise das Auswählen des Modells and das darauffolgende konfigurieren ebenjenes Modells in einem vereineten Optimierungsraums, welcher deshalb auch nur von einem einzelnen Optimierer untersucht wird.
-Jüngste Publikationen haben diese gängige Methode jedoch erweitert und den vereinten Optimierungsraum in zwei Räume für die Modellauswahl und Modellkonfiguration, die dann auch von zwei unterschiedlichen Optimierungsalgorithmen bearbeitet werden.
+Ansätze für Automatisiertes Maschinelles Lernen aus dem aktuellen Stand der Forschung kombinieren gängigerweise das Auswählen des Modells and das darauffolgende Konfigurieren ebenjenes Modells in einem vereineten Optimierungsraums, welcher deshalb auch nur von einem einzelnen Optimierer untersucht wird.
+Jüngste Publikationen haben diese gängige Methode jedoch erweitert und den vereinten Optimierungsraum in zwei Räume für die Modellauswahl und Modellkonfiguration aufgeteilt, die dann auch von zwei unterschiedlichen Optimierungsalgorithmen bearbeitet werden.
 Jedoch haben diese Ansätze immer noch für jedes mögliche Ergebnis der Modellauswahl und für jeden möglichen Eingabe-Datensatz ein und den selben Algorithmus zur Optimierung der Modellkonfiguration verwendet.
 Nach dem No-Free-Lunch Theorem für Optimierung ist es jedoch nicht möglich, dass ein einzelner Optimierungsalgorithmus für alle Problemklassen die optimale Lösung findet, solange er unter Beschränkungen arbeitet, wie zum Beispiel einem Zeitbudget.
 Diese Abschlussarbeit entwickelt einen Ansatz, in dem die Modellkonfiguration mit einem Ensemble aus verschiedenen Optimierern angegangen wird, sodass es möglich ist den Optimierungsalgorithmus herauszufinden, der am besten geeignet ist für das aktuelle Ergebnis der Modellauswahl und den konkreten Eingabe-Datensatz, und diesen Optimierungsalgorithmus zu verwenden.

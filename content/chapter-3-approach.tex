@@ -156,7 +156,7 @@ But without prior knowledge it is impossible to reliably predict, which optimize
 A na\"ive approach is to randomly try out different optimization algorithms for optimizing the parametrization and examine their optimization results to gather knowledge successively.
 This try-and-error approach is also referred to as \textit{exploration}.
 During the collection of exploration results it will become more evident, which optimizer yields which score quality.\newline
-Collecting a few sample scores for each optimizer is basically conducting an experiment since black-box optimization is often a probabilistic process.
+Collecting a few sample scores for each optimizer is basically conducting an experiment since black box optimization is often a probabilistic process.
 Based on the amount of experiment samples, the of optimization capability an optimizer can be estimated with a certain probability.
 After a sufficient amount of samples is gathered, the most suitable optimizer can be selected and utilized with a high certainty.
 Using one choice with the expectation of a good result is also named \textit{exploitation}.\newline
@@ -271,7 +271,7 @@ Additionally, all candidate evaluation are stored in these pipeline nodes for th
 Hence, the optimization algorithms should utilize this advantage of prior collected data instead of performing the optimization anew every time.\newline
 Starting with a foundation of previously collected data instead of a completely unexplored optimization space ist called \textit{warmstarting} an optimizer.
 However, it is important to have a certain robustness against local optima, because without it an optimization algorithm could start in an local optimum, which was found in another optimization run, and would probably not get out of this local optima.
-In the following it is explained how some of the different black-box optimization algorithms, which are presented in~\ref{sec:theory:optimization:search} up to~\ref{sec:theory:optimization:bayesian}, can be modified to be executed warmstarted.
+In the following it is explained how some of the different black box optimization algorithms, which are presented in~\ref{sec:theory:optimization:search} up to~\ref{sec:theory:optimization:bayesian}, can be modified to be executed warmstarted.
 They will therefore utilize an ordered list of pairs of the best candidates $l = \langle (c_1, s_1), ... (c_k, s_k) \rangle$, where $c_i$ is an already evaluated pipeline configuration and $s_i$ the corresponding score of this evaluation.
 
 \textbf{Random Search}:

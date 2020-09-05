@@ -102,7 +102,7 @@ Each optimization algorithm now has to implement the abstract \texttt{perform\_o
 
 In this current reference implementation, five optimization algorithms are implemented:
 \begin{itemize}
-    \item \texttt{RandomSearch}: This random search implementation is based on the second variant from~\ref{sec:theory:optimization:search}, i.e. it warmstarts with the best candidate so far from the optimization domain of this pipeline topology, if one exists, as the current candidate and takes the default configuration as an alterative if no parametrization was evaluated yet.
+    \item \texttt{RandomSearch}: This random search implementation is based on the second variant from~\ref{sec:theory:optimization:search:random}, i.e. it warmstarts with the best candidate so far from the optimization domain of this pipeline topology, if one exists, as the current candidate and takes the default configuration as an alterative if no parametrization was evaluated yet.
     Afterwards, a random point from a small hypersphere surrounding the current candidate is selected and evaluated.
     If this newly selected candidate shows an improvement, it is selected as the next current candidate for the next search step iteration.
     Otherwise, the last current candidate is kept.
