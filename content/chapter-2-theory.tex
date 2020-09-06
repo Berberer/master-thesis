@@ -263,7 +263,7 @@ Three of these search algorithms are explained in more detail with the aid of th
 
 \subsubsection{Random Search}
 \label{sec:theory:optimization:search:random}
-The Random Search Algorithm comes in two variants.
+The random search Algorithm comes in two variants.
 In the first one, the candidates are drawn completely at random out of the whole candidate space and evaluated.
 When the optimization budget is spent, the best candidate is returned as the result.
 Since this method does not use any knowledge gathered during the optimization, it depends on luck and the optimization budget if the optimal solution or at least a near optimal solution is found.\newline
@@ -272,10 +272,10 @@ The next candidate will be randomly drawn out of a hypersphere with a pre-define
 If the drawn candidate has a better evaluation score than the starting candidate, the next candidate will be drawn from a hypersphere around the second candidate and from the hypersphere of the starting candidate otherwise.
 This loop is continued until the optimization budget is spent. Since this method is very prone to local minima/maxima, it is a possible improvement to remember the current best candidate, select a new completely random start point and start the loop over, if there was no improvement in the last $n$ iterations of the current loop.
 Both variants are illustrated for the running example in figure~\ref{fig:theory:random-search}.\newline
-One example of the Random Search algorithm applied in the context of AutoML is the \textit{Hyperband} approach~\cite{Li-Hyperband}.
-Here, multiple parallel working instances of Random Searches are evaluating candidates in a joint space of model selection and model configuration to cover as much of the candidate space as possible.
+One example of the random search algorithm applied in the context of AutoML is the \textit{Hyperband} approach~\cite{Li-Hyperband}.
+Here, multiple parallel working instances of random searches are evaluating candidates in a joint space of model selection and model configuration to cover as much of the candidate space as possible.
 The initial problem is that multiple instances combined require a big portion of the optimization budget.
-This was tackled with concepts from Multi-armed bandit problems, by treating each random search instance as the arm of a bandit and terminating single random search instances over time, if they do not find candidates with high evaluation scores and therefore probably have a low regret.
+This was tackled with concepts from Multi-Armed Bandit problems, by treating each random search instance as the arm of a bandit and terminating single random search instances over time, if they do not find candidates with high evaluation scores and therefore probably have a low regret.
 By terminating some probably low performing searches, the optimization budget can be spent on more promising search instances.
 Strategies like this are often referred to as \textit{Early Stopping}.
 In the context of Hyperband, selecting the search instances, which will not be stopped early, is done in a non-stochastic manner with the \textit{Successive Halving} algorithm~\cite{Jamieson-SuccessiveHalving}.
@@ -287,45 +287,45 @@ In the context of Hyperband, selecting the search instances, which will not be s
     \begin{subfigure}{0.48\textwidth}
         \includegraphics[width=\textwidth]{gfx/Figures/Theory/RandomSearchHypersphere.pdf}
     \end{subfigure}
-    \caption[Visualization of different variants of Random Search strategies.]{Visualization of different variants of Random Search strategies. On the left is the first variant with a few randomly selected candidates. On the right are six possible first iterations of the second variant. The hypersphere is only shown for the first candidate.}
+    \caption[Visualization of different variants of random search strategies.]{Visualization of different variants of random search strategies. On the left is the first variant with a few randomly selected candidates. On the right are six possible first iterations of the second variant. The hypersphere is only shown for the first candidate.}
     \label{fig:theory:random-search}
 \end{figure}
 
 
 \subsubsection{Grid Search}
 \label{sec:theory:optimization:search:grid}
-A Grid Search tries to cover with a na\"ive brute-force approach as much of the candidate space as possible.
+A grid search tries to cover with a na\"ive brute-force approach as much of the candidate space as possible.
 From each dimension of the candidate space a few values are selected either manual, or more commonly in periodic intervals from the different dimensions.
 For example, if the x-dimension of the running example should be evaluated in the range $[-1,1]$, depending on the available optimization budget, potential value selections for this dimension could be $\{-1,0,1\}$ or $\{-0.75,-0.25,0.25,0.75\}$.
 With this method the candidate space is discretized and therewith becomes enumerable.\newline
 After selecting the value sets for each dimension, the Cartesian product of all sets is calculated.
 The elements of this Cartesian product, which are valid candidates because they have a value of each dimension, are the candidates that will be evaluated during the search and for the order of evaluations, any arbitrary sequence of the sets elements can be selected.
 After either all candidates from the Cartesian product are evaluated or if the optimization budget is spent, the best evaluated candidate is the overall optimization result.
-An illustration of a Grid Search over the candidate space of the running example can be seen in figure~\ref{fig:theory:grid-search}.\newline
-Therefore, as opposed to Random Searches where by chance only a small portion of the candidate space could be covered, a certain coverage of the space is assured.
-Especially in contrast to the second variant of the Random Search, the advantage is that there is no risk of getting stuck in a local optimum.
-But in comparison with the second Random Search variant the main drawback of a Grid Search comes clear as well: A Grid Search does not utilize the knowledge gathered from previous evaluations at all, since the evaluation order is completely predefined.
-This implies that even if the Grid Search would evaluate a candidate comparably close to a global optimum, it would completely disregard this chance and not continue the search closely to this candidate to potentially find this global optimum.\newline
-Grid Searches are as well as Random Searches classical algorithm choices for Hyperparameter optimization because they are easy to implement and very resource-efficient due to their simplicity such that a high number of candidate evaluation can be performed.
-In the context of AutoML, a 2-dimensional Grid Search was utilized in the Weka toolbox~\cite{Witten-Weka} for a simple AutoML approach.
+An illustration of a grid search over the candidate space of the running example can be seen in figure~\ref{fig:theory:grid-search}.\newline
+Therefore, as opposed to random searches where by chance only a small portion of the candidate space could be covered, a certain coverage of the space is assured.
+Especially in contrast to the second variant of the random search, the advantage is that there is no risk of getting stuck in a local optimum.
+But in comparison with the second random search variant the main drawback of a grid search comes clear as well: A grid search does not utilize the knowledge gathered from previous evaluations at all, since the evaluation order is completely predefined.
+This implies that even if the grid search would evaluate a candidate comparably close to a global optimum, it would completely disregard this chance and not continue the search closely to this candidate to potentially find this global optimum.\newline
+Grid searches are as well as random searches classical algorithm choices for Hyperparameter optimization because they are easy to implement and very resource-efficient due to their simplicity such that a high number of candidate evaluation can be performed.
+In the context of AutoML, a 2-dimensional grid search was utilized in the Weka toolbox~\cite{Witten-Weka} for a simple AutoML approach.
 There, a joint candidate space was searched with a set of classifiers for model selection on one dimension and the other dimension is used to select the amount of components of Partial Least Squares filter, which is used as a pre-processor, and can therefore be considered as a simple model configuration.
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Theory/GridSearch.pdf}
-    \caption{Illustration of a Grid Search covering the search space of the running example systematically.}
+    \caption{Illustration of a grid search covering the search space of the running example systematically.}
     \label{fig:theory:grid-search}
 \end{figure}
 
 
 \subsubsection{(Heuristic) Graph Search}
 \label{sec:theory:optimization:graph}
-While a Random Search does it partially leave to chances which candidates are evaluated, the candidate space will not be adequately covered with a high probability.
-A Grid Search will achieve a certain coverage guarantee by default, depending on the amount of selected values per dimension.
-But on the other hand, a Grid Search will not utilize any gathered knowledge about the candidate space while at least the second variant of a Random Search is capable of utilizing knowledge about one prior evaluation.\newline
+While a random search does it partially leave to chances which candidates are evaluated, the candidate space will not be adequately covered with a high probability.
+A grid search will achieve a certain coverage guarantee by default, depending on the amount of selected values per dimension.
+But on the other hand, a grid search will not utilize any gathered knowledge about the candidate space while at least the second variant of a random aearch is capable of utilizing knowledge about one prior evaluation.\newline
 A Graph Search, usually in combination with a heuristic for search guidance, tries to achieve a trade-off between the advantages of both other presented search algorithms, i.e. having a solid coverage of the candidate space as well as utilizing knowledge gathered during the search.
 As the name suggests, for a Graph Search the candidate space is depicted as a graph, but how the space is transformed into a representation consisting out of nodes and edges is very domain and approach specific and several methods exist.
 For example, each node could represent a concrete candidate out of the space and can be directly evaluated.
-The edges would connect such candidate nodes, if they have a maximum distance to each other, comparable to the hyperspheres the second Random Search variant uses to define neighborhood.
+The edges would connect such candidate nodes, if they have a maximum distance to each other, comparable to the hyperspheres the second random aearch variant uses to define neighborhood.\newline
 Another method could be to use a tree as a search graph, where only the leaf nodes are concrete candidate nodes, which can be evaluated.
 Here, the inner nodes are used to progressively discretize the candidate spaces dimensions in a hierarchical manner by splitting the range into multiple intervals and creating a new child node for each one.
 This is continued until the intervals of each dimension either only consist of one element or are small enough such that one value out of it can be selected arbitrarily.
@@ -378,7 +378,7 @@ For the running example this would mean an array with length 2, one for the $x$ 
 Just as in the general principle from biological evolution, these genomes can change by random mutations as well as by recombination, when two individuals produce a new individual.
 For a mutation, one individual is selected and one or more cells are changed slightly at random and the other values are kept the same.
 If the amount of cells to change is equal to the length of the array or vector, this is the same idea of randomly selecting a candidate out of hypersphere around another candidate already mentioned for random searches.
-Thus, if the only applied evolutionary operator is the mutation operator, a Genetic Algorithm would be conceptually comparable to multiple parallel running random search instances, but in combination with the recombination operator this Random Search instances can interact with each other and re-organize their current positions to increase the chance of a high candidate space coverage.\newline
+Thus, if the only applied evolutionary operator is the mutation operator, a Genetic Algorithm would be conceptually comparable to multiple parallel running random search instances, but in combination with the recombination operator this random search instances can interact with each other and re-organize their current positions to increase the chance of a high candidate space coverage.\newline
 A recombination based on two genomes $g_1$ and $g_2$ to produce a new genome $g^*$ is usually performed as a cross-over.
 For each cell of $g^*$ the value is taken from either $g_1$ or $g_2$.
 Depending on the type of cross-over, there $k \in [1 ... |g^*| - 1]$ cross-over points, which are selected randomly.
@@ -391,7 +391,7 @@ An example for a two-point cross-over is shown in figure~\ref{fig:theory:crossov
     \label{fig:theory:crossover}
 \end{figure}
 
-With the random factors during the selection of the individuals for the creation of the next generation as well as during the application of the evolutionary operators, Genetic and Evolutionary optimization approaches are a stochastic optimization method just as a Random Search or certain Graph Search algorithms and heuristics.
+With the random factors during the selection of the individuals for the creation of the next generation as well as during the application of the evolutionary operators, Genetic and Evolutionary optimization approaches are a stochastic optimization method just as a random search or certain Graph Search algorithms and heuristics.
 Therefore, the chances of finding a high scoring solution, the coverage of the candidate space, as well as the risk of ending in a local optimum are highly dependent on the number of iterations the algorithm performs as well as other configuration parameters like for example the size of each generation.
 
 Additionally to the challenges of handling chances and probabilities emerging from any probabilistic approach, in the context of AutoML there is one more major challenge in applying a Genetic Algorithm for optimization.
@@ -689,11 +689,12 @@ The following allocation policies were defined:
 
 
 Monte-Carlo simulations as a heuristic for a graph search, as explained in~\ref{sec:theory:optimization:search}, are the basis of graph search algorithm named \textit{Monte-Carlo tree search}(MCTS).
-In this search, the task of selecting the next child node of one node for expansion is viewed as selecting an arm of an multi-armed bandit problem.
+In this search, the task of selecting the next child node of one node for expansion is viewed as selecting an arm of an Multi-Armed Bandit problem.
 With this approach, a balance between exploring more unevaluated areas of the tree and exploiting sub-trees which have already shown promising scores can be achieved.
-As specified in the Monte-Carlo tree search formalization \textit{UCT}(Upper Confidence bound applied to Trees)~\cite{Kocsis-UCT}, Child nodes are selected with the following formula: $\underset{i}{\textrm{argmax}} \left( \mu_i + \sqrt{\frac{2 \cdot \textrm{log}(c)}{n_i}} \right)$, where $\mu_i$ is the overall sampled score of the subtree below node $i$ as an average, $n_i$ is the amount of times the sub-tree below $i$ was sampled, and $n$ is the amount of overall iterations so far.\newline
-MCTS will be exemplified in more detail in the next chapter but it is picked up here, since it is the basis for heuristic graph search based AutoML approach called \textit{Mosaic}~\cite{Rakotoarison-Mosaic}, which utilizes a multi-stage optimization method as well.\newline
-Here, the tree, which MCTS searches, is modelled as a transformation of the optimization space into a model selection space.
+This balance is achieved via a heuristic scoring of nodes via in a Monte-Carlo tree search that is formalized as \textit{UCT}(Upper Confidence bound applied to Trees)~\cite{Kocsis-UCT}.
+MCTS will be exemplified in more detail in~\ref{sec:approach:selection:mcts}.\newline
+One example of a heuristic graph search based AutoML approach is called \textit{Mosaic}~\cite{Rakotoarison-Mosaic} and it utilizes such a MCTS and a multi-stage optimization method as well.
+In Mosaic, the tree that is the subject of the MCTS is modelled as a transformation of the optimization space into a model selection space.
 The first $k$ layers of the search tree are representing $k$ possible types of pipeline components, for example pre-processing methods or machine learning models, which have their corresponding $i \in [1,k]$ index in the resulting pipeline.
 All resulting pipelines are only linear and not generalized to any form of directed acyclic graph as in the prior related works approach.
 In each of the first $k$ layers one component of each type is selected.

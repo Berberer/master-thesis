@@ -179,7 +179,7 @@ With too much exploitation it can not be assured with a high probability that th
 But with too much exploration it may be possible to determine the probably best choice, but there is not enough budget left to actually utilize this choice to a higher extend.
 This balance between exploring and exploiting a set of choices, which have an unknown quality, is the fundamental problem of the so called \textit{Multi-Armed Bandit} problems.
 
-A multi-armed bandit problem is usually considered in the context of time steps $t_1, t_2, .., T$, which are sometimes also called turns.
+A Multi-Armed Bandit problem is usually considered in the context of time steps $t_1, t_2, .., T$, which are sometimes also called turns.
 $T$ is in this notation the current turn of the ongoing series, i.e. the current point in time.
 For every turn up to $T$ one arm, i.e. one of the $K$ choices $C = \langle c_1, ..., c_K \rangle$, is selected by a selection strategy $s: t \rightarrow [1,K]$.\newline
 For a turn $t$ a random reward $r$ is received after selecting the choice $c_{s(t)}$.
@@ -188,31 +188,42 @@ In the AutoML context, where each arm is one optimizer, this reward could be the
 Of course, each distribution $D_{c_i}$ has a corresponding expected value $\mu_{c_i}$.
 Therefore, if for example the selection strategy is $s(t) = 1$ the accumulated expected reward is $\sum_{t=1}^T = \mu_{c_1}$.\newline
 An optimal strategy $s^*$ would always pick the choice with the highest expected reward $\mu^* = \underset{i \in [1,K]}{\mathrm{max}} \> \mu_{c_i}$, such that $s^*(t) =\underset{i \in [1,K]}{\mathrm{argmax}} \> \mu_{c_i}$.
-However, $s^*$ is unknown and has to be approximated by $s$ over time.\newline
+However, $s^*$ is unknown and has to be approximated by adjusting the constructed $s$ over time.\newline
 For every turn where $s(t) \neq s^*(t)$, the strategy looses $\mu^* - \mu_{c_{s(t)}}$ in expected reward.
-The exploration vs. exploitation balance problem is here noticeable, since the strategy has to find out the arm with $\mu^*$ by trying out every arm, but also wants to keep $\mu^* - \mu_{c_{s(t)}}$ as minimal as possible for every turn.
+The exploration vs. exploitation balance problem is here noticeable, since the strategy has to find out the arm with $\mu^*$ by trying out every arm, but also wants to keep $\mu^* - \mu_{c_{s(t)}}$ as minimal as possible via exploitation of an optimal arm.
+Otherwise, the difference to $\mu^*$ is expected to grow with every turn where a non-optimal arm is selected.
 This idea of keeping the expected reward loss minimal in the overall context of $\underset{T \rightarrow \infty}{\lim}$, such that the strategy has time to approximate $s^*$, is formulated in the form of the \textit{Total expected Regret}: $R_T = T \cdot \mu^* - \sum_{t=1}^{T} \mu_{c_{s(t)}}$.
-Different algorithms for creating such selection strategies $s$ can be compared by their respective expected total regret $R_T$, which should be as low as possible.
+Different algorithms for creating such selection strategies $s$ over time can be compared by their respective expected total regret $R_T$, which should be as low as possible.
 
 \subsection{Ensemble Interaction with a MCTS}
 \label{sec:approach:selection:mcts}
-The selection of an optimizer node out of $N^A_{n^*_j}$ to perform the model configuration of the pipeline $p_{n^*_j}$ can be formalized as a multi-armed bandit problem.
-With that assumption, there are several existing algorithms to construct selection strategies for optimization nodes until the optimization budget is spent, which balance exploration and exploitation with the goal of keeping the total expected regret minimal.
-Common choices are for example \textit{Thompson Sampling}~\cite{Thompson-Sampling} or the usage of \textit{Upper confidence bounds} (UCB) as for instance in the \textit{UCB1} algorithm~\cite{Auer-UCB1}.\newline
-With this very limited set of arms, one of this algorithms could be applied and with a high enough optimization budget, there is a high probability that the best suited one will be exploited enough to get a good parametrization for $p_{n^*_j}$.
-But since no actual model selection is done until now, there is no pipeline $p_{n^*_j}$ selected and therefore the set of arms cannot be limited to $N^A_{n^*_j}$.
-Instead, the set of arms would be the set of optimizer nodes $N^A$, i.e. the set of combinations of all possible pipelines with all algorithms.\newline
-For such a high number of arms, the multi-armed bandit algorithm would need a massive amount of steps, where exploration would be performed, until exploitation could take place.
-As an alternative, the tree structure of $G'$ should be utilized for a better selection mechanism.
+Selecting an optimizer node out of $N^A_{n^*_j}$ to perform the model configuration of the pipeline $p_{n^*_j}$ can be formalized as a Multi-Armed Bandit problem.
+With a given timeout for each optimization run, the optimizers are called repeatedly, which would be the turns of the bandit problem.
+The selection strategy for an optimal $p_{n^*_j}$ as well as the most suitable optimizer for a model configuration of this pipeline is unknown beforehand and has to be explored.
+But since the time budget is limited, the expected regret of not exploiting this most suitable optimizer for the optimal pipeline is supposed to be as low as possible.\newline
+With that assumption of formalizing this selection as a Multi-Armed Bandit problem, there are several existing algorithms to construct selection strategies for optimization nodes until the optimization budget is spent, which balance exploration and exploitation with the goal of keeping the total expected regret minimal.
+Common choices are for example \textit{Thompson Sampling}~\cite{Thompson-Sampling} or the usage of \textit{Upper confidence bounds} (UCB) as for instance in the \textit{UCB1} algorithm~\cite{Auer-UCB1}.
 
-While formalizing the selection of an optimizer out of $A$ for optimizing a pipelines $p_{n^*_j}$ configuration as a multi-armed bandit problem in the form of the optimizer nodes $N^A_{n^*_j}$, it was utilized that most probably one of this optimizers $a_1$ will be the best suited one for the configuration optimization space of this particular pipeline.
+Let $n^*_j$ and therewith $p_{n^*_j}$ be already selected out of the model selection graph, now there is one arm for each optimization algorithm, i.e. $|A|$ arms.
+With this very limited set of arms, any of this Multi-Armed Bandit selection strategy construction algorithms could be applied and with a high enough optimization budget, there is a high probability that the most suitable optimizer will be exploited enough to get a good parametrization for $p_{n^*_j}$.\newline
+But since $n^*_j$ is not selected yet because no actual model selection is done until now, there is no pipeline $p_{n^*_j}$ selected and therefore the set of arms cannot be limited to $N^A_{n^*_j}$.
+Instead, the set of arms would be the set of optimizer nodes $N^A$, i.e. the set of combinations of all possible pipelines with all optimization algorithms.
+This set of combination can be enormously big or even have an infinite amount of elements, depending on the specification of the model selection space.
+For such a high number of arms, any Multi-Armed Bandit algorithm would need a massive amount of steps for exploring every arm sufficiently, until an educated guess for a good exploitation candidate could take place.
+As an more effective alternative for this use-case, the tree structure of $G'$ should be utilized for a better selection mechanism.
+
+The the selection of an optimizer out of $A$ for optimizing the configuration of a pipeline $p_{n^*_j}$ is formalized as a Multi-Armed Bandit problem in the form choosing one of the optimizer nodes $N^A_{n^*_j}$ each turn.
+An appropriate Multi-Armed Bandit algorithm will exploit with a high probability the most suitable one of this optimizers $a_1 \in A$ for the specific configuration optimization space of this particular pipeline.
 This suitability of an optimizer for a space is dependent on the structure of the space, i.e. the number of dimensions as well as the value sets of the different dimension, and the properties and landscape of the target function in this space.\newline
-But while $a_1$ is the best optimizer for the configuration space of this specific pipeline $p_{n^*_j}$, another optimizer $a_2$ could be the generally best optimizer for any pipeline that includes one certain component.
-In that case, all sub-trees below nodes where this component was selected would ideally use $a_2$ as the optimization algorithm.
-Because such hierarchical dependencies influence the best optimizer choice, the exploration and exploitation of a multi-armed bandit algorithm should utilized this dependencies.
+But while $a_1$ is the best optimizer for the configuration space of this specific pipeline $p_{n^*_j}$, another optimizer $a_2$ could be the generally best optimizer for any pipeline that includes one other certain component that is not included in $p_{n^*_j}$.
+In that case, all sub-trees below nodes where this component was selected would ideally exploit $a_2$ instead of $a_1$ as the optimization algorithm.
+Because such hierarchical dependencies influence the best optimizer choice, the exploration and exploitation of a Multi-Armed Bandit algorithm should utilize this hierarchical dependencies as well.
 
-The aforementioned upper confidence bounds were successively applied to the possibly hierarchical dependencies of trees in the form of the \textit{UCB applied to trees} algorithm (UCT)~\cite{Kocsis-UCT}, which is often also referred to as \textit{Monte-Carlo tree search} (MCTS).
-Each node has an attached score, which is $ $ in the case of UCT.
+The aforementioned upper confidence bounds were successively applied to the possibly hierarchical dependencies of trees in the form of the \textit{UCB applied to trees} algorithm (UCT)~\cite{Kocsis-UCT}.
+It is also often referred to as \textit{Monte-Carlo tree search} (MCTS), if the inner nodes of a tree are scored via Monte-Carlo simulations.\newline
+For UCT and therefore also MCTS, each node has an attached score, which is used for selecting nodes.
+This value can for example be calculated $\underset{n_i}{\textrm{argmax}} \left( w_{n_i} + f \cdot \sqrt{\frac{\textrm{ln}(t)}{v_{n_i}}} \right)$, but this formula can be adjusted depending of the desired exploration/exploitation behavior.
+$w_{n_i}$ is the overall sampled score so far of the subtree below node $n_i$ as an average, $f$ is a factor for the tendency towards exploration, $v_{n_i}$ is the amount of times the sub-tree below $n_i$ was sampled, and $t$ is the amount of overall turns/iterations so far.\newline
 MCTS is usually defined as an algorithm with an iteration of four steps, which are listed in the following and additionally illustrated in figure~\ref{fig:approach:mcts}:
 \begin{enumerate}
     \item \textbf{Selection}: The next node for expansion is chosen.
@@ -221,18 +232,19 @@ MCTS is usually defined as an algorithm with an iteration of four steps, which a
     \item \textbf{Simulation}: The new child nodes need some initial scores.
     Since an inner nodes represent an incomplete state, they are hard to score directly and a heuristic scoring for the sub-tree below this inner node is necessary.
     A set amount of Monte-Carlo Simulations, which are basically random walks down the search tree until a leaf node is reached, are performed.
-    The scores of the states in the found leaf nodes are used to approximate a score this sub-tree.
+    The scores of the states in the found leaf nodes are used to approximate a score for this sub-tree.
     Thus, the scoring gets more accurate with a higher number of simulations per child node, since more different leaf nodes are reached and therefore more possible solution states are covered.
-    But with a higher number of simulations, a bigger portion of the optimization budget is spent each iteration and fewer iterations can be performed overall.
+    But with a higher number of simulations, a bigger portion of the budget is spent each iteration and fewer iterations can be performed overall.
     A careful trade-off is therefore necessary.
     \item \textbf{Backpropagation}: The simulations returned for child node $n$ the scores $x_1, ..., x_k$.
-    Based on this scores $n$ will receive an initial scoring and afterwards, every node in the path from the root to $n$ will be updated to incorporate the newly gathered knowledge as well via backpropagation starting at $n$.
-    At first, $n$ is scored initially with the following formula $\frac{\frac{\sum_{i=1}^k x_i}{k}}{v_r} + f \cdot \sqrt{\frac{\mathrm{ln} (V_r)}{v_r}}$.
-    The formula consists of the following parts: $\frac{\sum_{i=1}^k x_i}{k}$ is the average of the simulation results, $f$ is a pre-defined weighting for the focus on exploration, $v_r$ is the amount of visits $n$ had after $r$ rounds of the MCTS loop via Monte-Carlo simulations before it was expanded or via previous backpropagation after it was expanded which is initially 1 since the node was just expanded and is receiving its first scoring, and $V_r$ is the $v_r$ value of the parent of $n$.
-    For the actual backpropagation, starting with the parent of $n$ which is referred to as $n'$ and continuing until the root is reached each nodes score is updated similar to the scoring of $n$.
-    At first, the $v_r$ counter of $n'$ is increased.
-    Let $w_{r-1}$ be the scoring of $n'$ of the previous round, it will be updated during the backpropagation of this round with a cumulative moving average $w_r=w_{r-1} + \frac{w_c - w_{r-1}}{r}$, where $w_c$ is the current node score of the child node previously updated during the backpropagation.
-    Now, the new score of $n'$ is $\frac{w_r}{v_r} + f \cdot \sqrt{\frac{\mathrm{ln} (V_r)}{v_r}}$.
+    Based on this scores $n$ will receive an initial value.
+    Afterwards, every node in the path from the root to $n$ will be updated to incorporate the newly gathered knowledge as well via backpropagation starting at $n$.
+    At first, $n$ is scored initially with the following formula $\frac{\frac{\sum_{i=1}^k x_i}{k}}{v_t} + f \cdot \sqrt{\frac{\mathrm{ln} (V_t)}{v_t}}$.
+    The formula consists of the following parts: $\frac{\sum_{i=1}^k x_i}{k}$ is the average of the simulation results, $f$ is a pre-defined factor for the focus on exploration, $v_t$ is the amount of visits $n$ had after $t$ rounds of the MCTS loop via Monte-Carlo previous simulations before it was expanded in this round or alternatively 1, and $V_t$ is the visit counter $v_t$ of the parent of $n$.
+    For the actual backpropagation, starting with the parent of $n$ which is referred to as $n'$ and continuing until the root is reached, each nodes score is updated similar to the initial scoring of $n$.
+    At first, the $v_t$ counter of $n'$ is increased.
+    Let $w_{t-1}$ be the scoring of $n'$ of the previous round, it will be updated during the backpropagation of this round with a cumulative moving average $w_t=w_{t-1} + \frac{w_c - w_{t-1}}{t}$, where $w_c$ is the already updated node score of the child node that was the previous stop during the backpropagation.
+    Now, the new score of $n'$ is $\frac{w_t}{v_t} + f \cdot \sqrt{\frac{\mathrm{ln} (V_t)}{v_t}}$.
 \end{enumerate}
 \begin{figure}[ht!]
     \centering
@@ -244,24 +256,25 @@ MCTS is usually defined as an algorithm with an iteration of four steps, which a
 To apply MCTS for a model selection in a search tree for example constructed with HTN planning, minor adjustments are necessary.
 After incorporating the following changes, this modified MCTS is the algorithmic foundation of the approach of this thesis:
 \begin{itemize}
-    \item Optimizer nodes are leafs and can not be further expanded. If a Monte-Carlo simulation terminates at one or if the overall search tree is expanded to such an extend that an optimizer node is chosen in the Selection phase, a mode configuration run with a certain optimization budget is started with the algorithm represented by this node.
-    \item The main MCTS loop does not run forever or for a fix amount of steps. It keeps track of the spent optimization budget during the search itself and during the optimizer runs and will stop after an iteration, if the budget limit is reached.
+    \item Optimizer nodes are leafs and can not be further expanded. When a Monte-Carlo simulation reaches one or if an optimizer node is chosen in the Selection phase based, a model configuration run with a given optimization budget is started with the optimization algorithm represented by this node.
+    \item The main MCTS loop does not run forever or for a fix amount of steps. It keeps track of the spent optimization budget during the search itself and during the optimizer runs and will stop after the current iteration, if the budget limit is reached or the budget is nearly spent such that is not possible to perform another complete optimization run.
 \end{itemize}
-As inputs an implementation would require  some values:
+As a user specified configuration, an MCTS model selection implementation with embedded optimizers for model configuration would require some values:
 \begin{itemize}
     \item The overall optimization budget $B$.
-    \item The budget a single optimizer run for a MCTS simulation can spent $b \ll B$.
+    \item The budget $b$ a single optimizer run for a MCTS simulation can spent with $b \ll B$.
     \item The exploration factor $f$.
     \item The amount of Monte-Carlo simulation starting at each new child node after expansion.
 \end{itemize}
-Additionally, the definition of the HTN planning space and the set of optimizers $A$ are required to construct the search tree.
-A complete formulation of the modified MCTS for the approach of this thesis can be found in appendix~\ref{sec:appendix:pseudo-code}.
+Additionally, the definition of the HTN planning space and the set of optimizers $A$ are required to construct the search tree including the optimizer leafs to achieve an optimizer ensemble for model configuration.
+A simplified formulation  in high-level pseudo-code of the modified MCTS for the approach of this thesis can be found in appendix~\ref{sec:appendix:pseudo-code}.
 
 \section{Model Configuration with Multiple Optimizers}
 \label{sec:approach:configuration}
 With the modified MCTS, the model selection is conducted and additionally it is controlled when an optimizer is started for model configuration.
-But since the optimizers of the optimizer nodes $N^A_{n^*_j}$ below the pipeline node $n^*_j$, all try to optimize a configuration for pipeline $p_{n^*_j}$, they can utilize the fact they share the same optimization space.
-At first, it is explained in the following how previous candidate evaluations of the shared optimization space are stored and afterwards, how optimizers re-use this stored candidate scores for new optimization runs, which is often also referred to as warmstarting.
+But since the optimizers of the optimizer nodes $N^A_{n^*_j}$ below the pipeline node $n^*_j$, all try to optimize a configuration for the same pipeline $p_{n^*_j}$, they can utilize the fact they share the same optimization space.
+When this sharing and utilizing of knowledge about the shared optimization space is achieved, this will be called an \textit{optimizer ensemble} and is in combination with the integration into a search graph the core novelty of the approach of this thesis.\newline
+At first it is explained in the following, how previous candidate evaluations of the shared optimization space are stored and afterwards, how optimizers re-use this stored candidate scores for new optimization runs, which is often also referred to as warmstarting.
 
 \subsection{Shared Parameter Domain for Selected Models}
 \label{sec:approach:configuration:parameter}
@@ -269,49 +282,72 @@ In every pipeline node $n^* \in N^*$, the optimization space for the model confi
 Therefore, $n^*$ can be the single point of contact for every subjacent optimizer node $n^{a}_{n^*} \in N^A_{n^*}$.
 With this centralized control instance it is possible to store and distribute knowledge from and to the optimizers.
 
-At first, every $n^{a}_{n^*} \in N^A_{n^*}$ can get the concrete model configuration space from $n^*$, as well as other helpful information like for example the default parametrization of certain pipeline components, which may be a good starting point for some optimization algorithms to start their optimization process at.
+At first, every $n^{a}_{n^*} \in N^A_{n^*}$ can get the concrete model configuration space from $n^*$, as well as other helpful information like for example the default parametrization of certain pipeline components
+Sometimes the default parametrization may be a good starting point, i.e. first evaluation candidate, for some optimization algorithms.\newline
 Additionally, each optimizer can store their evaluated candidates together with the evaluation score at $n^*$.
-Although this requires additional storage, collecting and saving already evaluated candidates has the following advantages if a suitable datastructure is used, which outweigh the disadvantage of higher storage demands since storage is in general a comparably cheap hardware component:
+Although this requires additional storage memory, collecting and saving already evaluated candidates has the following advantages:
 \begin{itemize}
     \item If saved in a hashtable, candidates can be inserted with a generated key and retrieved with one as well. Therewith, it can be checked if a candidate was already evaluated before and if yes, return the existing score from $n^*$ to the optimizer instead of training and evaluating a pipeline on the dataset again.
-    The lookup complexity of a hashtable is constant, while training a machine learning model is very time consuming in comparison.
+    The lookup complexity of a hashtable is constant, while training a machine learning model is generally very time consuming in comparison.
     For example, is the complexity of training a SVM with SMO~\cite{Platt-SMO} between linear and quadratic, depending on the dataset.
     \item If saved in a heap, retrieving the best candidates has a logarithmic complexity and thus, the best $n$ candidates from previous runs of the same or another optimizer from $N^A_{n^*}$ can efficiently be requested from $n^*$ as a starting point for a new optimization run.
 \end{itemize}
+Memory is in general a comparably cheap hardware component, which can be added to the computer nearly indefinitely such that a lot of evaluation results can be stored.
+In comparison, the capacity of the CPU, which affects the time for evaluations, has upper limits.
+When these two suitable datastructures are used, the speedup of sharing information about evaluations instead of evaluating once more outweighs therewith the disadvantage of higher memory demands.
 
-\subsection{Warmstarting Versions of Optimization Algorithms}
+\subsection{Warmstarted Versions of Optimization Algorithms}
 \label{sec:approach:configuration:warmstart}
-If the optimization budget is high enough, there is a high probability that the MCTS will select a pipeline node more than once or alternatively the Monte-Carlo simulations will end in the pipeline nodes again.
-Additionally, all candidate evaluation are stored in these pipeline nodes for the given model configuration optimization space.
-Hence, the optimization algorithms should utilize this advantage of prior collected data instead of performing the optimization anew every time.\newline
-Starting with a foundation of previously collected data instead of a completely unexplored optimization space is called \textit{warmstarting} an optimizer.
-However, it is important to have a certain robustness against local optima, because without it an optimization algorithm could start in an local optimum, which was found in another optimization run, and would probably not get out of this local optima.
-In the following it is explained how some of the different black box optimization algorithms, which are presented in~\ref{sec:theory:optimization:search} up to~\ref{sec:theory:optimization:bayesian}, can be modified to be executed warmstarted.
-They will therefore utilize an ordered list of pairs of the best candidates $l = \langle (c_1, s_1), ... (c_k, s_k) \rangle$, where $c_i$ is an already evaluated pipeline configuration and $s_i$ the corresponding score of this evaluation.
+If the optimization budget is high enough, there is a high probability that the MCTS will select or the Monte-Carlo simulations will reach a pipeline node more than once.
+Meaning that an optimization run is started in an model configuration space where already candidate evaluations have taken place.
+Additionally, all these previous candidate evaluations are stored in the pipeline nodes for the given model configuration optimization space.
+Hence, the optimization algorithms should utilize this advantage of prior collected data instead of performing the optimization anew from a blank page every time.
 
-\textbf{Random Search}:
+Starting with a foundation of previously collected data instead of a completely unexplored optimization space is called \textit{warmstarting} an optimizer.
+However, it is important to have a certain robustness against local optima, because without it an optimization algorithm could start in an local optimum, which was found in another optimization run, and might not get out of this local optima.
+This robustness can be achieved by the optimization algorithms themselves, but additionally a little bit by the selection of the data for the warmstart as well.
+
+In the following it is explained how the optimization algorithms that are used for the optimizer ensembles of this approach can be modified to be executed warmstarted.
+All this optimization algorithms are different established black box optimization algorithms, which were presented in~\ref{sec:theory:optimization:search} up to~\ref{sec:theory:optimization:bayesian}.
+They will therefore utilize an ordered list of pairs of already evaluated candidates in the form of $l = \langle (c_1, s_1), ... (c_k, s_k) \rangle$, where $c_i$ is an already evaluated pipeline configuration and $s_i$ the corresponding score of this evaluation.
+The list $l$ is created from a subset with the top $|l|$ candidates out of the set of all previous evaluations and $|l|$ can be decided by the corresponding optimization algorithm.
+
+\subsubsection{Random Search}
 The first variant of a random search, where each candidate was drawn independent and at random, has no advantages from warmstarting besides not having to re-evaluate candidates that were already evaluated.\newline
 But the second variant of a random search, where a candidate is sampled out of the hypersphere around the current best candidate up until either the optimization budget is spent or no improvement happened for $i$ iterations, can profit from a modification to a warmstarted version.
-This version could use the top pair, or alternatively one randomly chosen pair of the top $n$ pairs for more variation, as a starting point.
-Now, the random search will start sampling candidates in the hypersphere around this starting point and has the chance to find a better neighboring configuration.\newline
+This version could use the top pair of $l$, or alternatively one randomly chosen pair  out of the top $n$ pairs of $l$ for more variation, as a starting point.\newline
+Now, the random search will start sampling candidates in the hypersphere around this starting point and has the chance to find a better neighboring configuration, because it already is in a candidate with some good previous evaluations.\newline
 Of course the chosen starting point could be a local optimum, but this random search variant will use this hypersphere for at most $i$ iterations if no improvement is achieved, which can be an indicator for an optimum.
 In this case, it will select a new random starting point.
 Thus, not more than $i$ iterations are lost to a local optimum selected from $l$, which is depending on the optimization budget usually manageable, since random search is a comparably simplistic and therefore fast optimization algorithm.
 
-\textbf{Hyperband}:
-Hyperband is basically a method of treating multiple, parallel running random searches as a multi-armed bandit problem and stopping the less successful instances to have more optmization budget for the better performing instances.
+\subsubsection{Hyperband}
+Hyperband is basically a method of treating multiple, parallel running random searches as a Multi-Armed Bandit problem and stopping the less successful instances to have more optmization budget for the better performing instances.
 Therewith, if each random search instance is implemented as the warmstarted version from the previous explanation, Hyperband can profit from warmstarting a well.\newline
-The typical multi-armed bandit problem of balancing exploration and exploitation should be applied here as well.
+The typical Multi-Armed Bandit problem of balancing exploration and exploitation should be applied here as well.
 If Hyperband is configured to have $k$ parallel running instances, $\lfloor \sigma \cdot k \rfloor$ instances with $\sigma \in (0,1)$ should start at one of the top candidates from $l$ for exploitation, while $\lceil (1 - \sigma) \cdot k \rceil$ instances should start at new and randomly chosen configurations for a better exploration coverage of each Hyperband run.
 
-\textbf{Genetic Optimization}:
-A very important part of a genetic optimization algorithm, is the selection scheme from which individuals the next generation will be constructed.
-Such a selection can vary from simple approaches, like for example a random selection or the best individuals from the current generation, up to more sophisticated schemes like for example a \textit{Boltzmann Tournament Selection}~\cite{Goldberg-Boltzmann}.\newline
+\subsubsection{Genetic Optimization}
+A very important part of a genetic optimization algorithm, is the selection scheme with which individuals from the last generation will be selected to construct the next generation.
+Such a selection can be a simple na\"ive approach, like for example a random selection or the best individuals from the current generation.
+But it can also be a more sophisticated schemes like for example a \textit{Boltzmann Tournament Selection}~\cite{Goldberg-Boltzmann}.\newline
 With such an selection scheme in place, the warmstarting can be implemented straightforward.
-Instead of selecting individuals be a selection scheme from a previous generation, the selection scheme of the genetic algorithm will be applied on a subset of $l$.
+Instead of selecting individuals with a selection scheme from a previous generation, the selection scheme of the genetic algorithm will be applied on $l$.
+Therefore $|l|$ is set to the size of a generation.\newline
+Alternatively it is also possible to re-use the Hyperband warmstarting approach, such that $\lfloor \sigma \cdot k \rfloor$ candidate are selected via the selection scheme from $l$ and $\lceil (1 - \sigma) \cdot k \rceil$ candidates are randomly created to achieve more variance and a certain robustness against local optima.
 
-\textbf{SMAC}:
-For the Bayesian optimization implementation \textit{SMAC}, a warmstarting variant was developed by~\textcite{Lindauer-Smac-Warmstart}.
+\subsubsection{SMAC}
+For the Bayesian optimization implementation \textit{SMAC}, a warmstarted variant was developed by~\textcite{Lindauer-Smac-Warmstart}.
 During the optimization, SMAC trains a regression model, for instance a Random Forest, to predict the performance of a configuration before actually evaluating it.
 This regression model is then used to guide the selection of candidates that are actually evaluated to build the surrogate function model.
-Additionally to training this regression model progressively during the optimization, it can be trained beforehand with a subset of $l$ to have a more accurate model right from the start.
+Additionally to training this regression model progressively during the optimization, it can be trained beforehand with $l$ or any other subset of all previously evaluated candidates to have a more accurate regression model right from the start of the optimization run.
+
+\subsubsection{Discretization Search}
+This optimization algorithm is based on the optimization method from \textit{ML-Plan}, where in each inner node of a search tree is used to further discretize one dimension of the optimization space at a time, by refining, i.e. splitting it, into several value ranges.
+For each split a child node is attached during a node expansion until, depending on the parameter type, either the interval only consists of one value or the splits interval size is below a given threshold.
+Afterwards the next dimension is refined, until each dimension was completely discretized and a leaf node is reached.\newline
+Therefore, this can be viewed as converting a grid search approach into a tree structure, which will be searched more dynamically then a grid search, with a best-first search, where the nodes are scored via Monte-Carlo simulations.\newline 
+In ML-Plan the optimization was done for model selection and model configuration in a joint graph.
+Here for this approach, instead of creating a search graph for the complete AutoML problem solution space, it is solely applied on the model configuration space, i.e. hyperparameter optimization.\newline
+Warmstarting does here not imply that a starting point of the optimization is selected out of $l$, because the selection is controlled by the best first search depending on the node scores.
+However, if the same optimizer instance is started more than once, this optimization approach can be warmstarted in the way that a search graph is already created for this space and the search can simply be continued.
