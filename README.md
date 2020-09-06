@@ -1,4 +1,4 @@
-# Masters Thesis: Optimizer Ensembles for Automated Machine Learning
+# Master Thesis: Optimizer Ensembles for Automated Machine Learning
 
 Thesis about an AutoML approach with two core ideas:
 * Model selection as a HTN planning problem searched via an MCTS, which allows the creation of more complex pipelines
