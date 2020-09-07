@@ -47,12 +47,12 @@ Finally, in the fourth sub-section it is illustrated how both sub-goals can be a
 \subsection{Model Selection as a Graph Search Problem}
 \label{sec:approach:selection:search}
 A machine learning pipeline can vary heavily in structure and complexity.
-For example, simply using just a Decision tree as the only component is a valid pipeline as well as as many components in a more sophisticated topology such as the pipeline in figure~\ref{fig:approach:complex-pipeline}.
+For example, simply using just a Decision tree as the only component is a valid pipeline as well as as many components in a more sophisticated topology such as the pipeline in Fig. ~\ref{fig:approach:complex-pipeline}.
 Depending on the concrete input dataset, both levels of pipeline complexity could be the optimal output of the model selection step.
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Approach/ComplexPipeline.pdf}
-    \caption[An example of a complex machine learning pipeline with a higher length and a non-linear topology.]{An example of a complex machine learning pipeline with a higher length and a non-linear topology. Input dataset and output prediction data are shown in green, pre-processing components in orange and the machine learning components constructing the machine learning model in blue.}
+    \caption[An example of a complex machine learning pipeline with a higher length and a non-linear topology.]{An example of a complex machine learning pipeline with a higher length and a non-linear topology. Input dataset and output prediction data are shown in green, pre-processing components in orange and the machine learning components constructing the machine learning algorithm in blue.}
     \label{fig:approach:complex-pipeline}
 \end{figure}
 
@@ -64,14 +64,14 @@ As the name suggests, HTN planning is based around the notion of tasks
 Usually, one goal task is given as the planning problem input, which would be something like a formalized form of "\textit{Construct a machine learning pipeline out of a set of components}" in this case.
 These tasks can either be primitive tasks or compound task, where the overall goal task usually is a compound task.
 Primitive tasks are simple enough be directly achievable without the need for further planning or other calculations.
-An example for a primitive task in the AutoML context could be "\textit{Use a Decision tree as a learning model for the pipeline}" as this task can be directly transformed into a pipeline construction command.\newline
+An example for a primitive task in the AutoML context could be "\textit{Use a Decision tree as a learning algorithm for the pipeline}" as this task can be directly transformed into a pipeline construction command.\newline
 Compound tasks on the other hand, are not directly realizable and it is necessary to further decompose the task.
 Each compound task can be decomposed into one or most commonly two or more sub-tasks.
 Depending on the planning domain, there are decomposition rules where a compound task has one or more possible decompositions.
 Such sub-tasks of a compound task can be primitive tasks, compound tasks, or a mixture of both.\newline
 If a compound task can be decomposed into solely primitive tasks, this task is directly solvable via the actions of the primitive tasks.
-But if the decomposition of the compound task consists out of at least one compound tasks, this child compound task needs to be decomposed recursively as well until it becomes solvable and this solution can be used to solve the original compound task.
-The exemplaric AutoML compound tasks "\textit{Construct a machine learning pipeline out of a set of components}" could be decomposed for example into the to smaller compound tasks "\textit{Construct a pre-processing pipeline out of a set of pre-processing components}" and "\textit{Construct a learning model out of a set of machine learning components}".
+But if the decomposition of the compound task consists of at least one compound tasks, this child compound task needs to be decomposed recursively as well until it becomes solvable and this solution can be used to solve the original compound task.
+The exemplaric AutoML compound tasks "\textit{Construct a machine learning pipeline out of a set of components}" could be decomposed for example into the to smaller compound tasks "\textit{Construct a pre-processing pipeline out of a set of pre-processing components}" and "\textit{Construct a learning algorithm out of a set of machine learning components}".
 
 With this decomposition of compound tasks into different sub-tasks, the hierarchical aspect of HTN planning is added.
 A plan as the solution of the planning problem is therefore a task-tree, where each leaf node is a primitive task and each inner node is a compound task.
@@ -81,7 +81,7 @@ This edges are therefore connected to nodes, where the represented task-tree is 
 For a bigger HTN problem an unsolved task-tree will contain a high number of undecomposed compound nodes and therefore an immense amount of decomposition rules would be applicable.
 To reduce the maximum degree of the graph and therefore the memory and runtime complexity of most search algorithms, there should not be an outgoing edge for the applicable decomposition rules of each undecomposed compound task.
 A simplification is to create an ordering for the undecomposed compound task of the nodes task tree and only create outgoing edges for decomposition rules, which are applicable to the first compound task of this ordering.
-The representation of one simple incomplete task tree and two applicable decomposition rules for the first compound task of an ordering is illustrated in figure~\ref{fig:approach:htn-planning}.
+The representation of one simple incomplete task tree and two applicable decomposition rules for the first compound task of an ordering is illustrated in Fig.~\ref{fig:approach:htn-planning}.
 \begin{figure}[ht!]
     \centering
     \includegraphics[height=0.5\textheight]{gfx/Figures/Approach/HTN.pdf}
@@ -103,11 +103,11 @@ With a suitable formalization and corresponding data model, the HTN planning dom
 In the AutoML context it is with this adjustments and expansions possible to modify valid pipeline topologies and the set of pipeline components, which are used for construction.\newline
 While attempting pipeline constructions, it is not possible to create arbitrary pipeline graphs because components often expect a certain type of input that can only be given by certain other components as an output.
 Additionally, sometimes the selection of some components implies the requirement of selecting certain other components.
-For example if an ensemble method was selected as a learning model, the components that are used to be the predictors of the ensemble must be learning model components and cannot be pre-processing components.
+For example if an ensemble method was selected as a learning algorithm, the components that are used to be the predictors of the ensemble must be learning algorithm components and cannot be pre-processing components.
 
 To incorporate such constraints into tasks and decomposition rules, ML-Plan utilizes a simple type system in the form of required and provided interfaces.
 Each task has one or more type definitions which represents certain properties of the solution to the associated task.
-For example, the primitive task of using a Decision Tree as well as the compound task of creating an ensemble learning model out of several other learning models would both offer a solution in the form of a machine learning model.
+For example, the primitive task of using a Decision Tree as well as the compound task of creating an ensemble learning algorithm out of several other learning algorithms would both offer a solution in the form of a machine learning algorithm.
 Both of them could have something like \texttt{Classifier} or \texttt{Learner} as their solution type and therewith as the types of interfaces they provide.\newline
 On the other hand, are compound tasks only solvable if they get solutions of certain types as the results of the sub-tasks they are decomposed into.
 For example, a Stacking classifier can only be based on other classifiers, i.e. solutions with types like \texttt{Classifier}.
@@ -118,7 +118,7 @@ A compound task with a single required interface of type $a$ can only be decompo
 With such a definitions of required and provided interface types for each task, it is straightforward to incorporate construction constraints into the planning problem without the need to write an extensive list of decomposition rules.
 This constraints can be pipeline topology specific constraints like splits into two sub-pipelines and uniting such sub-pipelines again, or machine learning specific constraints like for example creating ensembles out of classifiers.
 
-The overall pipeline structure, for example Pre-Processing + Learning Model or Pre-Processing + Learning Model + Post-Processing, can be encoded in the required interfaces of the goal task.
+The overall pipeline structure, for example Pre-Processing + Learning Algorithm or Pre-Processing + Learning Algorithm + Post-Processing, can be encoded in the required interfaces of the goal task.
 Every actual pipeline component, which shall be included in the pipeline construction of a solved task tree, will be represented as primitive tasks.
 For a better structure, they should be grouped by their provided interface types that are deduced from their properties and purposes.\newline
 Non-linear topologies like creating parallel pre-processing sub-pipelines can be for example achieved with a Feature Union pipeline component, which has one or more types of pre-processing components as required interfaces.
@@ -152,7 +152,7 @@ Therefore, the search tree $G=(V, E)$ of the model selection HTN planning is ext
     \item $G' = (V', E')$
 \end{itemize}
 Since the nodes in $N^*$ are now not longer leaf nodes of $G'$ they are now referred to as \textit{Pipeline Nodes} and the newly added leaf nodes $N^A$ are the \textit{Optimizer Nodes.}
-An simplified illustration of a possible $G'$ without the HTN planning aspects of this extended search tree can be seen in figure~\ref{fig:approach:search-graph}.
+An simplified illustration of a possible $G'$ without the HTN planning aspects of this extended search tree can be seen in Fig.~\ref{fig:approach:search-graph}.
 The pipeline nodes and the optimizer nodes are also marked for a better intuition of the extended search tree $G'$.
 \begin{figure}[ht!]
     \centering
@@ -224,7 +224,7 @@ It is also often referred to as \textit{Monte-Carlo tree search} (MCTS), if the 
 For UCT and therefore also MCTS, each node has an attached score, which is used for selecting nodes.
 This value can for example be calculated $\underset{n_i}{\textrm{argmax}} \left( w_{n_i} + f \cdot \sqrt{\frac{\textrm{ln}(t)}{v_{n_i}}} \right)$, but this formula can be adjusted depending of the desired exploration/exploitation behavior.
 $w_{n_i}$ is the overall sampled score so far of the subtree below node $n_i$ as an average, $f$ is a factor for the tendency towards exploration, $v_{n_i}$ is the amount of times the sub-tree below $n_i$ was sampled, and $t$ is the amount of overall turns/iterations so far.\newline
-MCTS is usually defined as an algorithm with an iteration of four steps, which are listed in the following and additionally illustrated in figure~\ref{fig:approach:mcts}:
+MCTS is usually defined as an algorithm with an iteration of four steps, which are listed in the following and additionally illustrated in Fig.~\ref{fig:approach:mcts}:
 \begin{enumerate}
     \item \textbf{Selection}: The next node for expansion is chosen.
     Commonly, each node has a value assigned and starting at the root node, the next node is the child node with the highest value until a not expanded node is reached.
@@ -288,7 +288,7 @@ Additionally, each optimizer can store their evaluated candidates together with 
 Although this requires additional storage memory, collecting and saving already evaluated candidates has the following advantages:
 \begin{itemize}
     \item If saved in a hashtable, candidates can be inserted with a generated key and retrieved with one as well. Therewith, it can be checked if a candidate was already evaluated before and if yes, return the existing score from $n^*$ to the optimizer instead of training and evaluating a pipeline on the dataset again.
-    The lookup complexity of a hashtable is constant, while training a machine learning model is generally very time consuming in comparison.
+    The lookup complexity of a hashtable is constant, while training a machine learning algorithm is generally very time consuming in comparison.
     For example, is the complexity of training a SVM with SMO~\cite{Platt-SMO} between linear and quadratic, depending on the dataset.
     \item If saved in a heap, retrieving the best candidates has a logarithmic complexity and thus, the best $n$ candidates from previous runs of the same or another optimizer from $N^A_{n^*}$ can efficiently be requested from $n^*$ as a starting point for a new optimization run.
 \end{itemize}

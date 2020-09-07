@@ -22,37 +22,32 @@ This setting can be formalized as a combination of $T, P$ and $E$, where $T$ is 
 Of course it is possible for a human programmer to manually specify the solution with the best performance measurement for any possible $t\in T$ but for a high $|T|$ this is rarely possible and viable.
 Here, machine learning has its use-case: "Machine learning enables us to tackle tasks that are too difficult to solve with fixed programs written and designed by human beings"~\cite{Goodfellow-DeepLearning}.
 
-A high number of different types of task classes $T$ is imaginable, but one of the common ones is \textit{Supervised Learning}.
+A high number of different types of task classes $T$ is imaginable, but one of the most common ones in the machine learning field is \textit{Supervised Learning}.
 In supervised learning, $T$ includes a fix set of all possible solutions $S$.
 The concrete task for Supervised Learning is now to select for a given $t\in T$ a $s\subseteq S$ such that the performance measurement $P(t,s)$ is optimal.
 To enable a machine to learn supervised, the experience $E$ has to be successively build in the form of $\{(t_1, s_1, P(t_1, s_1)), ..., (t_n, s_n, P(t_n s_n))\}$.\newline
-For a new task instance $t_i$, the computer will select a $s_i$ based on a decision model build from $E$, receive a performance feedback $P(t_i, s_i)$ and finally enrich $E$ with $(t_i, s_i, P(t_i, s_i))$ as well as updating the decision model with the changed $E$.
+For a new task instance $t_i$, the computer will select an $s_i$ based on a decision model build from $E$, which is supposed to be at least better than random guessing.
+Depending on the selected $s_i$ the computer will receive a performance feedback $P(t_i, s_i)$ and finally enrich $E$ with $(t_i, s_i, P(t_i, s_i))$ as well as updating the decision model with the changed $E$.
 Therewith, a well working machine learning algorithm for supervised learning would now be able to achieve $P(t_j, s_j) \geq P(t_i, s_i)$ if $t_j$ and $t_i$ are similar instances, since it already has experience values which selection for $s_i\subseteq S$ had achieved a certain performance value for $t_i$ and might therefore be a good or respectively bad choice for $t_j$ such that $s_j$ can be deduced to a certain degree.\newline
 This task of comparing and judging the similarity of different instances of $T$ and to build a practicable decision model based on $E$ to select a solution out of $S$ has been tackled with a plethora of different algorithms or even combinations of multiple algorithms as a form of machine learning pipeline.
-Usually, this algorithms have to be configured with a set of hyperparameter depending on $T$ and often $T$ also has to be transformed before presenting concrete instances to the algorithm for learning, i.e. pre-processing each $t\in T$ with one or more transformation methods.\newline
-Without making suitable choices for the machine learning algorithm as well as corresponding hyperparameter and pre-processing methods for each different $T$, the performance measurements $P$ will only increase for a very high $|E|$ or even not increase at all.
-But because the number of available task instances, i.e. the amount of data, that can be used to build $E$ with a machine learning algorithm is often limited for most use-case domains, a valid choice for the learning algorithm, hyperparameter and, if necessary, pre-processing methods is crucial.
-
-With the high number of available machine learning algorithms and the often complex relationships between learning performance and hyperparameter configurations of the chosen algorithms as well as properties of $T$ and suitable pre-processing methods, a big expertise in the machine learning field is necessary to be able to assemble machine learning applications with good performance measurements.
-Since this necessary expertise in machine learning is not broadly available and a lot of companies or research facilities have a high demand for machine learning applications, it is not possible to apply machine learning in every use-case where it might be beneficial.
-This accelerated the emergence of the machine learning research sub-topic \textit{Automated Machine Learning}. 
+Usually, these algorithms have to be configured with a set of hyperparameters depending on $T$ and often $T$ also has to be transformed before presenting concrete instances to the algorithm for learning, i.e. pre-processing each $t\in T$ with one or more transformation methods.\newline
 
 \section{Automated Machine Learning}
 \label{sec:theory:automl}
-Automated Machine Learning, or short \textit{AutoML}, tries to tackle this knowledge barrier, which prevents interested people from applying machine learning.
+Automated Machine Learning, or short \textit{AutoML}, tries to tackle the knowledge barrier, which prevents interested people from applying machine learning.
 Therefore, the overall goal is to automate most tasks of the process of creating a machine learning applications that would otherwise require machine learning knowledge.\newline
 In this section, a description of the general workflow of an AutoML tool is given and the usual two main steps of this workflow are illustrated.
-This will be concluded with an formalization of the AutoML problem setting as an optimization problem.
+This will be concluded with a formalization of the AutoML problem setting as an optimization problem.
 
 \subsection{General Workflow}
 \label{sec:theory:automl:workflow}
-AutoML application are usually designed very homogeneous and therefore have very similar workflows among themselves.
-As an input, the application will receive data in an machine-readable format and usually some form of constraint for its execution, such as hardware resource or time limitations.\newline
+AutoML applications are usually designed very homogeneously and therefore have very similar workflows among themselves.
+As an input, the application receives data in a machine-readable format and usually some form of constraint for its execution, such as hardware resource or time limitations.\newline
 The expected output is the best found machine learning pipeline for the given data measured by some task-dependent metric and additionally often the actual performance value of the found machine learning pipeline measured in said metric.
 Additionally, each AutoML tool can have further necessary configurations as an input.\newline
-The constraints for execution are required to prevent the AutoML tool from searching for the best machine learning pipeline for the given data indefinitely with probably continuously growing hardware consumption.
+The constraints for execution are required to prevent the AutoML tool from searching for the best machine learning pipeline for the given data virtually forever with probably continuously growing hardware consumption.
 Therefore, the  execution time and/or some hardware resources are constrained in the form of budgets.
-This inputs and outputs of an conceptual AutoML tool are illustrated in figure~\ref{fig:theory:conceptualAutoMLTool}.
+These inputs and outputs of a conceptual AutoML tool are illustrated in Fig.~\ref{fig:theory:conceptualAutoMLTool}.
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Theory/AutoMLTool.pdf}
@@ -65,11 +60,11 @@ The general workflow of an AutoML tool, as numbered and illustrated in the figur
     \item The AutoML tool gets some input data and execution constraints as an input.
     \item Model selection and model configuration are repeated until execution budgets are spent.
     \item Model selection as well as model configuration can perform a model evaluation to get a score for any pipeline candidate they produce.
-    \item After the constraints are reached, the best evaluated pipeline as well as the score of this pipeline are given as an output.
+    \item When the user-specified constraints are reached, for instance a timeout is hit, the best evaluated pipeline as well as the score of this pipeline are returned as an output.
 \end{enumerate}
-The model evaluation step is usually performed by training a pipeline on one big portion of the input data and testing it with a smaller portion of the data, sometimes called validation data, while measuring some kind of performance measurement, for example the accuracy of predictions or some error metric.
-But other evaluation techniques for example like a Cross-Validation are also common.\newline
-While the model evaluation step is only very loosely defined and usually not a complex procedure, the model Selection and model configuration steps of the AutoML workflow are more sophisticated.
+The model evaluation step is usually performed by training a pipeline on one split of the input data and testing it with another split of the data, sometimes called validation data, while observing some kind of performance measurement, for example the accuracy of predictions or some error metric.
+But other evaluation techniques for example like a cross-validation are also common.\newline
+While the model evaluation step is only very loosely defined and usually not a complex procedure, the model selection and model configuration steps of the AutoML workflow are more sophisticated.
 They have to select a suitable candidate from a usually large space. 
 Both spaces, for model selection as well as for model configuration, will be individually explained in the following.
 
@@ -80,44 +75,45 @@ For example, a simple, but valid pipeline would be to apply a Principal-Componen
 In this step of the workflow, the space one candidate has to be selected from, consists of all these valid pipeline component combinations, which usually consist out of two or more components.\newline
 Usually there are three types of components, although other classifications of the components are possible as well:
 \begin{itemize}
-    \item Pre-Processing: Transform the input data before presenting it to the learning model.
-    \item Learning Model: Perform the actual machine learning task on the data, for example classify a datapoint after training.
-    \item Post-Processing: Transform the output of the learning model before yielding it as a final result.
+    \item Pre-Processing: Transform the input data before presenting it to the learning algorithm.
+    \item Learning Algorithm: Perform the actual machine learning task on the data, for example classify a datapoint after training.
+    \item Post-Processing: Transform the output of the learning algorithm before yielding it as a final result.
 \end{itemize}
-Although in theory, only a single learning model is necessary and components for pre- and post-processing are optional, at least pre-processing component is very common in machine learning pipelines and included most of the time.\newline
-It is possible to use more than one component from each type in a single pipeline, pipelines with arbitrary complexity can be created.
+Although in theory, only a single learning algorithm is necessary and components for pre- and post-processing are optional, having at least a pre-processing component is very common in machine learning pipelines and included most of the time.\newline
+It is possible to use more than one component of each type in a single pipeline, pipelines with arbitrary complexity can be created.
 More than one pre- or post-processor can be used in sequence or in parallel with some kind of aggregator component subsequently.
-Equally, more than one learning model can be combined to be used as a composite or ensemble model with a proper aggregation method like for example Bagging of models~\cite{Breiman-BaggingPredictors}.
-An example for such a more complex pipeline is illustrated in figure~\ref{fig:theory:complexPipeline}.
+Similarly, more than one learning algorithm can be combined to be used as a composite or ensemble model with a proper aggregation method as for example Bagging of models~\cite{Breiman-BaggingPredictors}.
+An example for such a more complex pipeline is illustrated in Fig.~\ref{fig:theory:complexPipeline}.
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Theory/ComplexPipeline.pdf}
-    \caption[Example for a more complex machine learning pipeline.]{Example for a more complex machine learning pipeline with four pre-processing components and an ensemble learner. The pre-processors are shown in blue: A One-hot Encoder as well as subsequential Feature Union of a PCA and a LSA. The learning model in green is a Majority Voter ensemble as an aggregation of a Decision Tree, a SVM and a Logistic Regression Classifier.}
+    \caption[Example for a more complex machine learning pipeline.]{Example for a more complex machine learning pipeline with four pre-processing components and an ensemble learner. The pre-processors are shown in blue: A One-hot Encoder as well as a subsequent Feature Union of a PCA and an LSA. The learning algorithm in green is a Majority Voter ensemble as an aggregation of a Decision Tree, an SVM and a Logistic Regression classifier.}
 	\label{fig:theory:complexPipeline}
 \end{figure}
 
 Model selection, where the resulting pipelines can have this complexity, needs to add a structural relationship between the selected pipeline components.
-Therewith, a valid model selection result can be seen as a simple formalization consisting out of with two elements:
+Therewith, a valid model selection result can be seen as a simple formalization consisting of two elements:
 \begin{itemize}
-    \item For all possible components $C=\{c_1, ..., c_n\}$ a $C' \subseteq C$ of components that will be used to construct the pipeline.
-    \item A binary structure relation $\prec$ over $C'$ that defines which components are a data input for one other component to define an order of the components for the pipeline as well as aggregation of several components with one component. 
+    \item With a given set of all possible components $C$ a list of components $C' = \langle c_1, ..., c_r\rangle$ is created with $\forall c_i \in C' : c_i \in C$.
+    The components of that list are the selected components that will be used to construct the pipeline.
+    \item A binary structure relation $\prec$ over $C'$ that defines which components are a data input for another component to define an order of the components for the pipeline as well as an aggregation of several components with one component. 
 \end{itemize}
 Nevertheless, to find a valid set $C' \subseteq C$ is not a trivial task.
 For example, when an aggregator for multiple parallel pre-processing components is needed, a valid choice could be a Feature Union component but a Decision Tree component would be invalid for this pipeline position.\newline
-Therefore, if the pipelines shall be allowed to be more complex than for example a single pre-processing component and a single learning model, there is a big set of constraints for valid subsets of the candidate space of the model selection $C$.
+Therefore, if the pipelines shall be allowed to be more complex than for example a single pre-processing component and a single learning algorithm, there is a set of constraints for valid subsets of the candidate space of the model selection $C$.
 
 \subsection{Model Configuration}
 \label{sec:theory:automl:configuration}
-With the resulting component set $C'=\{c_1, ..., c_r\}$ and the associated structure relationship after the model selection step, the pipeline is not ready to be used yet.
-Usually each component of $c_k \in C'$ has a set of hyperparameter and for each one a concrete value is needed, which is the task of the model configuration step.\newline
+With the component list $C'=\langle c_1, ..., c_r\rangle$ and the associated binary structure relationship $\prec$ as the two results of the model selection step, the pipeline is not ready to be used yet.
+Usually each component of $c_k \in C'$ has a set of hyperparameters and for each one a concrete value is needed, which is the task of the model configuration step.\newline
 The candidate space for the model configuration step is completely dependent on the resulting $C'$.
-Each component $c_k$ has a set of hyperparameter $\Theta_k=\{ \theta_{k,1}, ..., \theta_{k,j} \}$ where each hyperparameter has a range where the value for this hyperparameter has to be chosen from.
-Such a range can for example be a numeric set like $\mathbb{N}$ or a set with custom values like for example $\{\textrm{true}, \textrm{false}\}$.
+Each component $c_k$ has a set of hyperparameters $\Theta_k=\{ \theta_{k,1}, ..., \theta_{k,j} \}$ where each hyperparameter has a range of valid values for this hyperparameter from which values have to be chosen from.
+Such a range can for example be a numeric set like $\mathbb{N}$ or a set with custom values as for example $\{\textrm{true}, \textrm{false}\}$.
 
 When combining all ranges $\bigcup\limits_{i=1}^r \Theta_i$ a parametrization space with dimension $r$ is defined as the candidate space for the model configuration step, where configuration vectors can be drawn from.
-If there are no additional constraints attached to the possible configurations, all vectors of this space are a valid candidate and will result in a working pipeline instance created from $C'$ and configured with this vector.\newline
+If there are no additional constraints attached to the possible configurations, all vectors of this space represent valid candidates and will result in a working pipeline instance created from $C'$ and configured with this vector.\newline
 When such a pipeline is constructed and configured with the vector values it can finally be evaluated as a candidate pipeline.
-An example for a concrete parametrization drawn from a three dimensional parameter space is shown in figure~\ref{fig:theory:parameterSpace}
+An example for a concrete parametrization drawn from a three dimensional parameter space is shown in Fig.~\ref{fig:theory:parameterSpace}
 \begin{figure}[ht!]
     \centering
     \begin{tikzpicture}
@@ -142,22 +138,22 @@ An example for a concrete parametrization drawn from a three dimensional paramet
 \label{sec:theory:automl:optimization}
 The choices in the model selection and model configuration step for one candidate out of the corresponding candidate spaces should not be arbitrary.
 Evaluations of a candidate pipeline yield a score for this candidate and intuitively a suitable AutoML approach should try to select candidates with scores as good as possible.
-Therefore, the AutoML problem is often considered as a special form of an optimization problem and can be formalized as one as well.\newline
+Therefore, the AutoML problem is often considered as an instance an optimization problem and can be formalized as one as well.\newline
 \textcite{Feurer-Cash} give a formalization for AutoML problems as a so called \textit{Combined Algorithm Selection and Hyperparameter optimization} problem, or short \textit{CASH} problem.
 Their definition is the following:
 \begin{equation*}
     A^*, \lambda_* \in \> \underset{A^{(j)} \in \mathcal{A},\lambda \in \Lambda^{(j)}}{\mathrm{argmin}} \> \frac{1}{K} \sum_{i=0}^K \mathcal{L} (A_\lambda^{(j)}, D_{\textit{train}}^{(i)}, D_{\textit{valid}}^{(i)})
 \end{equation*}
-This formula consists out of the following parts:
+This formula consists of the following parts:
 \begin{itemize}
     \item $A^*$: The best solution of the algorithm selection, i.e. for the AutoML setting the best pipeline construction found in the model selection step
-    \item $\lambda_*$: The best hyperparameter configuration for $A^*$ found in the hyperparameter optimization step, i.e. the model configuration step for AutoML
+    \item $\lambda_*$: The best hyperparameter configuration for $A^*$ found in the the model configuration step
     \item $\mathcal{A}$: A set of possible algorithms to choose from and given in the form $\mathcal{A} = \{A^{1}, ..., A^{R} \}$, which is the set of all valid pipeline component combinations in the case of AutoML
-    \item $\Lambda^{(j)}$: Each algorithm $A^{(j)} \in \mathcal{A}$ has a parameter configuration domain $\Lambda^{(j)}$, where a concrete parametrization $\lambda$ can be selected out of
+    \item $\Lambda^{(j)}$: Each algorithm $A^{(j)} \in \mathcal{A}$ has a parameter configuration domain $\Lambda^{(j)}$, where a concrete parametrization $\lambda$ can be selected from
     \item $\frac{1}{K} \sum_{i=0}^K $: This is used to calculate the K-fold cross-validation of a pipeline, but other evaluation metrics are also possible if the formula is adjusted accordingly
     \item $\mathcal{L} (A_\lambda^{(j)}, D_{\textit{train}}^{(i)}, D_{\textit{valid}}^{(i)})$: Is the loss, calculated with the loss function $\mathcal{L}$, of the algorithm $A^{(j)}$ configured with the parametrization $\lambda$, trained on the $i$-th split of the training data $D_{\textit{train}}^{(i)}$ and evaluated on the validation data $D_{\textit{valid}}^{(i)}$
 \end{itemize}
-In summary, the goal is to select an algorithm and a parameter configuration for this algorithm, such that the cross-validation loss for a for a given training and validation set is minimal.
+In summary, the goal is to select an algorithm together with a parameter configuration, such that the expected loss is minimal.
 
 \section{Black Box Optimization}
 \label{sec:theory:optimization}
@@ -213,7 +209,7 @@ For example, it could be partially or fully pre-defined or random.
 Also it could be defined implicitly by the priorly selected candidates and their order can also depend on the knowledge gathered from the evaluation of candidates.\newline
 For each one of the aforementioned black box optimization strategies, this candidate selection and candidate order will be explained in general and on the basis of some concrete algorithms, which were used in the AutoML research.
 These explanations of the strategies will be supported with a simple running example.
-The unconstrained target function $f_0 \left( \begin{bmatrix}x\\y \end{bmatrix} \right) = x^2 + y^2$, which can be seen in figure~\ref{fig:theory:target-function}, shall be minimized.
+The unconstrained target function $f_0 \left( \begin{bmatrix}x\\y \end{bmatrix} \right) = x^2 + y^2$, which can be seen in Fig.~\ref{fig:theory:target-function}, shall be minimized.
 This function is defined in $\mathbb{R}^2$ and has one global minimum.
 Although the running example is a minimization task, the presented algorithms can also perform maximization tasks out of the box or with minor modifications.
 \begin{figure}[ht!]
@@ -271,7 +267,7 @@ In the second one, a starting candidate is drawn at random out of the candidate 
 The next candidate will be randomly drawn out of a hypersphere with a pre-defined radius around the starting candidate and evaluated.
 If the drawn candidate has a better evaluation score than the starting candidate, the next candidate will be drawn from a hypersphere around the second candidate and from the hypersphere of the starting candidate otherwise.
 This loop is continued until the optimization budget is spent. Since this method is very prone to local minima/maxima, it is a possible improvement to remember the current best candidate, select a new completely random start point and start the loop over, if there was no improvement in the last $n$ iterations of the current loop.
-Both variants are illustrated for the running example in figure~\ref{fig:theory:random-search}.\newline
+Both variants are illustrated for the running example in Fig.~\ref{fig:theory:random-search}.\newline
 One example of the random search algorithm applied in the context of AutoML is the \textit{Hyperband} approach~\cite{Li-Hyperband}.
 Here, multiple parallel working instances of random searches are evaluating candidates in a joint space of model selection and model configuration to cover as much of the candidate space as possible.
 The initial problem is that multiple instances combined require a big portion of the optimization budget.
@@ -301,7 +297,7 @@ With this method the candidate space is discretized and therewith becomes enumer
 After selecting the value sets for each dimension, the Cartesian product of all sets is calculated.
 The elements of this Cartesian product, which are valid candidates because they have a value of each dimension, are the candidates that will be evaluated during the search and for the order of evaluations, any arbitrary sequence of the sets elements can be selected.
 After either all candidates from the Cartesian product are evaluated or if the optimization budget is spent, the best evaluated candidate is the overall optimization result.
-An illustration of a grid search over the candidate space of the running example can be seen in figure~\ref{fig:theory:grid-search}.\newline
+An illustration of a grid search over the candidate space of the running example can be seen in Fig.~\ref{fig:theory:grid-search}.\newline
 Therefore, as opposed to random searches where by chance only a small portion of the candidate space could be covered, a certain coverage of the space is assured.
 Especially in contrast to the second variant of the random search, the advantage is that there is no risk of getting stuck in a local optimum.
 But in comparison with the second random search variant the main drawback of a grid search comes clear as well: A grid search does not utilize the knowledge gathered from previous evaluations at all, since the evaluation order is completely predefined.
@@ -332,7 +328,7 @@ This is continued until the intervals of each dimension either only consist of o
 At this point, a leaf node would be the child node because for each dimension a value is selected such that the candidates configuration is complete and could be evaluated.\newline
 With a given start node and a method to expand this start node incrementally into a bigger graph, a large amount of search algorithms exists to search this graph for the best candidate.
 They mostly differ in the selection method that decides which unexplored node should be visited next.
-The set of nodes, consisting of the unexplored neighbors of already visited and expanded nodes, is sometimes called a \textit{Search Front} and it is exemplarily illustrated for a search tree in figure~\ref{fig:theory:graph-search-front}.
+The set of nodes, consisting of the unexplored neighbors of already visited and expanded nodes, is sometimes called a \textit{Search Front} and it is exemplarily illustrated for a search tree in Fig.~\ref{fig:theory:graph-search-front}.
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Theory/GraphSearchFront.pdf}
@@ -360,7 +356,7 @@ This combination of utilizing a heuristic Graph Search with Monte-Carlo simulati
 \subsection{Genetic and Evolutionary Optimization}
 \label{sec:theory:optimization:genetic}
 Genetic and Evolutionary optimization methods try to transfer the process of the evolution in nature, as described in Charles Darwins \textit{Natural Selection} theory, to computational optimization.
-Exactly like a biological evolution model for a species, the optimization process is modelled in consecutive generations and each generation consists out of a high number of individuals.
+Exactly like a biological evolution model for a species, the optimization process is modelled in consecutive generations and each generation consists of a high number of individuals.
 Ideally, from an optimization point of view, only the individuals that are most adopted to their surroundings should survive and produce offsprings and therefore create a succeeding generation, which is based on this individuals with minor changes.
 This is often referred to as \textit{Survival of the fittest}.\newline
 Transferred to optimization, this would mean that each individual is a possible solution candidate and therefore a generation is a set of solution candidates.
@@ -383,7 +379,7 @@ A recombination based on two genomes $g_1$ and $g_2$ to produce a new genome $g^
 For each cell of $g^*$ the value is taken from either $g_1$ or $g_2$.
 Depending on the type of cross-over, there $k \in [1 ... |g^*| - 1]$ cross-over points, which are selected randomly.
 Each cross-over point marks an index of $g^*$ at which it will be switched from $g_1$ to $g_2$ or vice versa from which source genome the next value will be taken from.
-An example for a two-point cross-over is shown in figure~\ref{fig:theory:crossover}.
+An example for a two-point cross-over is shown in Fig.~\ref{fig:theory:crossover}.
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Theory/Crossover.pdf}
@@ -425,7 +421,7 @@ Of course it can differ in both directions but this can be examined with an addi
 Therefore, if the estimated value already indicates an optimum and additionally the credible interval is broad, the value of the target function could be even more optimal at this position and it is the most promising candidate to be drawn as the next sample.
 
 For candidates that were already evaluated, this acquisition score is set to zero because the target score at this position is already known and the surrogate can be certain at this position.
-A graphical intuition for the concept of acquisition functions is given in figure~\ref{fig:theory:acquisition-function}, where Bayesian optimization on one dimension of the running example is illustrated.
+A graphical intuition for the concept of acquisition functions is given in Fig.~\ref{fig:theory:acquisition-function}, where Bayesian optimization on one dimension of the running example is illustrated.
 \begin{figure}[ht!]
     \centering
     \begin{subfigure}{\textwidth}
@@ -620,7 +616,7 @@ This three components could be used to construct a specific problem instance for
 If this optimization space is modified and thus a new problem instance $p_2$ is created from the original problem instance $p_1$, this can have a huge influence on the optimizer qualities and the optimization method that was the most successful one for $p_1$ could now theoretically be the worst one for $p_2$.
 
 Such a modification of the optimization space can be created if, for instance, the model selection part is already finished and the remaining model configuration step induces a new optimization space, which is now the problem of optimizing the parameters of a concrete pipeline.
-Here, different optimization spaces can be created out of one initial space by pre-selecting a pipeline and having the pipeline hyperparameter define the remaining optimization space.\newline
+Here, different optimization spaces can be created out of one initial space by pre-selecting a pipeline and having the pipeline hyperparameters define the remaining optimization space.\newline
 Now, different optimizers can differ in quality here as well solely based on the selected pipeline components.
 For example, with a given dataset optimizer $A$ could find good configurations for a pipeline consisting of a Principal Component Analysis followed by a Decision Tree, while optimizer $B$ yields better results in the case of a single Support Vector Machine.
 The same transformations of the optimization space can of course be done by only considering the model selection instead and not the model configuration.
@@ -632,20 +628,20 @@ In the next section, a selection of related works approaches will be presented, 
 \label{sec:theory:related}
 The first presented approach that uses different optimizers for different transformed AutoML optimization spaces is \textit{ReinBo}~\cite{Sun-ReinBo}.
 Here, the overall optimization space, containing model selection and model configuration, is transformed into a solely model selection space at first.
-For practicability each pipeline can only consist out of up to three components: One for data pre-processing, one for feature engineering, and one as the machine learning model.
+For practicability each pipeline can only consist out of up to three components: One for data pre-processing, one for feature engineering, and one as the machine learning algorithm.
 The model selection is performed in three stages, in each of which one of the three component types is selected successively.
 It is also possible to not select any component for a pre-processing or feature engineering, which could be represented by a symbol like for example "NA".
 A simple example for a small optimization space for such a model selection method would therefore consist out of three sets:
 \begin{itemize}
     \item A set $S_p$ with pre-processing algorithms: For example $S_p=\{$Min-Max Scaling, One-Hot Encoding, NA$\}$
     \item A set $S_f$ with feature engineering methods: For example $S_f=\{$ PCA, Variant Threshold Filtering, NA$\}$
-    \item A set $S_m$ with machine learning models: For example $S_m=\{$ SVM, Decision Tree$\}$
+    \item A set $S_m$ with machine learning algorithms: For example $S_m=\{$ SVM, Decision Tree$\}$
 \end{itemize}
 Such a model selection space as in ReinBo can be imagined as a tree, where the root is an empty pipeline that has none of the three component types selected.
 This root node has a child node for each $s_p \in S_p$, including the representation symbol "NA" for not selecting any pre-processing component.
 Therefore, the child node which represents one $s_p$ means that the pipeline from this sub-tree uses $s_p$ as a pre-processor.
 Accordingly, such a child node for a $s_p \in S_p$ has a child node itself for each $s_f \in S_f$ and ultimately each $s_f$ node has a child node as well for each $s_m \in S_m$, which now is a leaf node since the pipeline components are completely constructed.
-An illustration of the previous examples optimization space can be seen in figure~\ref{fig:theory:reinbo-model-selection}.
+An illustration of the previous examples optimization space can be seen in Fig.~\ref{fig:theory:reinbo-model-selection}.
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth,height=0.7\textheight,keepaspectratio]{gfx/Figures/Theory/ReinBoModelSelection.pdf}
@@ -655,17 +651,17 @@ An illustration of the previous examples optimization space can be seen in figur
 
 Because of the tree-like structure of this optimization space, a hierarchical Reinforcement Learning approach is trained during the optimization.
 With learning a policy for suitable pipeline component choices, it can act as an optimizer for model selection.\newline
-After the Reinforcement Learning model has selected up to three pipeline components, the possible parametrization of each component is examined.
+After the Reinforcement Learning algoritm has selected up to three pipeline components, the possible parametrization of each component is examined.
 From the possible parametrization of each selected component, a model configuration space can be induced.
 Therewith, based on a completed model selection, the overall optimization space is once more transformed, but now to a space representing possible model configurations for the constructed pipeline.
 Each leaf node of the tree structure has such a small model configuration space.\newline
-Once the Reinforcement learning model performed the action of selecting a component from the last hierarchical layer and it reaches such a leaf node, Bayesian optimization is conducted in the model configuration space of this leaf.
-The evaluation result of the best candidate of this optimization run is given as a reward to the Reinforcement Learning model and it can update its policy.
-Afterwards, in next iteration the Reinforcement Learning model starts once again at the root node and has to select pipeline components based on the policy and this is repeated until the optimization budget ist spent.\newline
+Once the Reinforcement Learning algorithm performed the action of selecting a component from the last hierarchical layer and it reaches such a leaf node, Bayesian optimization is conducted in the model configuration space of this leaf.
+The evaluation result of the best candidate of this optimization run is given as a reward to the Reinforcement Learning algorithm and it can update its policy.
+Afterwards, in next iteration the Reinforcement Learning algorithm starts once again at the root node and has to select pipeline components based on the policy and this is repeated until the optimization budget ist spent.\newline
 Because Bayesian optimization is not very effective for high dimensional spaces, it is a suitable adjustment for an AutoML approach to not run a Bayesian optimization on the complete candidate space but on a smaller transformed space.
-Instead of Bayesian optimization, the model selection is performed by another optimizer and only a small portion of the model configuration space is the input for a Bayesian optimization run, which includes only the hyperparameter of the selected components.
+Instead of Bayesian optimization, the model selection is performed by another optimizer and only a small portion of the model configuration space is the input for a Bayesian optimization run, which includes only the hyperparameters of the selected components.
 The dimensionality is reduced to a great degree and Bayesian optimization will be more effective.\newline
-But this improvements regarding the Bayesian optimization and the inclusion of a Reinforcement Learning model as an additional optimizer, does not extend the set of problem classes where this approach can be superior drastically, because there is still a big amount of problem classes where the Bayesian optimization method itself is not suitable.
+But this improvements regarding the Bayesian optimization and the inclusion of a Reinforcement Learning algorithm as an additional optimizer, does not extend the set of problem classes where this approach can be superior drastically, because there is still a big amount of problem classes where the Bayesian optimization method itself is not suitable.
 
 The advantages of performing the AutoML optimization in several phases on transformed optimization spaces was further examined by~\textcite{Quemy-Two-Stage-Optimization}.
 Besides the aforementioned opportunity to compensate one less suitable optimization approach with another possibly better suited optimizer, in this publication additionally was stated, that if the optimization space is transformed into two or more smaller sub-spaces, the overall optimization process can be sped up.
@@ -695,7 +691,7 @@ This balance is achieved via a heuristic scoring of nodes via in a Monte-Carlo t
 MCTS will be exemplified in more detail in~\ref{sec:approach:selection:mcts}.\newline
 One example of a heuristic graph search based AutoML approach is called \textit{Mosaic}~\cite{Rakotoarison-Mosaic} and it utilizes such a MCTS and a multi-stage optimization method as well.
 In Mosaic, the tree that is the subject of the MCTS is modelled as a transformation of the optimization space into a model selection space.
-The first $k$ layers of the search tree are representing $k$ possible types of pipeline components, for example pre-processing methods or machine learning models, which have their corresponding $i \in [1,k]$ index in the resulting pipeline.
+The first $k$ layers of the search tree are representing $k$ possible types of pipeline components, for example pre-processing methods or machine learning algorithms, which have their corresponding $i \in [1,k]$ index in the resulting pipeline.
 All resulting pipelines are only linear and not generalized to any form of directed acyclic graph as in the prior related works approach.
 In each of the first $k$ layers one component of each type is selected.
 Therewith, this approach has a comparable tree structure to ReinBo but is more flexible regarding the length of the pipeline.\newline

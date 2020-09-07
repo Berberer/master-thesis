@@ -111,13 +111,13 @@ The Singularity image recipe as well as some additional information regarding th
 \label{sec:evaluation:results}
  The results of these experiments are presented and assessed in the following, before they are evaluated in more detail and used to answer the research questions in the following chapter.
 
- At first, table~\ref{table:benchmark-results} shows the benchmark results of frankensteins-automl against the competitor state-of-the-art approaches.
+ At first, Tab.~\ref{table:benchmark-results} shows the benchmark results of frankensteins-automl against the competitor state-of-the-art approaches.
  The experiment runs were only classified as successful and included in the results, if the AutoML approach was able to return a valid pipeline in one hour plus an additional 15 minutes range of tolerance and without throwing an exception or error.\newline
  None of the approaches was able to achieve successful runs for all 30 seeds across all ten datasets.
  But especially Mosaic was very unstable and was not able to achieve at least results for half of the seeds for six out of the ten datasets.
  Hence, the significance of the comparison of frankensteins with Mosaic is very questionable.\newline
  Nevertheless, a check for significant improvement or deterioration in comparison to the scores of frankenstein were executed via a two-sample \textit{t}-tests with $p = 0.05$.
- The absolute frequencies how often the approaches were significantly better, significantly worse or without a significant difference compared to frankensteins-automl out of the ten datasets are shown in table~\ref{table:significanse-counts}.
+ The absolute frequencies how often the approaches were significantly better, significantly worse or without a significant difference compared to frankensteins-automl out of the ten datasets are shown in Tab.~\ref{table:significanse-counts}.
 
 \begin{sidewaystable}[ht]
     \renewcommand{\arraystretch}{1.5}
@@ -165,7 +165,7 @@ The Singularity image recipe as well as some additional information regarding th
 
 Additionally, the approach of this thesis was evaluated by itself in more detail.
 The first evaluated aspect of frankensteins-automl was the usage of the different optimization algorithms of the ensemble.\newline
-Table~\ref{table:optimizer-calls} show the relative frequency of the optimizers in the context of corresponding datasets as well a visualization of this frequencies as a heatmap.
+Tab.~\ref{table:optimizer-calls} show the relative frequency of the optimizers in the context of corresponding datasets as well a visualization of this frequencies as a heatmap.
 Here, the data was deliberately only considered relatively because the data was aggregated among all three different timeouts (1h, 6h, 12).
 Therefore, absolute values are less meaningful because with different timeouts the amount of MCTS iterations and thus the amount of optimization runs differs greatly.
 
@@ -200,7 +200,7 @@ Therefore, absolute values are less meaningful because with different timeouts t
     \end{subfigure}
 \end{table}
 
-After listing the relative optimizer utilization frequencies, this optimizer utilization is considered in the context of the different datasets and their properties in table~\ref{table:optimizer-call-correlations}.
+After listing the relative optimizer utilization frequencies, this optimizer utilization is considered in the context of the different datasets and their properties in Tab.~\ref{table:optimizer-call-correlations}.
 The following general dataset properties were gathered from OpenML for each dataset:
 \begin{itemize}
     \item \textit{Instances}: The number of instances of the dataset.
@@ -278,12 +278,12 @@ Because linearity and an underlying normal distribution cannot be ensured, since
 The second evaluated aspect of frankensteins mechanics was the influence study of the two main components, i.e. model selection via MCTS and model configuration via the warmstarted optimizer ensembles.\newline
 This was evaluated with the three variants of frankensteins automl for three different timeouts in the context of 30 random seeds and the same ten datasets.
 An analysis for significant improvement or deterioration within one timeout value, was here done in the form of a two-sample \textit{t}-tests with $p = 0.05$ as well.\newline
-All accuracy score averages as well as the significance analysis results can be seen in table~\ref{table:influence-results}.
+All accuracy score averages as well as the significance analysis results can be seen in Tab.~\ref{table:influence-results}.
 
 \begin{table}[ht]
     \caption[Results of the experiments for comparing the three frankenstein variants over longer timeouts.]{
         Results of the experiments for comparing the three frankenstein variants over longer timeouts.
-        The individual cells have the same layout as in table~\ref{table:benchmark-results}.
+        The individual cells have the same layout as in Tab.~\ref{table:benchmark-results}.
     }
     \label{table:influence-results}
     \renewcommand{\arraystretch}{1.25}
@@ -355,7 +355,7 @@ This collected data is now analysed in more detail and used to answer the two ma
 \subsection{Feasibility of AutoML via an Optimizer Ensembles}
 \label{sec:evaluation:analysis:feasibility}
 The first research question is about the feasibility of this optimizer ensembles approach for AutoML problems.\newline
-As observed in the  tables~\ref{table:benchmark-results} and~\ref{table:significanse-counts}, this approach is partially competitive to the compared state-of-the-art approaches.
+As observed in Tab.~\ref{table:benchmark-results} and Tab.~\ref{table:significanse-counts}, this approach is partially competitive to the compared state-of-the-art approaches.
 It appears for the evaluated datasets in large parts inferior to auto-sklearn and TPOT, where it was only able to achieve competitive scores without a significant deterioration for three respectively six datasets but has not significant improvements for a dataset.
 Compared to ML-Plan and Mosaic, the benchmark appears more balanced.
 It shows a minor advantage compared to ML-Plan with significant improvements for six datasets and minor disadvantages compared Mosaic with significant improvements for only one dataset.\newline
@@ -363,7 +363,7 @@ Based on this results, the current reference implementation of the approach of t
 However, it was able to yield partially competitive results and this could indicate the ability to close up to the current state-of-the-art with further developments, refinements and future work.
 
 As part of the feasibility question, it is also evaluated which influence the two core components of this approach, i.e. model selection and optimizer selection as a Multi-Armed Bandit problem tackled via MCTS as well as model configuration approached with warmstarted optimizer ensembles, have on the results.
-The results of this evaluation can be found in table~\ref{table:influence-results}.\newline
+The results of this evaluation can be found in Tab.~\ref{table:influence-results}.\newline
 For this experiment, one of the components was replaced with an alternative default behavior.
 At first, a random search instead of MCTS but all optimizers included.
 Second, only Bayesian optimization but reached via a MCTS.
@@ -385,7 +385,7 @@ Hence, if the timeout is long enough and MCTS was able to perform a sufficient e
 This inherent mechanism of gathering indications about the suitability of an optimization algorithm towards the optimization of parametrizations of constructed pipelines for different datasets was the basis for the second research question.\newline
 It should be examined it there are recognizable trends or tendencies towards one or more optimization algorithm across all datasets or otherwise, if it is correlated to properties of the corresponding dataset which optimizer was utilized with which frequency.
 
-As presented in table~\ref{table:optimizer-calls}, SMAC, i.e. an implementation of Bayesian optimization, was utilized most often for each of the datasets.
+As presented in Tab.~\ref{table:optimizer-calls}, SMAC, i.e. an implementation of Bayesian optimization, was utilized most often for each of the datasets.
 Although Hyperband and the Genetic Algorithm came more or less close regarding the relative utilization frequency, they appear to be selected less favorably by the MCTS.
 Both random search as well as discretization search trail significantly far behind the other three and have really low utilization frequency with a maximum around $15\%$.\newline
 If a ranking is created along the five overall relative utilizations it would look like the following:
@@ -399,12 +399,12 @@ If a ranking is created along the five overall relative utilizations it would lo
 This ranking is interesting in two ways.
 First, since Hyperband is more or less a more sophisticated random search, the three least suitable optimization algorithms are all based on search algorithms.\newline
 Second, auto-sklearn uses internally SMAC, TPOT a Genetic Algorithm and ML-Plan a more complex form of Discretization Search.
-When this ranking is now compared to the results of this three AutoML approaches in table~\ref{table:benchmark-results}, there is a similarity observable as auto-sklearn and TPOT being at the top with comparable scores, but clearly superior to ML-Plan for the evaluated datasets in this experiment series.
+When this ranking is now compared to the results of this three AutoML approaches in Tab.~\ref{table:benchmark-results}, there is a similarity observable as auto-sklearn and TPOT being at the top with comparable scores, but clearly superior to ML-Plan for the evaluated datasets in this experiment series.
 Theoretically, this would be another matching finding in comparison to the optimizer utilization ranking.
 But this is probably all in all solely a coincidence and not caused by the actual choice of optimizer, because the three approaches perform more competitive in other benchmark evaluations with longer timeouts~\cite{Mohr-ML-Plan} then in this evaluation.
 
 Since there is a clear trend recognizable regarding the most favorable optimizer choices of the MCTS across all datasets of this experiment, the evaluation regarding correlations between dataset properties and optimizer utilization becomes less relevant, but was done nevertheless.\newline
-As presented in table~\ref{table:influence-results}, there are only weak correlation coefficients between all dataset properties and optimizer utilizations across all three utilization metrics.
+As presented in Tab.~\ref{table:influence-results}, there are only weak correlation coefficients between all dataset properties and optimizer utilizations across all three utilization metrics.
 The correlation coefficients are overall in the range $-0.1662 \leq \rho \leq 0.2286$, which does not suggest any significant correlation altogether.
 
 This results suggest that SMAC is the most suitable choice of optimization algorithm across all regarded datasets independently of the eight evaluated dataset properties.

@@ -30,7 +30,7 @@ Finally, all components from the two previous parts are combined via a MCTS impl
 
 \subsection{Model Selection Search Space Management}
 \label{sec:implementation:components:search-space}
-Since the model selection is reduced to a graph search problem, the search space is managed as a graph datastructure as shown in~\ref{fig:implementation:uml:search-space}.
+Since the model selection is reduced to a graph search problem, the search space is managed as a graph datastructure as shown in Fig.~\ref{fig:implementation:uml:search-space}.
 Because in other components of this implementation, basic graph modelling functionalities are needed as well, abstract base classes for graph nodes and a graph generator are created to provide this basic datastructure.\newline
 Each \texttt{GraphNode} is identified by a unique id and knows its predecessor nodes as well as the successor nodes.
 Depending on the use-case for the graph node, the abstract method \texttt{is\_leaf\_node} has to be implemented with the respective logic of the use-case.\newline
@@ -80,7 +80,7 @@ The abstract methods of the base classes are implemented in the following manner
 \subsection{Pipeline Evaluation and Optimizers for Model Configuration}
 \label{sec:implementation:components:optimization}
 Once the model selection procedure has created a pipeline topology in the form of a satisfied \textit{SearchSpaceRestProblem}, the model configuration has to optimize a parametrization for the components of this topology.
-This is the task of the optimizer ensembles, which are implemented as illustrated in~\ref{fig:implementation:uml:optimization}.
+This is the task of the optimizer ensembles, which are implemented as illustrated in Fig.~\ref{fig:implementation:uml:optimization}.
 
 For each created pipeline topology of the model selection, i.e. one for each Pipeline Node, a \texttt{OptimizationParameterDomain} object is created and attached.
 It can manage the components and the corresponding parameter space of this pipeline as well as all already evaluated candidates parametrizations.\newline
@@ -153,7 +153,7 @@ In this current reference implementation, five optimization algorithms are imple
 \label{sec:implementation:components:mcts}
 After setting up the model selection as an HTN planning problem with a suitable graph search space and embedding the model configuration via the optimizer ensembles in the leaf nodes with satisfied planning states by attaching additional optimizer nodes, this combined search space has to be actually searched for a functioning AutoML tool.
 Additionally, it needs a user-facing interface such that anyone can start an AutoML process with their custom dataset.
-This two functionalities are illustrated in~\ref{fig:implementation:uml:mcts} and outlined in the following.\newline
+This two functionalities are illustrated in Fig.~\ref{fig:implementation:uml:mcts} and outlined in the following.\newline
 A user should start with creating a \texttt{FrankensteinsAutoMLConfig}.
 They can customize all configuration values as wanted, but all have suitable default values such that this can be omitted as well.
 The only requirement is a dataset as the AutoML problem input, which can either be given as a \texttt{*.arff} file in combination with the index of the target class column or alternatively as two NumPy arrays.
