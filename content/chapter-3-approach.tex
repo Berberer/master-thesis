@@ -289,7 +289,7 @@ Although this requires additional storage memory, collecting and saving already 
 \begin{itemize}
     \item If saved in a hashtable, candidates can be inserted with a generated key and retrieved with one as well. Therewith, it can be checked if a candidate was already evaluated before and if yes, return the existing score from $n^*$ to the optimizer instead of training and evaluating a pipeline on the dataset again.
     The lookup complexity of a hashtable is constant, while training a machine learning algorithm is generally very time consuming in comparison.
-    For example, is the complexity of training a SVM with SMO~\cite{Platt-SMO} between linear and quadratic, depending on the dataset.
+    For example, is the complexity of training an SVM with SMO~\cite{Platt-SMO} between linear and quadratic, depending on the dataset.
     \item If saved in a heap, retrieving the best candidates has a logarithmic complexity and thus, the best $n$ candidates from previous runs of the same or another optimizer from $N^A_{n^*}$ can efficiently be requested from $n^*$ as a starting point for a new optimization run.
 \end{itemize}
 Memory is in general a comparably cheap hardware component, which can be added to the computer nearly indefinitely such that a lot of evaluation results can be stored.

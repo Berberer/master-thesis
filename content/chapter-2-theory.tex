@@ -14,6 +14,12 @@ Before explaining the ensemble approach in the next chapter, which could counter
 
 \section{Classical Machine Learning}
 \label{sec:theory:ml}
+Machine learning in general has been a topic in computer science and mathematics for several decades even before attempts to autotomize it were made in the form of AutoML.
+AutoML is of course not replacing this classical approach, but it is an extension of it.
+Therefore, a short overview from a more abstract and theoretical point of view of this classical machine learning without AutoML is given in this first theory section.
+Especially supervised learning is elucidated here and one possible definition is given, since the approach of this thesis will focus on classification settings, which are a sub-group of supervised learning settings.
+With this foundation, AutoML is explained in the following sections.
+
 If a human is given a task where the correct solution or reaction is not evident, a humans has always the possibility to react with a random solution or with an arbitrary reaction.
 But if the human has any prior first- or second-hand experience with the same or a similar task, the human can choose the reaction based on the memories of different outcomes for different reactions for the more or less similar prior task.
 With the high abstraction level and very symbolic nature of human thinking and memorization, it is comparably easy for humans to recognize even remote similarities between tasks.\newline
@@ -34,9 +40,13 @@ Usually, these algorithms have to be configured with a set of hyperparameters de
 
 \section{Automated Machine Learning}
 \label{sec:theory:automl}
-Automated Machine Learning, or short \textit{AutoML}, tries to tackle the knowledge barrier, which prevents interested people from applying machine learning.
-Therefore, the overall goal is to automate most tasks of the process of creating a machine learning applications that would otherwise require machine learning knowledge.\newline
-In this section, a description of the general workflow of an AutoML tool is given and the usual two main steps of this workflow are illustrated.
+Automated Machine Learning, or short \textit{AutoML}, tries to the overall goal is to automate most tasks of the process of creating a machine learning application and also other associated tasks from the data science field.
+This serves two main purposes:
+\begin{itemize}
+    \item By automating construction and configuration, it tackle the knowledge barrier, which prevents interested people from applying machine learning.
+    \item By reducing the amount of manual work to a bare minimum, it offers a big speed-up to applying machine learning regardless of the level of knowledge of the user.
+\end{itemize}
+In this section, a description of the general workflow of an AutoML tool is given and the usual two main steps of such an AutoML workflow are illustrated.
 This will be concluded with a formalization of the AutoML problem setting as an optimization problem.
 
 \subsection{General Workflow}
@@ -98,9 +108,9 @@ Therewith, a valid model selection result can be seen as a simple formalization 
     The components of that list are the selected components that will be used to construct the pipeline.
     \item A binary structure relation $\prec$ over $C'$ that defines which components are a data input for another component to define an order of the components for the pipeline as well as an aggregation of several components with one component. 
 \end{itemize}
-Nevertheless, to find a valid set $C' \subseteq C$ is not a trivial task.
+Nevertheless, to find valid results for $C'$ and $\prec$ is not a trivial task.
 For example, when an aggregator for multiple parallel pre-processing components is needed, a valid choice could be a Feature Union component but a Decision Tree component would be invalid for this pipeline position.\newline
-Therefore, if the pipelines shall be allowed to be more complex than for example a single pre-processing component and a single learning algorithm, there is a set of constraints for valid subsets of the candidate space of the model selection $C$.
+Therefore, if the pipelines shall be allowed to be more complex than for example a single pre-processing component and a single learning algorithm, there is depending on $C'$ a probably big set of constraints for the binary structure relation $\prec$.
 
 \subsection{Model Configuration}
 \label{sec:theory:automl:configuration}
@@ -139,7 +149,7 @@ An example for a concrete parametrization drawn from a three dimensional paramet
 The choices in the model selection and model configuration step for one candidate out of the corresponding candidate spaces should not be arbitrary.
 Evaluations of a candidate pipeline yield a score for this candidate and intuitively a suitable AutoML approach should try to select candidates with scores as good as possible.
 Therefore, the AutoML problem is often considered as an instance an optimization problem and can be formalized as one as well.\newline
-\textcite{Feurer-Cash} give a formalization for AutoML problems as a so called \textit{Combined Algorithm Selection and Hyperparameter optimization} problem, or short \textit{CASH} problem.
+\textcite{Thornton-AutoWeka} give a formalization for AutoML problems as a so called \textit{Combined Algorithm Selection and Hyperparameter optimization} problem, or short \textit{CASH} problem.
 Their definition is the following:
 \begin{equation*}
     A^*, \lambda_* \in \> \underset{A^{(j)} \in \mathcal{A},\lambda \in \Lambda^{(j)}}{\mathrm{argmin}} \> \frac{1}{K} \sum_{i=0}^K \mathcal{L} (A_\lambda^{(j)}, D_{\textit{train}}^{(i)}, D_{\textit{valid}}^{(i)})
@@ -150,9 +160,10 @@ This formula consists of the following parts:
     \item $\lambda_*$: The best hyperparameter configuration for $A^*$ found in the the model configuration step
     \item $\mathcal{A}$: A set of possible algorithms to choose from and given in the form $\mathcal{A} = \{A^{1}, ..., A^{R} \}$, which is the set of all valid pipeline component combinations in the case of AutoML
     \item $\Lambda^{(j)}$: Each algorithm $A^{(j)} \in \mathcal{A}$ has a parameter configuration domain $\Lambda^{(j)}$, where a concrete parametrization $\lambda$ can be selected from
-    \item $\frac{1}{K} \sum_{i=0}^K $: This is used to calculate the K-fold cross-validation of a pipeline, but other evaluation metrics are also possible if the formula is adjusted accordingly
+    \item $\frac{1}{K} \sum_{i=0}^K$: This is used to calculate the K-fold cross-validation of a pipeline, but other evaluation metrics are also possible if the formula is adjusted accordingly
     \item $\mathcal{L} (A_\lambda^{(j)}, D_{\textit{train}}^{(i)}, D_{\textit{valid}}^{(i)})$: Is the loss, calculated with the loss function $\mathcal{L}$, of the algorithm $A^{(j)}$ configured with the parametrization $\lambda$, trained on the $i$-th split of the training data $D_{\textit{train}}^{(i)}$ and evaluated on the validation data $D_{\textit{valid}}^{(i)}$
 \end{itemize}
+Instead of the integration of the K-fold cross-validation in the definition of \citeauthor{Thornton-AutoWeka} via $\frac{1}{K} \sum_{i=0}^K$, it is of course also possible to replace it with any other form of metric.\newline
 In summary, the goal is to select an algorithm together with a parameter configuration, such that the expected loss is minimal.
 
 \section{Black Box Optimization}

@@ -41,6 +41,11 @@ For creating and utilizing this optimizer ensembles in the context of AutoML, a 
 
 \section{Thesis Goal and Research Questions}
 \label{sec:intro:goal}
+The recent related works approaches increased their number of applied optimizer up to two instead of the single optimizer in the single optimizer of the established state-of-the-art approaches.
+However, implied by the No-free-lunch Theorems for optimization, this will achieve the optimal results for only a certain set of problem instances.
+If the set of optimizers would be increased even further, this set could theoretically be increased, under the assumption that even more optimizers than just two are considered and the most suitable one exploited.
+Additionally, during the evaluation of the different optimizers to identify the most suitable one for the problem instance, they could share gathered between each other about their evaluation insights up to that point.
+This introduces the novelle approach for optimizer ensembles for AutoML problems.\newline
 In the context of this thesis, a feasible concept and algorithm for such optimizer ensembles will be devised and exemplarily realized as a reference implementation.
 This  implemented optimizer ensemble algorithm will be the test subject for a series of empirical evaluations.\newline
 Overall, the goal of this thesis is to answer two research questions regarding this approach for optimizer ensembles applied to the AutoML problem with the data gathered during the evaluations:
@@ -49,7 +54,10 @@ Overall, the goal of this thesis is to answer two research questions regarding t
     More precisely, is the result quality comparable or even better compared to other state-of-the-art approaches?
     And if it is a feasible approach, what influence have the particular components of the approach on the overall outcome?
     \item Can knowledge about the optimization in the general AutoML context be extrapolated from this approach?
-    When the frequencies of utilizing certain optimizations algorithms during the execution of this approach are recorded, this may give indications regarding their capability for different AutoML problems, since this approach tries to find the best suited optimizer out of the ensemble for the input problem and exploit it.
+    From a theoretical point of view, the suitability of an optimization for a model configuration problem could depend on a variety of different factors like the dataset, the optimization budget, the components of the machine learning pipeline whose parametrizations are optimized, and several others.
+    The pipeline components are influenced by the model selection and the timeout depends on the environment of the user.
+    But the relationship between input datasets as well as more generalized properties of the datasets in relation to the optimizer utilization, can be valuable insights beyond the discussion approach.\newline
+    When the frequencies of utilizing certain optimizations algorithms during the execution of this approach are recorded, this may give indications regarding their capability for different AutoML problems, since this approach tries to find the best suited optimizer out of the ensemble for the input problem, i.e. the dataset with its properties, and exploit it.
     Based on these frequencies, is every optimizer called an equal amount of times or is one or more optimization method favoured for the AutoML use case?
     Does it depend on certain dataset properties of the concrete AutoML problem, whether an optimization method is used relatively often?
 \end{enumerate}
@@ -60,26 +68,17 @@ Following the current introduction chapter, this thesis is structured into five 
 The content and goals of each chapter are briefly explained here:
 
 \textbf{Chapter \ref{sec:theory}} \\[0.2em]
-At first, the foundations of the machine learning, the AutoML setting and optimization in general are elucidated, to give a starting point for the related work part of this chapter and aid the understanding of the approach of this thesis.
-A selection of Black Box optimization algorithms is presented and for each one a few existing AutoML approaches, which apply this specific optimization algorithm, as well.\newline
-With the help of the No-Free-Lunch theorems for optimization, it will be argued why it is not sufficient to utilize a single optimization method for a single AutoML optimization space.\newline
-The chapter is concluded by presenting a few recently published AutoML approaches, which already apply the idea of separating the single joint optimization space and applying more than one optimizer, as supplementary related works besides the AutoML approaches, which were presented priorly in this chapter altogether with their utilized black box optimization algorithm.
+At first, the foundations of the machine learning, the AutoML setting and optimization in general are elucidated, to give a starting point for the related work part of this chapter and the approach of this thesis.
 
 \textbf{Chapter \ref{sec:approach}} \\[0.2em]
 The optimizer ensemble approach of this thesis is theoretically specified here and the underlying design choices explained and justified.
-Every concept mentioned in the theory chapter, which is taken up again for the specification of this approach, is explained in more detail here as well.\newline
-All improvements from applying an optimizer ensemble instead of a single optimizer are listed with reference to the disadvantages from the related work approaches mentioned in chapter~\ref{sec:theory}.
 
 \textbf{Chapter \ref{sec:implementation}} \\[0.2em]
-To apply the approach for actual AutoML problem settings as well as evaluating the approach empirically in an experiment series, an actual implementation is necessary.
-The technical details of an exemplaric reference implementation as a tool developed with the Python programming language are explicated in this chapter, accompanied with an overview of the utilized libraries of the implementation.
+To apply the approach for actual AutoML problem settings as well as evaluating the approach empirically in an experiment series, an actual implementation is necessary and is explicated in this chapter.
 
 \textbf{Chapter \ref{sec:evaluation}} \\[0.2em]
-In order to answer the previously listed research questions, a series of empirical experiments is designed and conducted.\newline
-This approach is benchmarked against state-of-the-art scores of some of the related work approaches as well as altered versions of itself.
-Structured by the addressed research question, the experiments design and execution is explained.
-Subsequent to this explanations, the results of the experiments are shown and interpreted to answer the research questions.
+In order to answer the previously listed research questions, a series of empirical experiments is designed and the results analyzed in this chapter.
 
 \textbf{Chapter \ref{sec:conclusion}} \\[0.2em]
 Finally, the answers to the research questions are used to summarize the concepts of this approach and their validity.
-At last, an outlook is given about additions, which could further improve this approach and are a starting point for future work and follow-up research.
+At last, an outlook is given with a selection of starting points for future work and follow-up research.
