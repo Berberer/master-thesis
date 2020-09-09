@@ -8,7 +8,7 @@ In this final chapter after previously answering the concrete research questions
 \label{sec:conclusion:summary}
 This thesis was based on the statements of the No-Free-Lunch theorems for optimization, which had proven that under given constraints no optimization algorithm can be superior for all problems.
 To approach this problem, the model selection of an AutoML setting combined with choosing an optimizer that should perform a model configuration for the selected pipeline model was seen as a hierarchical Multi-Armed Bandit problem.
-Hence, it was tackled with a MCTS, which searches a model selection graph that is realized as a HTN planning graph with embedded optimizers.
+Hence, it was tackled with an MCTS, which searches a model selection graph that is realized as an HTN planning graph with embedded optimizers.
 This optimizers are combined as an ensemble to utilize each others gathered information about evaluated candidates and perform successive warmstarting for each optimization run.
 
 This novelle AutoML idea was realized as a first simple reference implementation, which afterwards was used in a series of experiments to examine the feasibility of the approach and to gather additional knowledge about the functionality of the components.
@@ -28,7 +28,7 @@ To conclude this chapter, they are listed in the following, grouped into differe
     For example, the amount of Monte-Carlo simulation could start with a high value and will be reduced during the run, such that a higher exploration coverage of the search space is reached in the beginning.
     Or alternatively the optimization time budget could start with a low value and be improved later in the search, once the probability of exploiting more suitable optimizers is higher after a certain degree of exploration.
     The adjustment of time budgets, could utilize one of the time allocation policies of~\textcite{Quemy-Two-Stage-Optimization}, which were presented in~\ref{sec:theory:related}.
-    \item \textbf{Model Selection Search}: During the evaluation of different configurations, it could also prove worthwhile to evaluate different search algorithms instead of a MCTS.
+    \item \textbf{Model Selection Search}: During the evaluation of different configurations, it could also prove worthwhile to evaluate different search algorithms instead of an MCTS.
     Since the variant of this approach that used a random search instead of MCTS was not significantly worse, other search algorithms should also be considered and tested.\newline
     Although MCTS is usually associated with UCT as a policy for scoring nodes, there are also other published MCTS policies for scoring nodes and selecting them accordingly.
     A survey of a broad selection of such policies was for example done by~\textcite{Browne-Policies}.
@@ -40,7 +40,9 @@ To conclude this chapter, they are listed in the following, grouped into differe
     Similar to adjusting the configuration dynamically during the run, it could also be a variation to enable or disable warmstarting for different time periods of the overall search or for different parts of the search graph.
     In the same manner, early stopping for all or for some optimizers could be added as a functionality and then dynamically be enabled and disabled during the run, if there is a chance for a better budget allocation towards more promising optimizers.\newline
     Additionally, the possibilities for creating the model configuration optimization spaces can be extended to a degree of the expressiveness of auto-sklearns space modelling features.
-    Constraints across multiple parameters like for example, "\textit{If value $a$ is selected for parameter $p_1$, value $b$ is no longer an allowed value for parameter $p_2$}" could prevent this approach from evaluating unsuitable or even invalid pipeline parametrization candidates.
+    Constraints across multiple parameters as for example, "\textit{If value $a$ is selected for parameter $p_1$, value $b$ is no longer an allowed value for parameter $p_2$}" could prevent this approach from evaluating unsuitable or even invalid pipeline parametrization candidates.\newline
+    As part of this thesis it was only evaluated if the dataset properties had any correlations to the optimizer utilization, but the same could be done in regard to the components and the topology of the pipeline.
+    For example, if one optimization algorithm would be utilized more often for shorter pipelines or alternatively for example, if the learning algorithm is a decision tree, an optmizer selection policy could integrate such correlations.
     \item \textbf{Problem Settings}: In theory, the approach of this thesis has no limitations regarding the desired functionality of the algorithm selection and hyperparameter optimization outcome.
     This thesis focusses on AutoML as one specific outcome, but with minor modifications regarding problem description input and internal candidate evaluation, it can construct models for other combined algorithm selection and configuration domains as well.\newline
     Once the above mentioned improvements were made and this minor modifications for allowing other domains as well, an interesting follow-up research question is to evaluate how the optimizer ensemble approach performs in other domains besides AutoML.

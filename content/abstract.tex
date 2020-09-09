@@ -8,7 +8,7 @@
 State-of-the-art approaches for Automated Machine Learning have combined their model selection and model configuration spaces into a joint optimization space, which is hence only examined with one optimizer.
 Recent publications have extended this joint space method by partitioning model selection and model configuration into two sub-spaces and approaching them alternating with two different optimization algorithms.
 However, for all possible outcomes of the model selection and all possible input datasets, the model configuration is always optimized with the same algorithm.
-According to the No-Free-Lunch Theorem for Optimization, one single optimization algorithm cannot be optimal for all problem classes in a constrained environment, like for example a limited time budget.
+According to the No-Free-Lunch Theorem for Optimization, one single optimization algorithm cannot be optimal for all problem classes in a constrained environment, as for example a limited time budget.
 This thesis proposes an idea for tackling the model configuration with an ensemble of several optimizers, such that the most suitable optimizer for the current result of the model selection and the input dataset can be identified and utilized.
 An initial simple reference implementation of this idea showed partially competitive scores against current state-of-the-art AutoML tools in a comprehensive experimental evaluation.
 \vspace*{10mm}

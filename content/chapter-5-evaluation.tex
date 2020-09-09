@@ -22,10 +22,10 @@ In this case, there would no motivation to use this approach instead of other ap
 Secondly, if there is an improvement in some scores, which of the two components of the approach, the MCTS model selection or the warmstarted optimizer ensemble model configuration, has had which influence on the resulting scores.
 To assess this influences, three versions of frankensteins-automl are evaluated, where two of them have slight modifications:
 \begin{enumerate}
-    \item To evaluate the influence of a Model Selection via a MCTS, this modified version does not utilize an optimizer ensemble.
+    \item To evaluate the influence of a Model Selection via an MCTS, this modified version does not utilize an optimizer ensemble.
     Every optimizer node represents the same optimizer, which will be SMAC for this evaluation.
     In the remaining chapter it will be referenced as \textit{frankenstein-mcts.}
-    \item To evaluate the influence of the ensembled optimizers, this modified version does not utilize a MCTS selection.
+    \item To evaluate the influence of the ensembled optimizers, this modified version does not utilize an UCT based selection as in an MCTS.
     The node selection on each level down the paths to the different optimizer nodes, will be random for each search iteration.
     Therefore, it is basically a repeated random search.
     Hence, it will be named \textit{frankenstein-rs}.
@@ -44,7 +44,7 @@ Alternatively, there could be no significant difference and each optimizer was s
 \label{sec:evaluation:setup}
 To answer the first step of the first research question, frankensteins-automl will be benchmarked against different other competitor state-of-the-art approaches.
 The selection of this approaches is made to represent the different established optimization strategies in the current state-of-the-art.\newline
-\textit{ML-Plan} is selected for optimization via searching, \textit{TPOT} as an approach with a Genetic Algorithm, \textit{auto-sklearn} for Bayesian optimization, and finally \textit{Mosaic} as a related work approach that utilizes more than one optimization method via an optimization space transformation.\newline
+\textit{ML-Plan} is selected for optimization via searching, \textit{TPOT} as an approach with a genetic algorithm, \textit{auto-sklearn} for Bayesian optimization, and finally \textit{Mosaic} as a related work approach that utilizes more than one optimization method via an optimization space transformation.\newline
 Since ML-Plan is the only approach out of this selection, which is not implemented in Python but in Java, it can not be integrated seamlessly in the same experimental setup as the remaining ones.
 The experimental results for ML-Plan were kindly provided by the original authors of the approach~\textcite{Mohr-ML-Plan}.
 All other approaches will be evaluated in a unified Python experimental environment that is explained in more detail in appendix~\ref{sec:appendix:singularity}.
@@ -366,8 +366,8 @@ As part of the feasibility question, it is also evaluated which influence the tw
 The results of this evaluation can be found in Tab.~\ref{table:influence-results}.\newline
 For this experiment, one of the components was replaced with an alternative default behavior.
 At first, a random search instead of MCTS but all optimizers included.
-Second, only Bayesian optimization but reached via a MCTS.
-Both were seen as competitors to the unmodified approach with a MCTS and all optimizers.\newline
+Second, only Bayesian optimization but reached via an MCTS.
+Both were seen as competitors to the unmodified approach with an MCTS and all optimizers.\newline
 Unfortunately, across all three evaluated timeouts there are only four occurrences of one of the modified variants having significantly different scores compared to the unmodified and complete variant.
 Additionally, these four significant differences do not suggest any kind of pattern and are most likely just outliers.
 Therefore, based on the evaluated datasets and timeouts, the approach appears to be powered by a combination of both components and is not clearly influenced by one more than the other.
@@ -380,7 +380,7 @@ More evaluations and experimentation with modifications and additions in both co
 
 \subsection{Optimizer Utilization Frequencies}
 \label{sec:evaluation:analysis:optimizer}
-Since a MCTS as a method to tackle a Multi-Armed Bandit problem it used to select the optimizer, it will try to explore the most suitable optimizer for each problem class/instance and exploit it.
+Since an MCTS as a method to tackle a Multi-Armed Bandit problem it used to select the optimizer, it will try to explore the most suitable optimizer for each problem class/instance and exploit it.
 Hence, if the timeout is long enough and MCTS was able to perform a sufficient exploration, there should be a clearly visible trend towards one or more optimizer for the problem class, i.e. an input dataset.\newline
 This inherent mechanism of gathering indications about the suitability of an optimization algorithm towards the optimization of parametrizations of constructed pipelines for different datasets was the basis for the second research question.\newline
 It should be examined it there are recognizable trends or tendencies towards one or more optimization algorithm across all datasets or otherwise, if it is correlated to properties of the corresponding dataset which optimizer was utilized with which frequency.
@@ -398,7 +398,7 @@ If a ranking is created along the five overall relative utilizations it would lo
 \end{enumerate}
 This ranking is interesting in two ways.
 First, since Hyperband is more or less a more sophisticated random search, the three least suitable optimization algorithms are all based on search algorithms.\newline
-Second, auto-sklearn uses internally SMAC, TPOT a Genetic Algorithm and ML-Plan a more complex form of Discretization Search.
+Second, auto-sklearn uses internally SMAC, TPOT a genetic algorithm and ML-Plan a more complex form of Discretization Search.
 When this ranking is now compared to the results of this three AutoML approaches in Tab.~\ref{table:benchmark-results}, there is a similarity observable as auto-sklearn and TPOT being at the top with comparable scores, but clearly superior to ML-Plan for the evaluated datasets in this experiment series.
 Theoretically, this would be another matching finding in comparison to the optimizer utilization ranking.
 But this is probably all in all solely a coincidence and not caused by the actual choice of optimizer, because the three approaches perform more competitive in other benchmark evaluations with longer timeouts~\cite{Mohr-ML-Plan} then in this evaluation.

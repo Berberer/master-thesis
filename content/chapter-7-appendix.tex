@@ -3,6 +3,278 @@
 \chapter{Appendix}
 \label{sec:appendix}
 
+\section{Setup and Singularity Definition File of the Experiments}
+\label{sec:appendix:singularity}
+The evaluation utilizes a Python library for experiment execution.
+It requires a definition of all possible input parameters for one experiment run and the desired result values.\newline
+Experiment executions themselves, are orchestrated via one central database.
+The experiment runner will select one possible parametrization of the allowed input parameter values, check via the database if this parametrization was already evaluated and perform the evaluation of the parametrization otherwise.
+With this experiment management via a single database, the actual experiment execution can be parallelized arbitrarily.
+Further details about the libraries setup and functionality can be found in the corresponding repository\footnote{\url{https://github.com/Berberer/python-experimenter}}.\newline
+
+Every time a certain file name is assumed for the setup it is given as well, but this can of course be customized for a different setup.
+
+The experiment runner has to be configured with the information regarding the database connection and the values for possible parametrization and expected results.
+For example in the case of the experiments with the timeout of one hour to compare the different approaches regarding their accuracy scores and additionally to count the optimizer runs of frankenstein, the experiment configuration file (\texttt{experiment.properties}) could look like the following:
+\begin{Verbatim}[fontsize=\scriptsize]
+keyfields = timeout,seed,dataset,algorithm
+resultfields = score,random_count,hyperband_count,genetic_count,
+    smac_count,discretization_count
+
+# Keyfield values(i.e. values for input parametrizations)
+timeout=3600
+seed=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
+    26,27,28,29,30
+algorithm=tpot,autosklearn,mosaic,frankenstein
+dataset=amazon-1000,car-6,cifar-3072,dexter-20000,dorothea-100000,
+    krvskp-36,semeion-256,waveform-40,wine-11,yeast-8
+
+# Database connection setup values
+db.host = 192.168.0.1
+db.type = MYSQL
+db.username = experimenter
+db.password = password123
+db.database = experiments
+db.table = automl
+\end{Verbatim}
+Here, the datasets have a number attached to their name, to indicate the index of the column with the prediction target class.
+
+This experiment configuration file is given as an input to the following Python script (\texttt{experiment.py}) that defines how the experiments for a single parametrization are actually conducted and then starts the execution of experiments:
+\begin{lstlisting}[language=Python,basicstyle=\scriptsize]
+import resource
+from python_experimenter.experiment_runner import ExperimentRunner
+from tpot import TPOTClassifier
+from autosklearn.classification import AutoSklearnClassifier
+from mosaic_ml.automl import AutoML
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from frankensteins_automl.frankensteins_automl import (
+    FrankensteinsAutoMLConfig,
+    FrankensteinsAutoML,
+)
+from frankensteins_automl.machine_learning.arff_reader import read_arff
+from frankensteins_automl.optimizers.baysian.smac_optimizer import SMAC
+
+
+def automl_experiment(keyfields):
+    # Get experiment parametrization
+    algorithm = keyfields["algorithm"]
+    dataset = keyfields["dataset"]
+    seed = int(keyfields["seed"])
+    timeout = int(keyfields["timeout"])
+
+    # Set results to dummy values
+    results = {}
+    results["random_count"] = -1
+    results["hyperband_count"] = -1
+    results["genetic_count"] = -1
+    results["smac_count"] = -1
+    results["discretization_count"] = -1
+    results["score"] = -1
+
+    # Read input dataset and perform stratified split
+    parts = dataset.split("-")
+    dataset_file = parts[0]
+    class_index = int(parts[1])
+    data_x, data_y, _, _ = read_arff(
+        f"res/datasets/{dataset_file}.arff",
+        class_index 
+    )
+    x_train, x_test, y_train, y_test = train_test_split(
+                data_x,
+                data_y,
+                test_size=0.3,
+                random_state=seed,
+                stratify=data_y,
+            )
+    score = None
+
+    # Configure and execute approach of this experiments run
+    if algorithm == "tpot":
+        tpot_automl = TPOTClassifier(
+            generations=None,
+            random_state=seed,
+            max_time_mins=int(timeout / 60.0)
+        )
+        tpot_automl.fit(x_train, y_train)
+        score = tpot_automl.score(x_test, y_test)
+    elif algorithm == "autosklearn":
+        autosklearn_automl = AutoSklearnClassifier(
+            time_left_for_this_task=timeout,
+            seed=seed,
+            ml_memory_limit=16384
+        )
+        autosklearn_automl.fit(x_train, y_train)
+        predictions = autosklearn_automl.predict(x_test)
+        score = accuracy_score(predictions, y_test)
+    elif algorithm == "mosaic":
+        mosaic_automl = AutoML(
+            time_budget=timeout,
+            seed=seed,
+            scoring_func="accuracy",
+            memory_limit=59392,
+        )
+        _, score = mosaic_automl.fit(
+            x_train,
+            y_train,
+            x_test,
+            y_test,
+            categorical_features=["numerical"]*len(x_train[0])
+        )
+    else:
+        config = FrankensteinsAutoMLConfig()
+        config.direct_data_input(x_train, y_train)
+        config.timeout_in_seconds = float(timeout)
+        config.timeout_for_optimizers_in_seconds = 180.0
+        config.timeout_for_pipeline_evaluation = 300.0
+        config.simulation_runs_amount = 3
+        config.random_seed = seed
+        
+        # Select frankensteins-automl variant
+        if algorithm == "frankenstein":
+            config.count_optimizer_calls = True
+        elif algorithm == "frankenstein-rs":
+            config.random_node_selection = True
+        elif algorithm == "frankenstein-mcts":
+            config.optimizers = [SMAC]
+
+        # Return accuracy and optimizer run counts if available
+        e = None
+        r = None
+        try:
+            frankensteins_automl = FrankensteinsAutoML(config)
+            r = frankensteins_automl.run()
+        except Exception as exception:
+            e = exception
+        if r is not None:
+            pipeline = r["pipeline_object"]
+            if pipeline is not None:
+                pipeline.fit(x_train, y_train)
+                predictions = pipeline.predict(x_test)
+                score = accuracy_score(predictions, y_test)
+            if algorithm == "frankenstein":
+                if "optimizer_calls" in r:
+                    oc = r["optimizer_calls"]
+                    if "RandomSearch" in oc:
+                        results["random_count"] = oc["RandomSearch"]
+                    if "Hyperband" in oc:
+                        results["hyperband_count"] = oc["Hyperband"]
+                    if "GeneticAlgorithm" in oc:
+                        results["genetic_count"] = oc["GeneticAlgorithm"]
+                    if "SMAC" in oc:
+                        results["smac_count"] = oc["SMAC"]
+                    if "DiscretizationSearch" in oc:
+                        results["discretization_count"] = (
+                            oc["DiscretizationSearch"]
+                        )
+        elif e is not None:
+            raise e
+
+    if score is not None:
+        results["score"] = score
+
+    return results
+
+# Start the experiment execution with the here defined evaluation method
+runner = ExperimentRunner(automl_experiment, "experiment.properties")
+runner.run()
+\end{lstlisting}
+This experiment script can be used for the experiments of all research questions of this thesis with an appropriate configuration in the corresponding \texttt{experiment.properties} file as for example the one aforementioned.
+
+At last, this script has to be executed in a reproducible Python environment.
+For instance, this can be achieved with Singularity containers~\cite{Kurtzer-Singularity}.
+The Singularity recipe for the container of this experiments is the following:
+\begin{Verbatim}[fontsize=\scriptsize]
+BootStrap: library
+From: ubuntu:20.04
+
+%files
+    # Approach of this thesis to be copied into the container
+    frankensteins-automl /experiment/
+
+%post
+    # Bring Ubuntu up to date
+    apt-get -y update
+    apt-get -y upgrade
+    # Install Python and different required libraries
+    apt-get -y install python3
+    apt-get -y install python3-dev
+    apt-get -y install python3-distutils
+    apt-get -y install wget
+    apt-get -y install git
+    apt-get -y install bison
+    apt-get -y install flex
+    apt-get -y install curl
+    apt-get -y install build-essential
+    apt-get -y install autotools-dev
+    apt-get -y install automake
+    apt-get -y install libpcre3-dev
+    apt-get -y install gcc
+    apt-get -y install g++
+    # Install pip
+    wget https://bootstrap.pypa.io/get-pip.py
+    python3 get-pip.py
+    pip install --upgrade pip setuptools wheel Cython numpy scipy
+    # Build and install swig
+    git clone https://github.com/swig/swig.git --branch=v3.0.8
+    cd swig
+    ./autogen.sh
+    ./configure
+    make
+    make install
+    # Install approach of this thesis locally in the container
+    cd /experiment/frankensteins-automl
+    pip install -r requirements.txt
+    pip install .
+    cd ..
+    # Clone and install experiment runner locally in the container
+    git clone https://github.com/Berberer/python-experimenter.git
+    cd python-experimenter
+    pip install -r requirements.txt
+    pip install .
+    cd ..
+    # Install the benchmark approaches and their dependencies
+    pip install tpot
+    a="https://raw.githubusercontent.com/automl/auto-sklearn/master/requirements.txt"
+    curl ${a} | xargs -n 1 -L 1 pip install
+    pip install auto-sklearn
+    pip install git+https://github.com/herilalaina/mosaic@0.1
+    pip install git+https://github.com/herilalaina/mosaic_ml
+\end{Verbatim}
+This recipe assumes that the image is build in a directory where the reference implementation of the approach of this thesis is located in a folder called \texttt{frankensteins-automl} to allow direct changes and customizations of the code.
+Alternatively, this can be easily changed in the recipe to directly clone it from GitHub.
+
+After building the image (\texttt{experiment.sif}), the experiments can be started for example via \texttt{singularity exec experiment.sif python3 experiment.py}.\newline
+This execution assumes the following file setup in the same directory where the built container is located and used:
+\dirtree{%
+    .1 /. 
+    .2 experiment.properties. 
+    .2 experiment.py. 
+    .2 experiment.sif. 
+    .2 res. 
+    .3 config. 
+    .4 logging.conf. 
+    .3 searchspace. 
+    .4 frankensteins\_automl\_classifiers.json. 
+    .4 frankensteins\_automl\_data\_preprocessors.json. 
+    .4 frankensteins\_automl\_feature\_preprocessors.json. 
+    .4 frankensteins\_automl\_topologies.json. 
+    .3 datasets. 
+    .4 amazon.arff. 
+    .4 dorothea.arff. 
+    .4 wine.arff. 
+    .4 car.arff. 
+    .4 krvskp.arff. 
+    .4 yeast.arff. 
+    .4 cifar.arff. 
+    .4 semeion.arff. 
+    .4 dexter.arff. 
+    .4 waveform.arff. 
+}
+The \texttt{res/searchspace/*.json} files are given in~\ref{sec:appendix:htn-space}, but can be downloaded from \url{https://github.com/Berberer/frankensteins-automl/tree/master/res/search_space}.
+Additionally, \texttt{res/logging/logging.conf} is used to configure the logging of frankensteins-automl with the usual Python logging configuration and can be set to the desired values.
+Finally, \texttt{res/datasets/*.arff} are the dataset files listed in~\ref{sec:evaluation:setup}.
+
 \section{Example AutoML Optimization Space Definition}
 \label{sec:appendix:htn-space}
 This is an adaptation of the model selection and model configuration space of \textit{auto-sklearn}~\cite{Feurer-AutoSklearn} for the approach of this thesis.
@@ -1177,319 +1449,3 @@ This concrete search space is therefore split into four parts:
     ]
 }
 \end{Verbatim}
-
-\section{Ensemble Optimizer AutoML in Pseudo-Code}
-\label{sec:appendix:pseudo-code}
-Here follows a description of the approach of this thesis in very high-level pseudo-code.
-For a more detailed version, an implementation in Python can be found here: \url{https://github.com/Berberer/frankensteins-automl}.
-In this simplified version, the pseudo-code specification expects the overall AutoML timeout, the timeout for each single optimization run, a searchspace created beforehand from searchspace definition files, and the dataset in the format instances $x$ and classes $\hat{y}$ as an input.
-
-\begin{algorithm}[H]
-    \caption{frankensteins-automl}
-    \SetAlgoLined
-    \DontPrintSemicolon
-    \KwResult{Best found pipeline and corresponding score.}
-    \KwData{Timeout, OptimizerTimeout, Searchspace, $x$, $\hat{y}$}
-    \BlankLine
-    bestPipeline $\leftarrow$ null\;
-    bestScore $\leftarrow$ 0\;
-    graphGenerator $\leftarrow$ new MCTSGraphGenerator(Searchspace, $x$, $\hat{y}$)\;
-    rootNode $\leftarrow$ graphGenerator.getRootNode()\;
-    \While{ $\lnot$ Timeout is spent}{
-        n $\leftarrow$ rootNode\;
-        \While{n is expanded $\wedge \, \lnot$ n is leaf node}{
-            n $\leftarrow \underset{c \, \in \, \mathrm{n.getChildNodes()}}{\mathrm{argmax}} $ c.getNodeValue()\;
-        }
-        \BlankLine
-        startNodes $\leftarrow \, \{\}$\;
-        \eIf{n is leaf node}{
-            startNodes $\leftarrow$ startnodes $\cup$ n\;
-        }{
-            graphGenerator.expand(n)\;
-            startNodes $\leftarrow$ startnodes $\cup$ n.getChildNodes())\;
-        }
-        \BlankLine
-        (reachedLeafNodes, results) $\leftarrow$ monteCarloSimulations(startNodes, OptimizerTimeout)\;
-        backpropagate(reachedLeafNodes, results)\;
-        \BlankLine
-        \For{(pipeline, score) $\in$ results}{
-            \If{score $>$ bestScore}{
-                bestScore $\leftarrow$ score\;
-                bestPipeline $\leftarrow$ pipeline\;
-            }
-        }
-    }
-    return (bestPipeline, bestScore)\;
-\end{algorithm}
-
-\section{Setup and Singularity Definition File of the Experiments}
-\label{sec:appendix:singularity}
-The evaluation utilizes a Python library for experiment execution.
-It requires a definition of all possible input parameters for one experiment run and the desired result values.\newline
-Experiment executions themselves, are orchestrated via one central database.
-The experiment runner will select one possible parametrization of the allowed input parameter values, check via the database if this parametrization was already evaluated and perform the evaluation of the parametrization otherwise.
-With this experiment management via a single database, the actual experiment execution can be parallelized arbitrarily.
-Further details about the libraries setup and functionality can be found in the corresponding repository\footnote{\url{https://github.com/Berberer/python-experimenter}}.\newline
-
-Every time a certain file name is assumed for the setup it is given as well, but this can of course be customized for a different setup.
-
-The experiment runner has to be configured with the information regarding the database connection and the values for possible parametrization and expected results.
-For example in the case of the experiments with the timeout of one hour to compare the different approaches regarding their accuracy scores and additionally to count the optimizer runs of frankenstein, the experiment configuration file (\texttt{experiment.properties}) could look like the following:
-\begin{Verbatim}[fontsize=\scriptsize]
-keyfields = timeout,seed,dataset,algorithm
-resultfields = score,random_count,hyperband_count,genetic_count,
-    smac_count,discretization_count
-
-# Keyfield values(i.e. values for input parametrizations)
-timeout=3600
-seed=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
-    26,27,28,29,30
-algorithm=tpot,autosklearn,mosaic,frankenstein
-dataset=amazon-1000,car-6,cifar-3072,dexter-20000,dorothea-100000,
-    krvskp-36,semeion-256,waveform-40,wine-11,yeast-8
-
-# Database connection setup values
-db.host = 192.168.0.1
-db.type = MYSQL
-db.username = experimenter
-db.password = password123
-db.database = experiments
-db.table = automl
-\end{Verbatim}
-Here, the datasets have a number attached to their name, to indicate the index of the column with the prediction target class.
-
-This experiment configuration file is given as an input to the following Python script (\texttt{experiment.py}) that defines how the experiments for a single parametrization are actually conducted and then starts the execution of experiments:
-\begin{lstlisting}[language=Python,basicstyle=\scriptsize]
-import resource
-from python_experimenter.experiment_runner import ExperimentRunner
-from tpot import TPOTClassifier
-from autosklearn.classification import AutoSklearnClassifier
-from mosaic_ml.automl import AutoML
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from frankensteins_automl.frankensteins_automl import (
-    FrankensteinsAutoMLConfig,
-    FrankensteinsAutoML,
-)
-from frankensteins_automl.machine_learning.arff_reader import read_arff
-from frankensteins_automl.optimizers.baysian.smac_optimizer import SMAC
-
-
-def automl_experiment(keyfields):
-    # Get experiment parametrization
-    algorithm = keyfields["algorithm"]
-    dataset = keyfields["dataset"]
-    seed = int(keyfields["seed"])
-    timeout = int(keyfields["timeout"])
-
-    # Set results to dummy values
-    results = {}
-    results["random_count"] = -1
-    results["hyperband_count"] = -1
-    results["genetic_count"] = -1
-    results["smac_count"] = -1
-    results["discretization_count"] = -1
-    results["score"] = -1
-
-    # Read input dataset and perform stratified split
-    parts = dataset.split("-")
-    dataset_file = parts[0]
-    class_index = int(parts[1])
-    data_x, data_y, _, _ = read_arff(
-        f"res/datasets/{dataset_file}.arff",
-        class_index 
-    )
-    x_train, x_test, y_train, y_test = train_test_split(
-                data_x,
-                data_y,
-                test_size=0.3,
-                random_state=seed,
-                stratify=data_y,
-            )
-    score = None
-
-    # Configure and execute approach of this experiments run
-    if algorithm == "tpot":
-        tpot_automl = TPOTClassifier(
-            generations=None,
-            random_state=seed,
-            max_time_mins=int(timeout / 60.0)
-        )
-        tpot_automl.fit(x_train, y_train)
-        score = tpot_automl.score(x_test, y_test)
-    elif algorithm == "autosklearn":
-        autosklearn_automl = AutoSklearnClassifier(
-            time_left_for_this_task=timeout,
-            seed=seed,
-            ml_memory_limit=16384
-        )
-        autosklearn_automl.fit(x_train, y_train)
-        predictions = autosklearn_automl.predict(x_test)
-        score = accuracy_score(predictions, y_test)
-    elif algorithm == "mosaic":
-        mosaic_automl = AutoML(
-            time_budget=timeout,
-            seed=seed,
-            scoring_func="accuracy",
-            memory_limit=59392,
-        )
-        _, score = mosaic_automl.fit(
-            x_train,
-            y_train,
-            x_test,
-            y_test,
-            categorical_features=["numerical"]*len(x_train[0])
-        )
-    else:
-        config = FrankensteinsAutoMLConfig()
-        config.direct_data_input(x_train, y_train)
-        config.timeout_in_seconds = float(timeout)
-        config.timeout_for_optimizers_in_seconds = 180.0
-        config.timeout_for_pipeline_evaluation = 300.0
-        config.simulation_runs_amount = 3
-        config.random_seed = seed
-        
-        # Select frankensteins-automl variant
-        if algorithm == "frankenstein":
-            config.count_optimizer_calls = True
-        elif algorithm == "frankenstein-rs":
-            config.random_node_selection = True
-        elif algorithm == "frankenstein-mcts":
-            config.optimizers = [SMAC]
-
-        # Return accuracy and optimizer run counts if available
-        e = None
-        r = None
-        try:
-            frankensteins_automl = FrankensteinsAutoML(config)
-            r = frankensteins_automl.run()
-        except Exception as exception:
-            e = exception
-        if r is not None:
-            pipeline = r["pipeline_object"]
-            if pipeline is not None:
-                pipeline.fit(x_train, y_train)
-                predictions = pipeline.predict(x_test)
-                score = accuracy_score(predictions, y_test)
-            if algorithm == "frankenstein":
-                if "optimizer_calls" in r:
-                    oc = r["optimizer_calls"]
-                    if "RandomSearch" in oc:
-                        results["random_count"] = oc["RandomSearch"]
-                    if "Hyperband" in oc:
-                        results["hyperband_count"] = oc["Hyperband"]
-                    if "GeneticAlgorithm" in oc:
-                        results["genetic_count"] = oc["GeneticAlgorithm"]
-                    if "SMAC" in oc:
-                        results["smac_count"] = oc["SMAC"]
-                    if "DiscretizationSearch" in oc:
-                        results["discretization_count"] = (
-                            oc["DiscretizationSearch"]
-                        )
-        elif e is not None:
-            raise e
-
-    if score is not None:
-        results["score"] = score
-
-    return results
-
-# Start the experiment execution with the here defined evaluation method
-runner = ExperimentRunner(automl_experiment, "experiment.properties")
-runner.run()
-\end{lstlisting}
-This experiment script can be used for the experiments of all research questions of this thesis with an appropriate configuration in the corresponding \texttt{experiment.properties} file like for example the one aforementioned.
-
-At last, this script has to be executed in a reproducible Python environment.
-For instance, this can be achieved with Singularity containers~\cite{Kurtzer-Singularity}.
-The Singularity recipe for the container of this experiments is the following:
-\begin{Verbatim}[fontsize=\scriptsize]
-BootStrap: library
-From: ubuntu:20.04
-
-%files
-    # Approach of this thesis to be copied into the container
-    frankensteins-automl /experiment/
-
-%post
-    # Bring Ubuntu up to date
-    apt-get -y update
-    apt-get -y upgrade
-    # Install Python and different required libraries
-    apt-get -y install python3
-    apt-get -y install python3-dev
-    apt-get -y install python3-distutils
-    apt-get -y install wget
-    apt-get -y install git
-    apt-get -y install bison
-    apt-get -y install flex
-    apt-get -y install curl
-    apt-get -y install build-essential
-    apt-get -y install autotools-dev
-    apt-get -y install automake
-    apt-get -y install libpcre3-dev
-    apt-get -y install gcc
-    apt-get -y install g++
-    # Install pip
-    wget https://bootstrap.pypa.io/get-pip.py
-    python3 get-pip.py
-    pip install --upgrade pip setuptools wheel Cython numpy scipy
-    # Build and install swig
-    git clone https://github.com/swig/swig.git --branch=v3.0.8
-    cd swig
-    ./autogen.sh
-    ./configure
-    make
-    make install
-    # Install approach of this thesis locally in the container
-    cd /experiment/frankensteins-automl
-    pip install -r requirements.txt
-    pip install .
-    cd ..
-    # Clone and install experiment runner locally in the container
-    git clone https://github.com/Berberer/python-experimenter.git
-    cd python-experimenter
-    pip install -r requirements.txt
-    pip install .
-    cd ..
-    # Install the benchmark approaches and their dependencies
-    pip install tpot
-    a="https://raw.githubusercontent.com/automl/auto-sklearn/master/requirements.txt"
-    curl ${a} | xargs -n 1 -L 1 pip install
-    pip install auto-sklearn
-    pip install git+https://github.com/herilalaina/mosaic@0.1
-    pip install git+https://github.com/herilalaina/mosaic_ml
-\end{Verbatim}
-This recipe assumes that the image is build in a directory where the reference implementation of the approach of this thesis is located in a folder called \texttt{frankensteins-automl} to allow direct changes and customizations of the code.
-Alternatively, this can be easily changed in the recipe to directly clone it from GitHub.
-
-After building the image (\texttt{experiment.sif}), the experiments can be started for example via \texttt{singularity exec experiment.sif python3 experiment.py}.\newline
-This execution assumes the following file setup in the same directory where the built container is located and used:
-\dirtree{%
-    .1 /. 
-    .2 experiment.properties. 
-    .2 experiment.py. 
-    .2 experiment.sif. 
-    .2 res. 
-    .3 config. 
-    .4 logging.conf. 
-    .3 searchspace. 
-    .4 frankensteins\_automl\_classifiers.json. 
-    .4 frankensteins\_automl\_data\_preprocessors.json. 
-    .4 frankensteins\_automl\_feature\_preprocessors.json. 
-    .4 frankensteins\_automl\_topologies.json. 
-    .3 datasets. 
-    .4 amazon.arff. 
-    .4 dorothea.arff. 
-    .4 wine.arff. 
-    .4 car.arff. 
-    .4 krvskp.arff. 
-    .4 yeast.arff. 
-    .4 cifar.arff. 
-    .4 semeion.arff. 
-    .4 dexter.arff. 
-    .4 waveform.arff. 
-}
-The \texttt{res/searchspace/*.json} files are given in~\ref{sec:appendix:htn-space}, but can be downloaded from \url{https://github.com/Berberer/frankensteins-automl/tree/master/res/search_space}.
-Additionally, \texttt{res/logging/logging.conf} is used to configure the logging of frankensteins-automl with the usual Python logging configuration and can be set to the desired values.
-Finally, \texttt{res/datasets/*.arff} are the dataset files listed in~\ref{sec:evaluation:setup}.
