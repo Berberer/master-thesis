@@ -56,26 +56,36 @@ Depending on the concrete input dataset, both levels of pipeline complexity coul
     \label{fig:approach:complex-pipeline}
 \end{figure}
 
-Since ReinBo and Mosaic solve their model selection tasks by defining a fix pipeline length and creating a model selection tree containing every combinatorial possible combination from a few different component types, these approaches do not allow complex pipelines.\newline
+In their current implementation, ReinBo and Mosaic solve their model selection tasks by defining a fix pipeline length and creating a model selection tree containing the combinatorial possible combination with this length and the given component set. 
+Although it would be possible to increase the maximal pipeline length of the two approaches with minor modifications, the concept, where each layer represents one respective open component slot of the result pipeline, does not allow more complex pipeline topologies than linear.\newline
 Other approaches, as for example ML-Plan, TPOT or RECIPE utilize respectively hierarchical task network planning (\textit{HTN planning}) combined with a best-first search, or expression trees and formal grammars together with genetic programming, to achieve a more unconstrained model selection optimization space.
-Because for the ensemble method an MCTS will be required (this is reasoned in~\ref{sec:approach:selection:mcts}), which is a heuristic graph search algorithm like the best-first search as in ML-Plan, this approach will take this HTN planning approach as a foundation to construct the model selection space in the form of a tree.
+The optimizer ensembles of this approach try to achieve two aspects.
+First, the optimizers of the ensemble should to share the gathered knowledge between each other and utilize it.
+Second, during the ongoing AutoML workflow, the best optimizer for the given problem instance should be identified and exploited.
+This second aspect will be controlled by the model selection. 
+For this control function, an MCTS is a suitable choice (this is reasoned in~\ref{sec:approach:selection:mcts}), which is a heuristic graph search algorithm like the best-first search as in ML-Plan.
+The search of this ensemble approach will take this HTN planning approach as a foundation to construct the model selection space in the form of a tree.
 
-As the name suggests, HTN planning is based around the notion of tasks.
-Usually, one goal task is given as the planning problem input, which would be something like a formalized form of "\textit{Construct a machine learning pipeline out of a set of components}" in this case.
-These tasks can either be primitive tasks or compound task, where the overall goal task usually is a compound task, because otherwise there would be no need for any planing.
+As the name suggests, HTN planning is based around the notion of tasks and usually one task is given as the planning problem input.
+The goal of the planning algorithms is now to construct a plan to solve this input task.
+In the case of HTN planning, tasks can either be primitive tasks or compound task.\newline
 Primitive tasks are simple enough to be directly achievable without the need for further planning or other calculations.
-An example for a primitive task in the AutoML context could be "\textit{Use a decision tree as a learning algorithm for the pipeline}" as this task can be directly transformed into a pipeline construction command.\newline
 Compound tasks on the other hand, are not directly realizable and it is necessary to further decompose the task.
+Usually, the input task is a compound task, because otherwise there would be no need for any planing.
+This planning is done for HTN planning in the form of decompositions of compound tasks.\newline
 Each compound task can be decomposed into one or most commonly two or more sub-tasks.
-Depending on the planning domain, there are decomposition rules where a compound task has one or more possible decompositions.
-Such sub-tasks of a compound task can be primitive tasks, compound tasks, or a mixture of both.\newline
+Such sub-tasks of a compound task can be primitive tasks, compound tasks, or a mixture of both.
 If a compound task can be decomposed into solely primitive tasks, this task is directly solvable via the actions of the primitive tasks.
 But if the decomposition of the compound task consists of at least one compound tasks, this child compound task needs to be decomposed recursively as well until it becomes solvable and this solution can be used to solve the original compound task.
-The exemplaric AutoML compound tasks "\textit{Construct a machine learning pipeline out of a set of components}" could be decomposed for example into the to smaller compound tasks "\textit{Construct a pre-processing pipeline out of a set of pre-processing components}" and "\textit{Construct a learning algorithm out of a set of machine learning components}".
+Depending on the planning domain, there are decomposition rules where a compound task has one or more possible decompositions.\newline
+For example in an AutoML setting, one compound tasks could be something like a formalized form of "\textit{Construct a machine learning pipeline out of a set of components}".
+In the same context, an example for a primitive task could be "\textit{Use a decision tree as a learning algorithm for the pipeline}" as this task can be directly transformed into a pipeline construction command.
+The exemplaric AutoML compound task "\textit{Construct a machine learning pipeline out of a set of components}" could be decomposed for example into the to smaller compound tasks "\textit{Construct a pre-processing pipeline out of a set of pre-processing components}" and "\textit{Construct a learning algorithm out of a set of machine learning components}".
 
 With this decomposition of compound tasks into different sub-tasks, the hierarchical aspect of HTN planning is added.
 A plan as the solution of the planning problem is therefore a task-tree, where each leaf node is a primitive task and each inner node is a compound task.
-To create a search tree for an HTN planning problem, solution states, i.e. solved or incomplete task-trees, as well as planning operations to solve an incomplete task-tree, i.e. selecting and applying decomposition rules, need to be represented with nodes and edges.\newline
+To create a search tree for an HTN planning problem, solution states, i.e. solved or incomplete task-trees, as well as planning operations to solve an incomplete task-tree, i.e. selecting and applying decomposition rules, need to be represented with nodes and edges.
+Solved or incomplete tasks-trees are also called plans or plan prefixes in the incomplete case.\newline
 Here is one common possibility to have each node represent a task-tree and each outgoing edge is a decomposition rule that is applicable to the task-tree of the node.
 This edges are therefore connected to nodes, where the represented task-tree is the result of applying this decomposition rule on the previous task-tree.
 For a bigger HTN problem an unsolved task-tree will contain a high number of undecomposed compound nodes and therefore an immense amount of decomposition rules would be applicable.
@@ -100,16 +110,16 @@ The representation of one simple incomplete task tree and two applicable decompo
 \label{sec:approach:selection:graph}
 The examples of HTN tasks in~\ref{sec:approach:selection:search} are given as instructions in plain english but this cannot be used in an algorithm and therefore a formalization is necessary.
 With a suitable formalization and corresponding data model, the HTN planning domain is adjustable and expandable for the exact use-case.
-In the AutoML context it is with this adjustments and expansions possible to modify valid pipeline topologies and the set of pipeline components, which are used for construction.\newline
-While attempting pipeline constructions, it is not possible to create arbitrary pipeline graphs because components often expect a certain type of input that can only be given by certain other components as an output.
+Based on this adjustments and expansions, it is possible to modify valid pipeline topologies and the set of pipeline components for pipeline construction for the AutoML use-case.\newline
+While attempting pipeline constructions, it is not possible to create arbitrary pipeline graphs because components often expect one specific type of input that can only be provided from other components, which have this type as their output type.
 Additionally, sometimes the selection of some components implies the requirement of selecting certain other components.
 For example if an ensemble method was selected as a learning algorithm, the components that are used to be the predictors of the ensemble must be learning algorithm components and cannot be pre-processing components.
 
-To incorporate such constraints into tasks and decomposition rules, ML-Plan utilizes a simple type system in the form of required and provided interfaces.
-Each task has one or more type definitions which represents certain properties of the solution to the associated task.
+To incorporate such constraints into tasks and decomposition rules, ML-Plan utilizes a simple type system in the form of required and provided interfaces as an additional abstraction layer above the tasks .
+Each task has one or more type definitions which represent certain properties of the solution to the associated task.
 For example, the primitive task of using a decision tree as well as the compound task of creating an ensemble learning algorithm out of several other learning algorithms would both offer a solution in the form of a machine learning algorithm.
 Both of them could have something like \texttt{Classifier} or \texttt{Learner} as their solution type and therewith as the types of interfaces they provide.\newline
-On the other hand, are compound tasks only solvable if they get solutions of certain types as the results of the sub-tasks they are decomposed into.
+On the other hand, compound tasks are only solvable if they get solutions of certain types as the results of the sub-tasks they are decomposed into.
 For example, a Stacking classifier can only be based on other classifiers, i.e. solutions with types like \texttt{Classifier}.
 Thus, each compound task has one or more required interfaces, which represent the necessary solution types of the tasks the compound task could be decomposed into.\newline
 Decomposition rules are now simple matching rules, i.e. which required interfaces can be satisfied with which provided interface.
@@ -118,9 +128,8 @@ A compound task with a single required interface of type $a$ can only be decompo
 With such a definitions of required and provided interface types for each task, it is straightforward to incorporate construction constraints into the planning problem without the need to write an extensive list of decomposition rules.
 These constraints can be pipeline topology specific constraints like splits into two sub-pipelines and uniting such sub-pipelines again, or machine learning specific constraints as for example creating ensembles out of classifiers.
 
-The overall pipeline structure, for example Pre-Processing + Learning Algorithm or Pre-Processing + Learning Algorithm + Post-Processing, can be encoded in the required interfaces of the goal task.
-Every actual pipeline component, which shall be included in the pipeline construction of a solved task tree, will be represented as primitive tasks.
-For a better structure, they should be grouped by their provided interface types that are deduced from their properties and purposes.\newline
+The overall pipeline structure, for example Pre-Processing + Learning Algorithm or Pre-Processing + Learning Algorithm + Post-Processing, can be encoded in the decomposition rules for input tasks.
+Every actual pipeline component, which shall be included in the pipeline construction of a solved task tree, will be represented as primitive tasks.\newline
 Non-linear topologies like creating parallel pre-processing sub-pipelines can be for example achieved with a Feature Union pipeline component, which has one or more types of pre-processing components as required interfaces.
 Pipelines with a dynamic length can be achieved in a similar manner to generating sequences with an unlimited length in a regular grammar, where a pipeline can either be decomposed into just a component or a component and a pipeline.\newline
 A simple HTN planning space for a very small AutoML model selection space is illustrated in~\ref{fig:approach:htn-automl}.
@@ -195,8 +204,6 @@ Otherwise, the difference to $\mu^*$ is expected to grow with every turn where a
 This idea of keeping the expected reward loss minimal in the overall context of $\underset{T \rightarrow \infty}{\lim}$, such that the strategy has time to approximate $s^*$, is formulated in the form of the \textit{total expected regret}: $R_T = T \cdot \mu^* - \sum_{t=1}^{T} \mu_{c_{s(t)}}$.
 Different algorithms for creating such selection strategies $s$ over time can be compared by their respective expected total regret $R_T$, which should be as low as possible.
 
-\subsection{Ensemble Interaction with an MCTS}
-\label{sec:approach:selection:mcts}
 Selecting an optimizer node out of $N^A_{n^*_j}$ to perform the model configuration of the pipeline $p_{n^*_j}$ can be formalized as a Multi-Armed Bandit problem.
 With a given timeout for each optimization run, the optimizers are called repeatedly, which would be the turns of the bandit problem.
 The selection strategy for an optimal $p_{n^*_j}$ as well as the most suitable optimizer for a model configuration of this pipeline is unknown beforehand and has to be explored.
@@ -204,8 +211,10 @@ But since the time budget is limited, the expected regret of not exploiting this
 With that assumption of formalizing this selection as a Multi-Armed Bandit problem, there are several existing algorithms to construct selection strategies for optimization nodes until the optimization budget is spent, which balance exploration and exploitation with the goal of keeping the total expected regret minimal.
 Common choices are for example \textit{Thompson Sampling}~\cite{Thompson-Sampling} or the usage of \textit{Upper confidence bounds} (UCB) as for instance in the \textit{UCB1} algorithm~\cite{Auer-UCB1}.
 
+\subsection{Ensemble Interaction with MCTS}
+\label{sec:approach:selection:mcts}
 Let $n^*_j$ and therewith $p_{n^*_j}$ be already selected out of the model selection graph, now there is one arm for each optimization algorithm, i.e. $|A|$ arms.
-With this very limited set of arms, any of this Multi-Armed Bandit selection strategy construction algorithms could be applied and with a large enough optimization budget, there is a high probability that the most suitable optimizer will be exploited enough to get a good parametrization for $p_{n^*_j}$.\newline
+With this very limited set of arms, any of the referenced Multi-Armed Bandit selection strategy construction algorithms could be applied and with a large enough optimization budget, there is a high probability that the most suitable optimizer will be exploited enough to get a good parametrization for $p_{n^*_j}$.\newline
 But since $n^*_j$ is not selected yet because no actual model selection is done until now, there is no pipeline $p_{n^*_j}$ selected and therefore the set of arms cannot be limited to $N^A_{n^*_j}$.
 Instead, the set of arms would be the set of optimizer nodes $N^A$, i.e. the set of combinations of all possible pipelines with all optimization algorithms.
 This set of combination can be enormously big or even have an infinite amount of elements, depending on the specification of the model selection space.
@@ -213,15 +222,19 @@ For such a high number of arms, any Multi-Armed Bandit algorithm would need a ma
 As a more effective alternative for this use-case, the tree structure of $G'$ should be utilized for a better selection mechanism.
 
 The selection of an optimizer from $A$ for optimizing the configuration of a pipeline $p_{n^*_j}$ is formalized as a Multi-Armed Bandit problem in the form of choosing one of the optimizer nodes $N^A_{n^*_j}$ each turn.
-An appropriate Multi-Armed Bandit algorithm will exploit with a high probability the most suitable one of this optimizers $a_1 \in A$ for the specific configuration optimization space of this particular pipeline.
+An appropriate Multi-Armed Bandit algorithm will exploit with a high probability the most suitable one of this optimizers $a \in A$ for the specific configuration optimization space of this particular pipeline.
 This suitability of an optimizer for a space is dependent on the structure of the space, i.e. the number of dimensions as well as the value sets of the different dimensions, and the properties and landscape of the target function in this space.\newline
-But while $a_1$ is the best optimizer for the configuration space of this specific pipeline $p_{n^*_j}$, another optimizer $a_2$ could be the generally best optimizer for any pipeline that includes one other certain component that is not included in $p_{n^*_j}$.
-In that case, all subtrees below nodes where this component was selected would ideally exploit $a_2$ instead of $a_1$ as the optimization algorithm.
+Although $a$ is the best optimizer for the configuration space of this specific pipeline $p_{n^*_j}$, this does not apply to all pipelines.
+Another optimizer $a'$ could, for instance, be the best optimizer for any pipeline that includes one specific component, which is not part of $p_{n^*_j}$.
+In that case, all subtrees below nodes where this component was selected would ideally exploit $a'$ instead of $a$ as the optimization algorithm.
 Because such hierarchical dependencies influence the best optimizer choice, the exploration and exploitation of a Multi-Armed Bandit algorithm should utilize this hierarchical dependencies as well.
 
-The aforementioned upper confidence bounds were successively applied to the possibly hierarchical dependencies of trees in the form of the \textit{UCB applied to trees} algorithm (UCT)~\cite{Kocsis-UCT}.
-It is also often referred to as \textit{Monte-Carlo tree search} (MCTS), if the inner nodes of a tree are scored via Monte-Carlo simulations.\newline
-For UCT and therefore also MCTS, each node has an attached score, which is used for selecting nodes.
+A \textit{Monte-Carlo tree search} (MCTS) is a heuristic search algorithm, where the heuristic for scoring nodes is based on Monte-Carlo simulations.
+With the results of the simulations, an MCTS implementation now needs a selection strategy for the next node that will be expanded.
+The aforementioned upper confidence bounds were successively applied as such a selection strategy in the form of the \textit{UCB applied to trees} algorithm (UCT)~\cite{Kocsis-UCT}.
+For UCT is the goal to utilize the possibly hierarchical dependencies inside the trees.
+Although MCTS does not necessarily has to use this selection strategy, the two terms UCT and MCTS are often used interchangeably.\newline
+For UCT and therefore also MCTS, each node has an attached score, which is the basis for selection strategies.
 This value can for example be calculated via $\underset{n_i}{\textrm{argmax}} \left( w_{n_i} + f \cdot \sqrt{\frac{\textrm{ln}(t)}{v_{n_i}}} \right)$, but this formula can be adjusted depending on the desired exploration/exploitation behavior.
 $w_{n_i}$ is the overall sampled score so far of the subtree below node $n_i$ as an average, $f$ is a factor for the tendency towards exploration, $v_{n_i}$ is the amount of times the subtree below $n_i$ was sampled, and $t$ is the amount of overall turns/iterations so far.\newline
 MCTS is usually defined as an algorithm with an iteration of four steps, which are listed in the following and additionally illustrated in Fig.~\ref{fig:approach:mcts}:
@@ -236,11 +249,11 @@ MCTS is usually defined as an algorithm with an iteration of four steps, which a
     Thus, the scoring gets more accurate with a higher number of simulations per child node, since more different leaf nodes are reached and therefore more possible solution states are covered.
     But with a higher number of simulations, a bigger portion of the budget is spent each iteration and fewer iterations can be performed overall.
     A careful trade-off is therefore necessary.
-    \item \textbf{Backpropagation}: The simulations returned for child node $n$ the scores $x_1, ..., x_k$.
-    Based on this scores $n$ will receive an initial value.
+    \item \textbf{Backpropagation}: For the child node $n$, the simulations returned some scores $x_1, ..., x_k$.
+    Based on this scores, $n$ will receive an initial value.
     Afterwards, every node in the path from the root to $n$ will be updated to incorporate the newly gathered knowledge as well via backpropagation starting at $n$.
     At first, $n$ is scored initially with the following formula $\frac{\frac{\sum_{i=1}^k x_i}{k}}{v_t} + f \cdot \sqrt{\frac{\mathrm{ln} (V_t)}{v_t}}$.
-    The formula consists of the following parts: $\frac{\sum_{i=1}^k x_i}{k}$ is the average of the simulation results, $f$ is a pre-defined factor for the focus on exploration, $v_t$ is the amount of visits $n$ had after $t$ rounds of the MCTS loop via Monte-Carlo previous simulations before it was expanded in this round or alternatively 1, and $V_t$ is the visit counter $v_t$ of the parent of $n$.
+    The formula consists of the following parts: $\frac{\sum_{i=1}^k x_i}{k}$ is the average of the simulation results, $f$ is a pre-defined factor for the focus on exploration, $v_t$ is the amount of visits $n$ had after $t$ rounds of the MCTS loop via previous Monte-Carlo simulations before it was expanded in this round or alternatively 1, and $V_t$ is the visit counter $v_t$ of the parent of $n$.
     For the actual backpropagation, starting with the parent of $n$ which is referred to as $n'$ and continuing until the root is reached, each nodes score is updated similar to the initial scoring of $n$.
     At first, the $v_t$ counter of $n'$ is increased.
     Let $w_{t-1}$ be the scoring of $n'$ of the previous round, it will be updated during the backpropagation of this round with a cumulative moving average $w_t=w_{t-1} + \frac{w_c - w_{t-1}}{t}$, where $w_c$ is the already updated node score of the child node that was the previous stop during the backpropagation.
@@ -256,7 +269,7 @@ MCTS is usually defined as an algorithm with an iteration of four steps, which a
 To apply MCTS for a model selection in a search tree for example constructed via HTN planning, minor adjustments are necessary.
 After incorporating the following changes, this modified MCTS is the algorithmic foundation of the approach of this thesis:
 \begin{itemize}
-    \item Optimizer nodes are leafs and can not be further expanded. When a Monte-Carlo simulation reaches one or if an optimizer node is chosen in the Selection phase based, a model configuration run with a given optimization budget is started with the optimization algorithm represented by this node.
+    \item Optimizer nodes are leafs and can not be further expanded. The Monte-Carlo simulations end their search once they find an optimizer node and start an otimization run of the optimizer of this node. If an optimizer node is chosen in the Selection phase, a model configuration run with a given optimization budget is started with the optimization algorithm represented by this node instead of a node expansion.
     \item The main MCTS loop does not run forever or for a fix amount of steps. Instead, it keeps track of the spent optimization budget during the search itself and during the optimizer runs and will stop after the current iteration, if the budget limit is reached or the budget is nearly spent such that it is not possible to perform another complete optimization run.
 \end{itemize}
 As a user specified configuration, an MCTS model selection implementation with embedded optimizers for model configuration would require some values:
@@ -364,7 +377,7 @@ Thus, not more than $i$ iterations are lost to a local optimum selected from $l$
 Hyperband is basically a method of treating multiple, parallel running random searches as a Multi-Armed Bandit problem and stopping the less successful instances to have more optmization budget for the better performing instances.
 Therewith, if each random search instance is implemented as the warmstarted version from the previous explanation, Hyperband can profit from warmstarting as well.\newline
 The typical Multi-Armed Bandit problem of balancing exploration and exploitation should be applied here as well.
-If Hyperband is configured to have $k$ parallel running instances, $\lfloor \sigma \cdot k \rfloor$ instances with $\sigma \in (0,1)$ should start at one of the top candidates from $l$ for exploitation, while $\lceil (1 - \sigma) \cdot k \rceil$ instances should start at new and randomly chosen configurations for a better exploration coverage of each Hyperband run.
+If Hyperband is configured to have $k$ parallel running instances, $\lfloor \sigma \cdot k \rfloor$ instances with $\sigma \in (0,1)$ should start in the direct neighborhood of one of the top candidates from $l$ for exploitation, while $\lceil (1 - \sigma) \cdot k \rceil$ instances should start at new and randomly chosen configurations for a better exploration coverage of each Hyperband run.
 
 \subsubsection{Genetic Optimization}
 A very important part of a genetic optimization algorithm, is the selection scheme with which individuals from the last generation will be selected to construct the next generation.
@@ -372,7 +385,7 @@ Such a selection can be a na\"ive approach, as for example a random selection or
 But it can also be a more sophisticated scheme as for example a \textit{Boltzmann Tournament Selection}~\cite{Goldberg-Boltzmann}.\newline
 With such a selection scheme in place, the warmstarting can be implemented straightforward.
 Instead of selecting individuals with a selection scheme from a previous generation, the selection scheme of the genetic algorithm will be applied on $l$.
-Therefore $|l|$ is set to the size of a generation.\newline
+Therefore $|l|$ is set to the value that is used as the population size.\newline
 Alternatively it is also possible to re-use the Hyperband warmstarting approach, such that $\lfloor \sigma \cdot k \rfloor$ candidate are selected via the selection scheme from $l$ and $\lceil (1 - \sigma) \cdot k \rceil$ candidates are randomly created to achieve more variance and a certain robustness against local optima.
 
 \subsubsection{SMAC}
@@ -382,7 +395,8 @@ This regression model is then used to guide the selection of candidates that are
 Additionally to training this regression model progressively during the optimization, it can be trained beforehand with $l$ or any other subset of all previously evaluated candidates to have a more accurate regression model right from the start of the optimization run.
 
 \subsubsection{Discretization Search}
-This optimization algorithm is based on the optimization method from \textit{ML-Plan}, where in each inner node of a search tree is used to further discretize one dimension of the optimization space at a time, by refining, i.e. splitting it, into several value ranges.
+This optimization algorithm is based on the optimization method from \textit{ML-Plan}, where the inner nodes of a search tree are used to further discretize one dimension of the optimization space at a time with each node.
+This is achieved by refining the ranges of the dimensions, i.e. splitting them, into several value ranges.
 For each split a child node is attached during a node expansion until, depending on the parameter type, either the interval only consists of one value or the splits interval size is below a given threshold.
 Afterwards the next dimension is refined, until each dimension was completely discretized and a leaf node is reached.\newline
 Therefore, this can be viewed as converting a grid search approach into a tree structure, which will be searched more dynamically then a grid search, with a best-first search, where the nodes are scored via Monte-Carlo simulations.\newline 

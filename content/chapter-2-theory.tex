@@ -82,7 +82,7 @@ Both spaces, for model selection as well as for model configuration, will be ind
 \label{sec:theory:automl:selection}
 Model selection is the task of selecting $1$ to $n$ components that will be part of the machine learning pipeline and sequentially traversed when data is passed through the pipeline.
 For example, a simple, but valid pipeline would be to apply a Principal-Component-Analysis on the data as a first component and to use a Support Vector Machine for classification on the processed data as a second component afterwards.
-In this step of the workflow, the space one candidate has to be selected from, consists of all these valid pipeline component combinations, which usually consist out of two or more components.\newline
+In this step of the workflow, the space one candidate has to be selected from, consists of all these valid pipeline component combinations, which usually consist of two or more components.\newline
 Usually there are three types of components, although other classifications of the components are possible as well:
 \begin{itemize}
     \item Pre-Processing: Transform the input data before presenting it to the learning algorithm.
@@ -401,8 +401,8 @@ Each cross-over point marks an index of $g^*$ at which it will be switched from 
 An example for a two-point cross-over is shown in Fig.~\ref{fig:theory:crossover}.
 \begin{figure}[ht!]
     \centering
-    \includegraphics[width=\textwidth]{gfx/Figures/Theory/Crossover.pdf}
-    \caption{An example of a two-point cross-over to produce $g^*$ from $g_1$ and $g_2$.}
+    \includegraphics[width=0.6\textwidth,keepaspectratio]{gfx/Figures/Theory/Crossover.pdf}
+    \caption{An example of a two-point cross-over to produce genome $g^*$ from the genomes $g_1$ and $g_2$.}
     \label{fig:theory:crossover}
 \end{figure}
 
@@ -417,16 +417,16 @@ Two state-of-the-art approaches tackling this challenges and applying genetic al
 
 \subsection{Bayesian Optimization}
 \label{sec:theory:optimization:bayesian}
-From all the aforementioned optimization methods, Bayesian optimization utilizes the knowledge from previous candidate evaluations the most.
+Similar to some heuristic graph searches and genetic algorithm implementations, Bayesian optimization tries to utilize the knowledge from previous candidate evaluations as much as possible.
 The goal is to select the most promising candidate for the next evaluation and therefore minimize the overall amount of evaluations until a near-optimal score is reached.
-Since each evaluation in the context of AutoML comes with assembling a candidate pipeline and usually performing a cross-validation of the pipeline on the dataset, each evaluation consumes a lot of the optimization budget.
-Therewith, Bayesian Optimization is one of the most used black box optimization approaches in recent AutoML research.\newline
+Since each evaluation in the context of AutoML comes with assembling a candidate pipeline and usually performing a cross-validation of the pipeline on the dataset, each evaluation consumes an often not insignificantly portion of the optimization budget.
+Therewith, Bayesian Optimization is very well-suited for black box optimization in the context of AutoML.\newline
 The notation of a \textit{most promising} candidate could be interpreted in different ways.
 For example, a candidate near the current optimum, which has a high probability of having a comparable or even better score, or a candidate in a completely unevaluated region of the candidate space, where therefore an optimum could lie unnoticed.
 But in the case of Bayesian Optimization, this notation of most promising is more sophisticated.
 
-In general, the goal is to create a surrogate function model with Bayesian statistics that replicates the unknown target function as closely as possible.
-To model the Bayesian surrogate, a common choice is a regression based on a Gaussian Process.
+In general, the goal is to create a surrogate function model that replicates the unknown target function as closely as possible with the aid of Bayesian statistics.
+To model the Bayesian surrogate, a common choice is a regression via a Gaussian Process.
 Detailed information about Gaussian Processes can be found for example in~\cite{Rasmussen-Gaussian-Processes}.\newline
 This surrogate is based on the results of several evaluations as samples and will become more precise with each new sample, which is usually the next most promising candidate.
 For the actual selection of the next most promising candidate sample, a so called \textit{Acquisition Function} is used and the next value will be at an optimum of this acquisition function.
@@ -436,8 +436,9 @@ The value of such an acquisition function for a candidate are based on two facto
     \item The size of the credible interval(basically the concept of confidence intervals in the context of Bayesian statistics) of the Bayesian surrogate model at the position of the candidate.
 \end{enumerate}
 The size of the credible interval is especially important, because if at a point this interval is very broad, the chances are higher that the value of the target function can differ widely from the surrogate at this position.
-Of course it can differ in both directions but this can be examined with an additional sample at this position.
-Therefore, if the estimated value already indicates an optimum and additionally the credible interval is broad, the value of the target function could be even more optimal at this position and it is the most promising candidate to be drawn as the next sample.
+This would indicate a higher uncertainty of the model.
+Of course can the value differ in both directions, but this can be examined with an additional sample at this position.
+Therefore, if the estimated performance already indicates an optimum and additionally the credible interval is broad (i.e. an optimum of the acquisition function based on this two factors), the value of the target function could be even more optimal at this position and it is the most promising candidate to be drawn as the next sample.
 
 For candidates that were already evaluated, this acquisition score is set to zero because the target score at this position is already known and the surrogate can be certain at this position.
 A graphical intuition for the concept of acquisition functions is given in Fig.~\ref{fig:theory:acquisition-function}, where Bayesian optimization on one dimension of the running example is illustrated.
@@ -500,7 +501,8 @@ A graphical intuition for the concept of acquisition functions is given in Fig.~
         \caption[.]{
             Estimated surrogate function $f_s$ modelled after 5 samples.
             The evaluated samples are shown as red dots, the surrogate function as a red line, and the credible intervals as the two red dashed lines.
-            Important note: The values of the surrogate function and the credible intervals are not actually calculated but are only rough estimates to give an intuition of the method.
+            Important note: The values of the surrogate function and the credible intervals are not calculated but are only rough estimates to give an intuition of the method.
+            The exact values can vary significantly based on the applied kernel of the Gaussian Process.
         }
     \end{subfigure}
     \begin{subfigure}{\textwidth}
@@ -640,17 +642,17 @@ Now, different optimizers can differ in quality here as well solely based on the
 For example, with a given dataset, optimizer $A$ could find good configurations for a pipeline consisting of a Principal Component Analysis followed by a Decision Tree, while optimizer $B$ yields better results in the case of a single Support Vector Machine.
 The same transformations of the optimization space can of course be done by only considering the model selection instead and not the model configuration.
 
-Since one optimization method will only be the best one for a limited set of problem classes, it can be beneficial to use more than one optimization method and utilize a different optimizer for different transformations of the optimization space to extend the set of problem classes, where these optimizers now combined can be superior.\newline
+Since one optimization method will only be the best one for a limited set of problem classes, it can be beneficial to use more than one optimization method and utilize a different optimizer for different transformations of the optimization space to extend the set of problem classes, where a combination of these optimizers can now be superior.\newline
 In the next section, a selection of approaches will be presented, which use such transformations of the optimization space and more than one optimizer, to utilize this extension of problem classes in the AutoML context, where the theoretical superiority can be achieved by multiple optimizers.
 
 \section{Related Work}
 \label{sec:theory:related}
 The first presented approach that uses different optimizers for different transformed AutoML optimization spaces is \textit{ReinBo}~\cite{Sun-ReinBo}.
 Here, the overall optimization space, including model selection and model configuration, is transformed into a solely model selection space at first.
-For practicability each pipeline can only consist out of up to three components: One for data pre-processing, one for feature engineering, and one as the machine learning algorithm.
+For practicability each pipeline in this approach can only consist of up to three components: One for data pre-processing, one for feature engineering, and one as the machine learning algorithm.
 The model selection is performed in three stages, in each of which one of the three component types is selected successively.
 It is also possible to not select any component for a pre-processing or feature engineering, which could be represented by a symbol as for example "NA".
-A simple example for a small optimization space for such a model selection method would therefore consist out of three sets:
+A simple example for a small optimization space for such a model selection method would therefore consist of three sets:
 \begin{itemize}
     \item A set $S_p$ with pre-processing algorithms: For example $S_p=\{$Min-Max Scaling, One-Hot Encoding, NA$\}$
     \item A set $S_f$ with feature engineering methods: For example $S_f=\{$ PCA, Variant Threshold Filtering, NA$\}$
@@ -670,7 +672,7 @@ An illustration of the previous examples optimization space can be seen in Fig.~
 
 Because of the tree-shaped structure of this optimization space, a hierarchical reinforcement learning approach is trained during the optimization.
 Learning a policy for suitable pipeline component choices, it can act as an optimizer for model selection.\newline
-After the reinforcement learning algoritm has selected up to three pipeline components, the possible parametrization of each component is examined.
+After the reinforcement learning algorithm has selected up to three pipeline components, the possible parametrization of each component is examined.
 From the possible parametrization of each selected component, a model configuration space can be induced.
 Therewith, based on a completed model selection, the overall optimization space is once more transformed, but now to a space representing possible model configurations for the constructed pipeline.
 Each leaf node of the tree structure has such a small model configuration space.\newline
@@ -679,8 +681,9 @@ The evaluation result of the best candidate of this optimization run is given as
 Afterwards, in the next iteration the reinforcement learning algorithm starts once again at the root node and has to select pipeline components based on the policy and this is repeated until the optimization budget ist spent.\newline
 Because Bayesian optimization is not very effective for high dimensional spaces, it is a suitable adjustment for an AutoML approach to not run a Bayesian optimization on the complete candidate space but on a smaller transformed space.
 Instead of Bayesian optimization, the model selection is performed by another optimizer and only a small portion of the model configuration space is the input for a Bayesian optimization run, which includes only the hyperparameters of the selected components.
-The dimensionality is reduced signigicantly and Bayesian optimization will be more effective.\newline
-But this improvements regarding the Bayesian optimization and the inclusion of a reinforcement learning algorithm as an additional optimizer, does not extend the set of problem classes where this approach can be superior drastically, because there is still a big amount of problem classes where the Bayesian optimization method itself is not suitable.
+The dimensionality is reduced significantly and Bayesian optimization will be more effective.\newline
+But there is still a big amount of problem classes where the Bayesian optimization method itself can not be the suitable optimization algorithm choice.
+Therewith is the set of problem classes, where this approach can be superior extended drastically by the improvements regarding the reduction of dimensions of the Bayesian optimization space and the inclusion of a reinforcement learning algorithm as an additional optimizer.
 
 The advantages of performing the AutoML optimization in several phases on transformed optimization spaces was further examined by~\textcite{Quemy-Two-Stage-Optimization}.
 Besides the aforementioned opportunity to compensate one less suitable optimization approach with another possibly better suited optimizer, in this publication additionally was stated, that if the optimization space is transformed into two or more smaller sub-spaces, the overall optimization process can be sped up.
@@ -703,12 +706,13 @@ The following allocation policies were defined:
 \end{itemize}
 
 
-Monte-Carlo simulations as a heuristic for a graph search, as explained in~\ref{sec:theory:optimization:search}, are the basis of graph search algorithm named \textit{Monte-Carlo tree search}(MCTS).
+Monte-Carlo simulations as a heuristic for a graph search, as explained in~\ref{sec:theory:optimization:search}, are the basis of graph search algorithm named \textit{Monte-Carlo tree search}.
 In this search, the task of selecting the next child node of one node for expansion is viewed as selecting an arm of a Multi-Armed Bandit problem.
 With this approach, a balance between exploring more unevaluated areas of the tree and exploiting subtrees which have already shown promising scores can be achieved.
-This balance is achieved via a heuristic scoring of nodes via in a Monte-Carlo tree search that is formalized as \textit{UCT}(Upper Confidence bound applied to Trees)~\cite{Kocsis-UCT}.
+This balance is achieved via a heuristic scoring of nodes via Monte-Carlo simulations and a node selection strategy based on this scores that is formalized as \textit{UCT}(Upper Confidence bound applied to Trees)~\cite{Kocsis-UCT}.
+This combination of UCT and Monte-Carlo simulations is then often referred to as a Monte-Carlo tree search(MCTS).
 MCTS will be exemplified in more detail in~\ref{sec:approach:selection:mcts}.\newline
-One example of a heuristic graph search based AutoML approach is called \textit{Mosaic}~\cite{Rakotoarison-Mosaic} and it utilizes such an MCTS and a multi-stage optimization method as well.
+One example of a heuristic graph search based AutoML approach is called \textit{Mosaic}~\cite{Rakotoarison-Mosaic} and it leverages MCTS employed in a multi-stage optimization methodology as well.
 In Mosaic, the tree that is the subject of the MCTS is modelled as a transformation of the optimization space into a model selection space.
 The first $k$ layers of the search tree are representing $k$ possible types of pipeline components, for example pre-processing methods or machine learning algorithms.
 When a component is selected in layer $i \in [1,k]$ of the tree, it will also be the component with position $i$ in the resulting linear pipeline.
@@ -717,7 +721,7 @@ In each of the first $k$ layers one component of each type is selected.
 Therewith, this approach has a comparable tree structure to ReinBo but is more flexible regarding the length of the pipeline.\newline
 After the model selection for a pipeline is concluded, the $k$ components of the pipeline need a configuration.
 Thus, the continuous model configuration space that remains of the initial optimization space after the discrete model selection space has been covered with the search tree, is transformed into a sole model configuration space for the selected pipeline, which is embedded in the corresponding leaf node of the selected pipeline at the bottom of the $k$ model selection layers.
-Similar to ReinBo, in each leaf node will a surrogate model $f_s$ be constructed.
+Similar to ReinBo, a surrogate model $f_s$ will be constructed in each leaf node.
 It is supposed to predict the expected evaluation score for any point of the optimization space, if the pipeline that consists of the components represented by the current leaf is constructed with the parametrization of this point.
 The construction of $f_s$ and the optimization is based on Bayesian optimization.
 
