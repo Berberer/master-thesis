@@ -68,13 +68,19 @@ Restricting the optimization spaces to the auto-sklearn space implies three rule
 Eventually, this may limit the capabilities of frankensteins-automl, as well as ML-Plan and TPOT, because they are capable of constructing more complex pipelines beyond this auto-sklearn space.
 But this limitations are important for an informative and meaningful evaluation.\newline
 In this manner, the actual accomplishments of the approaches can be evaluated and compared to each other under fair conditions.
-It can be excluded that one approach outperforms another because his model selection space contains for example one component that the other approaches does not have for selection.\newline
-The adaptation of the auto-sklearn space in the JSON format of this approach, which is used by frankensteins-automl for the experiments, can be found in appendix~\ref{sec:appendix:htn-space} as well as a description of the limitations this adaptation has in comparison to the original auto-sklearn search space.
+It can be excluded that one approach outperforms another because his model selection space contains for example one component that the other approaches does not have for selection.
+
+The adaptation of the auto-sklearn space in the JSON format of this approach\footnote{\url{https://github.com/Berberer/frankensteins-automl/tree/master/res/search_space}}, which is used by frankensteins-automl for the experiments, has a few limitations in comparison to the original auto-sklearn search space and is not a one-to-one adaptation.
+Optimization space modelling for auto-sklearn is done as Python code, which is as a turing-complete programming language more expressive than a data interchange language as JSON can ever be.
+With this modelling in Python, it is possible to create constraints and relationships between parameters of a component.
+For example something like if parameter $p_1$ has value $a$, $p_2$ cannot have value $b$, or $p_4$ will only be part of the model configuration if $p_3$ has value $c$.\newline
+Additionally, it is possible to include logical processing steps for the selected values after the model configuration in the Python code, for example to change a configured value depending on properties of the actual input dataset.\newline
+Improving the modelling capacities of this JSON format can be a starting point for further research.
+However, it will not be possible to make it as expressive as the model configuration space definitions in a programming language as Python.
 
 In a first step of answering the first research question, the 4 state-of-the-art approaches as well as frankenstein have a timeout of one hour for selecting and configuring a pipeline.
-For the dataset inputs in the experiments, ten different datasets from the \textit{OpenML} platform~\cite{Vanschoren-OpenML} were selected, which are from a broad spectrum of different domains:
+For the dataset inputs in the experiments, nine different datasets from the \textit{OpenML} platform~\cite{Vanschoren-OpenML} were selected, which are from a broad spectrum of different domains:
 \begin{itemize}
-    \item AMAZON\footnote{\url{https://www.openml.org/d/1457}}
     \item CAR\footnote{\url{https://www.openml.org/d/40975}}
     \item CIFAR10SMALL\footnote{\url{https://www.openml.org/d/40926}}
     \item DEXTER\footnote{\url{https://www.openml.org/d/4136}}
@@ -87,12 +93,12 @@ For the dataset inputs in the experiments, ten different datasets from the \text
 \end{itemize}
 
 The second step, i.e. the comparison of the influence of the different components of this approach via the three modifications, has a similar setup.
-Again, the five experiment constraints are applied and the same ten datasets are given as inputs.
+Again, the five experiment constraints are applied and the same nine datasets are given as inputs.
 But to evaluate if the different influences might change with a different timescale, this second experiment will have one hour, six hours and twelve hours as timeouts for the three variants frankenstein, frankenstein-rs and frankenstein-mcts.
 
 During the two experiment stages, frankensteins-automl (in the unmodified version for the second stage) will additionally count the frequencies of utilizing each type of optimizer.
-With this counting, there is aggregated data of the optimizer utilization for three different timeouts and ten different datasets.
-The properties of the ten datasets, for example number of classes or datapoints, or balance of datapoints for some classes, will be evaluated in the context of the optimizer utilization frequencies to try to extrapolate knowledge about the suitability of the different optimizers for different dataset types to answer the second research question.
+With this counting, there is aggregated data of the optimizer utilization for three different timeouts and nine different datasets.
+The properties of the nine datasets, for example number of classes or datapoints, or balance of datapoints for some classes, will be evaluated in the context of the optimizer utilization frequencies to try to extrapolate knowledge about the suitability of the different optimizers for different dataset types to answer the second research question.
 
 For both experiment stages, frankensteins-automl is configured with the following values:
 \begin{itemize}
@@ -113,11 +119,11 @@ The Singularity image recipe as well as some additional information regarding th
 
  At first, Tab.~\ref{table:benchmark-results} shows the benchmark results of frankensteins-automl against the competitor state-of-the-art approaches.
  The experiment runs were only classified as successful and included in the results, if the AutoML approach was able to return a valid pipeline in one hour plus an additional 15 minutes range of tolerance and without throwing an exception or error.\newline
- None of the approaches was able to achieve successful runs for all 30 seeds across all ten datasets.
- But especially Mosaic was very unstable and was not able to achieve at least results for half of the seeds for six out of the ten datasets.
+ None of the approaches was able to achieve successful runs for all 30 seeds across all nine datasets.
+ But especially Mosaic was very unstable and was not able to achieve at least results for half of the seeds for six out of the nine datasets.
  Hence, the significance of the comparison of frankensteins with Mosaic is very questionable.\newline
  Nevertheless, a check for significant improvement or deterioration in comparison to the scores of frankenstein were executed via a two-sample \textit{t}-tests with $p = 0.05$.
- The absolute frequencies how often the approaches were significantly better, significantly worse or without a significant difference compared to frankensteins-automl out of the ten datasets are shown in Tab.~\ref{table:significanse-counts}.
+ The absolute frequencies how often the approaches were significantly better, significantly worse or without a significant difference compared to frankensteins-automl out of the nine datasets are shown in Tab.~\ref{table:significanse-counts}.
 
 \begin{sidewaystable}[ht]
     \renewcommand{\arraystretch}{1.5}
@@ -134,7 +140,6 @@ The Singularity image recipe as well as some additional information regarding th
     \begin{tabular}{l|ccccc}
         & \texttt{frankenstein}  & \texttt{autosklearn}  & \texttt{mlplan}  & \texttt{mosaic}  & \texttt{tpot} \\
         \hline
-        \texttt{amazon} & $ 0.9735 \pm 0.0049 (30) $ & $ 0.9752 \pm 0.0018 (29) \phantom{\downarrow}$ & $ 0.7301 \pm 0.0384 (20) \downarrow$ & $ \mathbin{/}   \phantom{\downarrow}$ & $ \boldsymbol{0.9753} \pm 0.0024 (29) \phantom{\downarrow}$\\
         \texttt{car} & $ 0.9789 \pm 0.0426 (30) $ & $ 0.9874 \pm 0.0065 (26) \phantom{\downarrow}$ & $ 0.4430 \pm 0.2452 (19) \downarrow$ & $ 0.9777 \pm 0.0145 (09) \phantom{\downarrow}$ & $ \boldsymbol{0.9900} \pm 0.0092 (30) \phantom{\downarrow}$\\
         \texttt{cifar} & $ 0.3140 \pm 0.0621 (28) $ & $ 0.3997 \pm 0.0068 (28) \uparrow$ & $ \boldsymbol{0.4226} \pm 0.0080 (20) \uparrow$ & $ 0.3663 \pm 0.0086 (27) \uparrow$ & $ 0.2815 \pm 0.0404 (23) \phantom{\downarrow}$\\
         \texttt{dexter} & $ 0.9004 \pm 0.0453 (28) $ & $ 0.9263 \pm 0.0189 (30) \uparrow$ & $ 0.9447 \pm 0.0170 (20) \uparrow$ & $ \boldsymbol{0.9509} \pm 0.0165 (22) \uparrow$ & $ 0.9289 \pm 0.0231 (30) \uparrow$\\
@@ -180,7 +185,6 @@ Therefore, absolute values are less meaningful because with different timeouts t
         \begin{tabular}{l|ccccc}
             & \textit{RS} & \textit{HB} & \textit{GA} & \textit{SMAC} & \textit{DS} \\
             \hline
-            \texttt{amazon} & $0.0669$ & $0.1811$ & $0.2732$ & $\boldsymbol{0.3840}$ & $0.0947$ \\
             \texttt{car} & $0.0679$ & $0.2185$ & $0.2194$ & $\boldsymbol{0.4202}$ & $0.0740$ \\
             \texttt{cifar} & $0.1545$ & $0.1591$ & $0.1640$ & $\boldsymbol{0.3721}$ & $0.1501$ \\
             \texttt{dexter} & $0.0780$ & $0.1052$ & $0.2991$ & $\boldsymbol{0.4396}$ & $0.0781$ \\
@@ -277,7 +281,7 @@ Because linearity and an underlying normal distribution cannot be ensured, since
 \end{table}
 
 The second evaluated aspect of frankensteins mechanics was the influence study of the two main components, i.e. model selection via MCTS and model configuration via the warmstarted optimizer ensembles.\newline
-This was evaluated with the three variants of frankensteins automl for three different timeouts in the context of 30 random seeds and the same ten datasets.
+This was evaluated with the three variants of frankensteins automl for three different timeouts in the context of 30 random seeds and the same nine datasets.
 An analysis for significant improvement or deterioration within one timeout value, was here done in the form of a two-sample \textit{t}-tests with $p = 0.05$ as well.\newline
 All accuracy score averages as well as the significance analysis results can be seen in Tab.~\ref{table:influence-results}.
 
@@ -294,7 +298,6 @@ All accuracy score averages as well as the significance analysis results can be 
         \begin{tabular}{l|ccc}
             & \texttt{frankenstein}  & \texttt{frankenstein-rs}  & \texttt{frankenstein-mcts} \\
             \hline
-            \texttt{amazon} & $ 0.9735 \pm 0.0049 (30) \phantom{\downarrow}$ & $ \boldsymbol{0.9752} \pm 0.0026 (28) \phantom{\downarrow}$ & $ 0.9748 \pm 0.0020 (28) \phantom{\downarrow}$\\
             \texttt{car} & $ 0.9789 \pm 0.0426 (30) \phantom{\downarrow}$ & $ \boldsymbol{0.9871} \pm 0.0148 (30) \phantom{\downarrow}$ & $ 0.9633 \pm 0.0674 (30) \phantom{\downarrow}$\\
             \texttt{cifar} & $ \boldsymbol{0.3140} \pm 0.0621 (28) \phantom{\downarrow}$ & $ 0.2841 \pm 0.0632 (28) \phantom{\downarrow}$ & $ 0.2664 \pm 0.0768 (30) \downarrow$\\
             \texttt{dexter} & $ 0.9004 \pm 0.0453 (28) \phantom{\downarrow}$ & $ 0.9020 \pm 0.0552 (28) \phantom{\downarrow}$ & $ \boldsymbol{0.9090} \pm 0.0426 (29) \phantom{\downarrow}$\\
@@ -314,7 +317,6 @@ All accuracy score averages as well as the significance analysis results can be 
         \begin{tabular}{l|ccc}
             & \texttt{frankenstein}  & \texttt{frankenstein-rs}  & \texttt{frankenstein-mcts} \\
             \hline
-            \texttt{amazon} & $ 0.9736 \pm 0.0087 (29) \phantom{\downarrow}$ & $ 0.9716 \pm 0.0125 (29) \phantom{\downarrow}$ & $ \boldsymbol{0.9743} \pm 0.0043 (29) \phantom{\downarrow}$\\
             \texttt{car} & $ 0.9714 \pm 0.0577 (30) \phantom{\downarrow}$ & $ \boldsymbol{0.9926} \pm 0.0068 (30) \phantom{\downarrow}$ & $ 0.9729 \pm 0.0602 (30) \phantom{\downarrow}$\\
             \texttt{cifar} & $ 0.3048 \pm 0.0652 (30) \phantom{\downarrow}$ & $ 0.3025 \pm 0.0682 (29) \phantom{\downarrow}$ & $ \boldsymbol{0.3210} \pm 0.0542 (30) \phantom{\downarrow}$\\
             \texttt{dexter} & $ 0.8904 \pm 0.1030 (29) \phantom{\downarrow}$ & $ 0.9044 \pm 0.0600 (29) \phantom{\downarrow}$ & $ \boldsymbol{0.9222} \pm 0.0255 (29) \phantom{\downarrow}$\\
@@ -334,7 +336,6 @@ All accuracy score averages as well as the significance analysis results can be 
         \begin{tabular}{l|ccc}
             & \texttt{frankenstein}  & \texttt{frankenstein-rs}  & \texttt{frankenstein-mcts} \\
             \hline
-            \texttt{amazon} & $ 0.9752 \pm 0.0022 (30) \phantom{\downarrow}$ & $ 0.9737 \pm 0.0039 (30) \phantom{\downarrow}$ & $ \boldsymbol{0.9756} \pm 0.0015 (30) \phantom{\downarrow}$\\
             \texttt{car} & $ 0.9838 \pm 0.0187 (30) \phantom{\downarrow}$ & $ \boldsymbol{0.9940} \pm 0.0057 (30) \uparrow$ & $ 0.9766 \pm 0.0556 (30) \phantom{\downarrow}$\\
             \texttt{cifar} & $ 0.3316 \pm 0.0467 (30) \phantom{\downarrow}$ & $ \boldsymbol{0.3319} \pm 0.0497 (30) \phantom{\downarrow}$ & $ 0.3069 \pm 0.0645 (30) \phantom{\downarrow}$\\
             \texttt{dexter} & $ 0.9265 \pm 0.0154 (30) \phantom{\downarrow}$ & $ \boldsymbol{0.9296} \pm 0.0128 (30) \phantom{\downarrow}$ & $ 0.9285 \pm 0.0127 (29) \phantom{\downarrow}$\\

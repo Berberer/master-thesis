@@ -131,10 +131,7 @@ These constraints can be pipeline topology specific constraints like splits into
 The overall pipeline structure, for example Pre-Processing + Learning Algorithm or Pre-Processing + Learning Algorithm + Post-Processing, can be encoded in the decomposition rules for input tasks.
 Every actual pipeline component, which shall be included in the pipeline construction of a solved task tree, will be represented as primitive tasks.\newline
 Non-linear topologies like creating parallel pre-processing sub-pipelines can be for example achieved with a Feature Union pipeline component, which has one or more types of pre-processing components as required interfaces.
-Pipelines with a dynamic length can be achieved in a similar manner to generating sequences with an unlimited length in a regular grammar, where a pipeline can either be decomposed into just a component or a component and a pipeline.\newline
-A simple HTN planning space for a very small AutoML model selection space is illustrated in~\ref{fig:approach:htn-automl}.
-For a better understanding, an example of a more detailed and sophisticated AutoML HTN planning space is given in Appendix~\ref{sec:appendix:htn-space}.
-It is written in the JSON schema, which is defined in~\ref{sec:implementation:json}.
+Pipelines with a dynamic length can be achieved in a similar manner to generating sequences with an unlimited length in a regular grammar, where a pipeline can either be decomposed into just a component or a component and a pipeline.
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Approach/HTNAutoML.pdf}
