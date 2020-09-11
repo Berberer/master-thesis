@@ -269,7 +269,7 @@ MCTS is usually defined as an algorithm with an iteration of four steps, which a
 To apply MCTS for a model selection in a search tree for example constructed via HTN planning, minor adjustments are necessary.
 After incorporating the following changes, this modified MCTS is the algorithmic foundation of the approach of this thesis:
 \begin{itemize}
-    \item Optimizer nodes are leafs and can not be further expanded. The Monte-Carlo simulations end their search once they find an optimizer node and start an otimization run of the optimizer of this node. If an optimizer node is chosen in the Selection phase, a model configuration run with a given optimization budget is started with the optimization algorithm represented by this node instead of a node expansion.
+    \item Optimizer nodes are leafs and can not be further expanded. The Monte-Carlo simulations end their search once they find an optimizer node and start an optimization run of the optimizer of this node. If an optimizer node is chosen in the Selection phase, a model configuration run with a given optimization budget is started with the optimization algorithm represented by this node instead of a node expansion.
     \item The main MCTS loop does not run forever or for a fix amount of steps. Instead, it keeps track of the spent optimization budget during the search itself and during the optimizer runs and will stop after the current iteration, if the budget limit is reached or the budget is nearly spent such that it is not possible to perform another complete optimization run.
 \end{itemize}
 As a user specified configuration, an MCTS model selection implementation with embedded optimizers for model configuration would require some values:
@@ -374,7 +374,7 @@ In this case, it will select a new random starting point.
 Thus, not more than $i$ iterations are lost to a local optimum selected from $l$, which is depending on the optimization budget usually manageable, since random search is a comparably simplistic and therefore fast optimization algorithm.
 
 \subsubsection{Hyperband}
-Hyperband is basically a method of treating multiple, parallel running random searches as a Multi-Armed Bandit problem and stopping the less successful instances to have more optmization budget for the better performing instances.
+Hyperband is basically a method of treating multiple, parallel running random searches as a Multi-Armed Bandit problem and stopping the less successful instances to have more optimization budget for the better performing instances.
 Therewith, if each random search instance is implemented as the warmstarted version from the previous explanation, Hyperband can profit from warmstarting as well.\newline
 The typical Multi-Armed Bandit problem of balancing exploration and exploitation should be applied here as well.
 If Hyperband is configured to have $k$ parallel running instances, $\lfloor \sigma \cdot k \rfloor$ instances with $\sigma \in (0,1)$ should start in the direct neighborhood of one of the top candidates from $l$ for exploitation, while $\lceil (1 - \sigma) \cdot k \rceil$ instances should start at new and randomly chosen configurations for a better exploration coverage of each Hyperband run.
