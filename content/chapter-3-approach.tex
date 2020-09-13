@@ -22,14 +22,14 @@ This approach is explained in the following steps in separate sections:
 
 \section{Separation of Model Selection and Configuration}
 \label{sec:approach:separation}
-A usual AutoML optimization search space is a joint space for model selection and model configuration consisting of a set of components, which can be used to construct a machine learning pipeline, and based on the selected components, a valid configuration has to be created.
+A usual AutoML optimization space is a joint space for model selection and model configuration consisting of a set of components, which can be used to construct a machine learning pipeline, and based on the selected components, a valid configuration has to be created.
 Since in the joint optimization space the selected components are not known beforehand, the dimensionality of this space has to be selected for a fixed parametrization size.
 Hence, the model configuration can only create parameter configurations with a pre-defined size as a constraint and the set of pipeline components for model selection can only contain components whose configuration does not exceed this size.\newline
-If the model selection and the model configuration steps are performed sequentially on separated optimization spaces, the dimensionality of the model configuration space can depend on the outcome of the model selection step and have the necessary dimensionality for the constructed pipelines parametrization.\newline
+If the model selection and the model configuration steps are performed sequentially or alternatingly on partitioned optimization spaces, the dimensionality of the model configuration space can depend on the outcome of the model selection step and have the necessary dimensionality for the constructed pipeline's parametrization.\newline
 Similar to ReinBo and Mosaic, the model selection space of this approach is represented by a tree structure.
 After the optimization method reaches a leaf node and has therewith a complete and valid pipeline structure, the size of the required configuration becomes clear.
 Any leaf node is for this reason the connection point and foundation for a model configuration space and the configuration requirements can be deduced.
-Thus, dimensionality and structure of the optimization space for the model configuration can be determined from the configuration requirements of the pipeline represented in this leaf node.
+Thus, dimensionality and structure of the optimization space for the model configuration can be determined from the configuration requirements of the pipeline represented by this leaf node.
 
 \section{Model Selection with MCTS}
 \label{sec:approach:selection}
@@ -56,10 +56,11 @@ Depending on the concrete input dataset, both levels of pipeline complexity coul
     \label{fig:approach:complex-pipeline}
 \end{figure}
 
-In their current implementation, ReinBo and Mosaic solve their model selection tasks by defining a fixed pipeline length and creating a model selection tree containing the combinatorial possible combination with this length and the given component set. 
+In their current implementation, ReinBo and Mosaic solve their model selection tasks by defining a fixed pipeline length and creating a model selection tree containing all combinatorially possible combinations with this length and the given component set. 
 Although it would be possible to increase the maximal pipeline length of the two approaches with minor modifications, the concept, where each layer represents one respective open component slot of the result pipeline, does not allow more complex pipeline topologies than linear.\newline
-Other approaches, as for example ML-Plan, TPOT ,or RECIPE utilize respectively hierarchical task network planning (\textit{HTN planning}) combined with a best-first search, or expression trees and formal grammars together with genetic programming, to achieve a more unconstrained model selection optimization space.
-The optimizer ensembles of this approach try to achieve two aspects.
+Other approaches, as for example ML-Plan, TPOT, or RECIPE utilize respectively hierarchical task network planning (\textit{HTN planning}) combined with a best-first search, or expression trees and formal grammars together with genetic programming, to achieve a more unconstrained model selection optimization space.
+
+The optimizer ensembles approach of this thesis try to achieve two aspects.
 First, the optimizers of the ensemble should share the gathered knowledge with each other and utilize it.
 Second, during the ongoing AutoML workflow, the best optimizer for the given problem instance should be identified and exploited.
 This second aspect will be controlled by the model selection. 
@@ -85,13 +86,13 @@ The exemplaric AutoML compound task "\textit{Construct a machine learning pipeli
 With this decomposition of compound tasks into different sub-tasks, the hierarchical aspect of HTN planning is added.
 A plan as the solution of the planning problem is therefore a task-tree, where each leaf node is a primitive task and each inner node is a compound task.
 To create a search tree for an HTN planning problem, solution states, i.e. solved or incomplete task-trees, as well as planning operations to solve an incomplete task-tree, i.e. selecting and applying decomposition rules, need to be represented with nodes and edges.
-Solved or incomplete tasks-trees are also called plans or plan prefixes in the incomplete case.\newline
-Here is one common possibility to have each node represent a task-tree and each outgoing edge is a decomposition rule that applies to the task-tree of the node.
+Solved or incomplete tasks-trees are also called plans or in the incomplete case plan prefixes.\newline
+For the search tree creation is one common possibility to have each node represent a task-tree and each outgoing edge is a decomposition rule that applies to the task-tree of the node.
 These edges are therefore connected to nodes, where the represented task-tree is the result of applying this decomposition rule on the previous task-tree.
-For a bigger HTN problem, an unsolved task-tree will contain a high number of undecomposed compound nodes and therefore an immense number of decomposition rules would be applicable.
+In the case of a bigger HTN problem, an unsolved task-tree will contain a high number of undecomposed compound nodes and therefore an immense number of decomposition rules would be applicable.
 To reduce the maximum degree of the graph and therefore the memory and runtime complexity of most search algorithms, there should not be an outgoing edge for the applicable decomposition rules of each undecomposed compound task.
-A simplification is to create an ordering for the undecomposed compound task of the nodes task tree and only create outgoing edges for decomposition rules, which apply to the first compound task of this ordering.
-The representation of one simple incomplete task tree and two applicable decomposition rules for the first compound task of an ordering is illustrated in Fig.~\ref{fig:approach:htn-planning}.
+A simplification is to create an ordering for the undecomposed compound task of the node's task-tree and only create outgoing edges for decomposition rules, which apply to the first compound task of this ordering.
+The representation of one simple incomplete task-tree and two applicable decomposition rules for the first compound task of an ordering is illustrated in Fig.~\ref{fig:approach:htn-planning}.
 \begin{figure}[ht!]
     \centering
     \includegraphics[height=0.5\textheight]{gfx/Figures/Approach/HTN.pdf}
@@ -99,7 +100,7 @@ The representation of one simple incomplete task tree and two applicable decompo
     In the lower half are all involved compound tasks listed in the utilized ordering.
     If any decomposition rule was already applied for a compound task, it is listed here as well.
     The first node on the left has already utilized a decomposition for compound task $c_1$ into $c_2$ and $c_3$.
-    In this ordering the first undecomposed compound task is $c_2$ and since two decomposition rules $c_2 \rightarrow (c_4, p_1)$ and $c_2 \rightarrow (p_2, p_3)$ are applicable, the node of this task-tree has two outgoing edges to nodes, where the corresponding decomposition rule was applied to the represented task tree.
+    In this ordering the first undecomposed compound task is $c_2$ and since two decomposition rules $c_2 \rightarrow (c_4, p_1)$ and $c_2 \rightarrow (p_2, p_3)$ are applicable, the node of this task-tree has two outgoing edges to nodes, where the corresponding decomposition rule was applied to the represented task-tree.
     After applying the second decomposition rule, $c_2$ has solely primitive tasks as sub-tasks and can therefore be marked as solved.
     In the case of the first decomposition rule, $c_4$ needs to be decomposed and solved before $c_2$ can would be solved.
     }
@@ -129,7 +130,7 @@ With such definitions of required and provided interface types for each task, it
 These constraints can be pipeline topology specific constraints like splits into two sub-pipelines and uniting such sub-pipelines again, or machine learning specific constraints as for example creating ensembles out of classifiers.
 
 The overall pipeline structure, for example, Pre-Processing + Learning Algorithm or Pre-Processing + Learning Algorithm + Post-Processing, can be encoded in the decomposition rules for input tasks.
-Every actual pipeline component, which shall be included in the pipeline construction of a solved task tree, will be represented as primitive tasks.\newline
+Every actual pipeline component, which shall be included in the pipeline construction of a solved task-tree, will be represented as primitive tasks.\newline
 Non-linear topologies like creating parallel pre-processing sub-pipelines can be for example achieved with a Feature Union pipeline component, which has one or more types of pre-processing components as required interfaces.
 Pipelines with a dynamic length can be achieved in a similar manner to generating sequences with an unlimited length in a regular grammar, where a pipeline can either be decomposed into just a component or a component and a pipeline.
 \begin{figure}[ht!]
@@ -164,7 +165,7 @@ The pipeline nodes and the optimizer nodes are also marked for a better intuitio
     \centering
     \includegraphics[width=\textwidth]{gfx/Figures/Approach/SearchGraph.pdf}
     \caption[A simplified illustration of a possible extended search tree $G'$.]{A simplified illustration of a possible extended search tree $G'$. The root is drawn in blue, the inner nodes with unsolved task-trees in white, pipelines nodes in green and optimizer nodes in red.
-    The yellow box shows the configuration space of the pipeline that is represented by the task tree in that pipeline node.}
+    The yellow box shows the configuration space of the pipeline that is represented by the task-tree in that pipeline node.}
     \label{fig:approach:search-graph}
 \end{figure}
 

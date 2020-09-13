@@ -56,7 +56,7 @@ For using problem representations in a graph search, it has the method \texttt{i
 Each graph node for the HTN planning graph represents, that one additional interface has been satisfied and in comparison to the parent node.
 Therefore the class has an additional static helper method \texttt{from\_previous\_rest\_problem} to create a rest problem from the parent node ones by satisfying one required interface.
 
-When all required interfaces in the interface abstraction layer of the considered HTN task tree are satisfied and a parametrization is generated afterward via the model selection, a concrete \texttt{SearchSpaceComponentInstance} can be created for a \texttt{SearchSpaceComponent} with this mapping from interface to component and the parametrization.
+When all required interfaces in the interface abstraction layer of the considered HTN task-tree are satisfied and a parametrization is generated afterward via the model selection, a concrete \texttt{SearchSpaceComponentInstance} can be created for a \texttt{SearchSpaceComponent} with this mapping from interface to component and the parametrization.
 With the method \texttt{construct\_pipeline\_element}, the actual pipeline element which is represented by the component can be instantiated and configured with the parameters and if necessary, the instantiated pipeline components represented by the required interfaces.
 
 Finally, the \texttt{GraphNode} and \texttt{GraphGenerator} classes are inherited for the use-case of model selection HTN planning via a graph search with the \texttt{SearchSpaceGraphNode} and \texttt{SearchSpaceGraphGenerator} classes.
