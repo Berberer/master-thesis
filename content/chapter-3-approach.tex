@@ -102,14 +102,14 @@ The representation of one simple incomplete task-tree and two applicable decompo
     The first node on the left has already utilized a decomposition for compound task $c_1$ into $c_2$ and $c_3$.
     In this ordering the first undecomposed compound task is $c_2$ and since two decomposition rules $c_2 \rightarrow (c_4, p_1)$ and $c_2 \rightarrow (p_2, p_3)$ are applicable, the node of this task-tree has two outgoing edges to nodes, where the corresponding decomposition rule was applied to the represented task-tree.
     After applying the second decomposition rule, $c_2$ has solely primitive tasks as sub-tasks and can therefore be marked as solved.
-    In the case of the first decomposition rule, $c_4$ needs to be decomposed and solved before $c_2$ can would be solved.
+    In the case of the first decomposition rule, $c_4$ needs to be decomposed and solved before $c_2$ would be solved.
     }
     \label{fig:approach:htn-planning}
 \end{figure}
 
 \subsection{Description of the Search Space Graph}
 \label{sec:approach:selection:graph}
-The examples of HTN tasks in section~\ref{sec:approach:selection:search} are given as instructions in plain English but this cannot be used in an algorithm and therefore a formalization is necessary.
+The examples of AutoML HTN tasks in section~\ref{sec:approach:selection:search} are given as instructions in plain English but this cannot be used in an algorithm and therefore a formalization is necessary.
 With a suitable formalization and corresponding data model, the HTN planning domain is adjustable and expandable for the exact use-case.
 Based on these adjustments and expansions, it is possible to modify valid pipeline topologies and the set of pipeline components for pipeline construction for the AutoML use-case.\newline
 While attempting pipeline constructions, it is not possible to create arbitrary pipeline graphs because components often expect one specific type of input that can only be provided from other components, which have this type as their output type.
@@ -117,12 +117,13 @@ Additionally, sometimes the selection of some components implies the requirement
 For example, if an ensemble method was selected as a learning algorithm, the components that are used to be the predictors of the ensemble must be learning algorithm components and cannot be pre-processing components.
 
 To incorporate such constraints into tasks and decomposition rules, ML-Plan utilizes a simple type system in the form of required and provided interfaces as an additional abstraction layer above the tasks.
-Each task has one or more type definitions that represent certain properties of the solution to the associated task.
+From this interface abstraction layer point of view, each task has one or more type definitions that represent certain properties of the solution to the associated task, i.e. they are provided by solving this task and are therefore called provided interfaces.
 For example, the primitive task of using a decision tree as well as the compound task of creating an ensemble learning algorithm out of several other learning algorithms would both offer a solution in the form of a machine learning algorithm.
 Both of them could have something like \texttt{Classifier} or \texttt{Learner} as their solution type and therewith as the types of interfaces they provide.\newline
 On the other hand, compound tasks are only solvable if they get solutions of certain types as the results of the sub-tasks they are decomposed into.
 For example, a Stacking classifier can only be based on other classifiers, i.e. solutions with types like \texttt{Classifier}.
-Thus, each compound task has one or more required interfaces, which represent the necessary solution types of the tasks the compound task could be decomposed into.\newline
+Thus, each compound task has one or more required interfaces, which represent the necessary solution types of the tasks the compound task could be decomposed into.
+
 Decomposition rules are now simple matching rules, i.e. which required interfaces can be satisfied with which provided interface.
 Of course, as the easiest form of matching rule, it is possible that these interface types must be identical.
 A compound task with a single required interface of type $a$ can only be decomposed into another task, which has $a$ as one of its provided interface types.
@@ -232,8 +233,8 @@ With the results of the simulations, an MCTS implementation now needs a selectio
 The aforementioned upper confidence bounds were successively applied as such a selection strategy in the form of the \textit{UCB applied to trees} algorithm (UCT)~\cite{Kocsis-UCT}.
 For UCT is the goal to utilize the possibly hierarchical dependencies inside the trees.
 Although MCTS does not necessarily has to use this selection strategy, the two terms UCT and MCTS are often used interchangeably.\newline
-For UCT and therefore also MCTS, each node has an attached score, which is the basis for selection strategies.
-This value can for example be calculated via $\underset{n_i}{\textrm{argmax}} \left( w_{n_i} + f \cdot \sqrt{\frac{\textrm{ln}(t)}{v_{n_i}}} \right)$, but this formula can be adjusted depending on the desired exploration/exploitation behavior.
+In the case of UCT but also some other MCTS selection strategies, each node has an attached score, which is the basis for these selection strategies.
+This value is for example for UCT calculated via $\underset{n_i}{\textrm{argmax}} \left( w_{n_i} + f \cdot \sqrt{\frac{\textrm{ln}(t)}{v_{n_i}}} \right)$, but this formula can be adjusted depending on the desired exploration/exploitation behavior.
 $w_{n_i}$ is the overall sampled score so far of the subtree below node $n_i$ as an average, $f$ is a factor for the tendency towards exploration, $v_{n_i}$ is the amount of times the subtree below $n_i$ was sampled, and $t$ is the amount of overall turns/iterations so far.\newline
 MCTS is usually defined as an algorithm with an iteration of four steps, which are listed in the following and additionally illustrated in Fig.~\ref{fig:approach:mcts}:
 \begin{enumerate}
@@ -248,7 +249,7 @@ MCTS is usually defined as an algorithm with an iteration of four steps, which a
     But with a higher number of simulations, a bigger portion of the budget is spent each iteration and fewer iterations can be performed overall.
     A careful trade-off is therefore necessary.
     \item \textbf{Backpropagation}: For the child node $n$, the simulations returned some scores $x_1, ..., x_k$.
-    Based on this scores, $n$ will receive an initial value.
+    Based on these scores, $n$ will receive an initial value.
     Afterwards, every node in the path from the root to $n$ will be updated to incorporate the newly gathered knowledge as well via backpropagation starting at $n$.
     At first, $n$ is scored initially with the following formula $\frac{\frac{\sum_{i=1}^k x_i}{k}}{v_t} + f \cdot \sqrt{\frac{\mathrm{ln} (V_t)}{v_t}}$.
     The formula consists of the following parts: $\frac{\sum_{i=1}^k x_i}{k}$ is the average of the simulation results, $f$ is a pre-defined factor for the focus on exploration, $v_t$ is the amount of visits $n$ had after $t$ rounds of the MCTS loop via previous Monte-Carlo simulations before it was expanded in this round or alternatively 1, and $V_t$ is the visit counter $v_t$ of the parent of $n$.
@@ -268,18 +269,18 @@ To apply MCTS for a model selection in a search tree for example constructed via
 After incorporating the following changes, this modified MCTS is the algorithmic foundation of the approach of this thesis:
 \begin{itemize}
     \item Optimizer nodes are leaves and can not be further expanded. The Monte-Carlo simulations end their search once they find an optimizer node and start an optimization run of the optimizer of this node. If an optimizer node is chosen in the Selection phase, a model configuration run with a given optimization budget is started with the optimization algorithm represented by this node instead of a node expansion.
-    \item The main MCTS loop does not run forever or for a fixed amount of steps. Instead, it keeps track of the spent optimization budget during the search itself and during the optimizer runs and will stop after the current iteration, if the budget limit is reached or the budget is nearly spent such that it is not possible to perform another complete optimization run.
+    \item The main MCTS loop does not run forever or for a fixed amount of steps. Instead, it keeps track of the spent optimization budget during the search itself and during the optimizeation runs and will stop after the current iteration, if the budget limit is reached or the budget is nearly spent such that it is not possible to perform another complete optimization run.
 \end{itemize}
 As a user-specified configuration, an MCTS model selection implementation with embedded optimizers for model configuration would require some values:
 \begin{itemize}
     \item The overall optimization budget $B$.
-    \item The budget $b$ a single optimizer run for a Monte-Carlo simulation can spent with $b \ll B$.
+    \item The budget $b$ a single optimizer run can spent with $b \ll B$.
     \item The exploration factor $f$.
     \item The number of Monte-Carlo simulations starting at each new child node after expansion.
 \end{itemize}
 Additionally, the definition of the HTN planning space and the set of optimizers $A$ is required to construct the search tree including the optimizer leaves to achieve an optimizer ensemble for model configuration.
 A simplified formulation in high-level pseudo-code of the modified MCTS for the approach of this thesis can be found in Algorithm~\ref{algo:pseudo-code}.
-For this simplification are expected as parameters: The overall AutoML timeout, the timeout for each single optimization run, a searchspace created beforehand from searchspace definition files, and the dataset in the format instances $x$ and classes $\hat{y}$.
+For this simplification the following parameters are expected: The overall AutoML timeout, the timeout for each single optimization run, a searchspace created beforehand from searchspace definition files, and the dataset in the format instances $x$ and classes $\hat{y}$.
 \begin{algorithm}[ht!]
     \caption{frankensteins-automl}
     \label{algo:pseudo-code}
@@ -335,7 +336,7 @@ With this centralized control instance it is possible to store and distribute kn
 At first, every $n^{a}_{n^*} \in N^A_{n^*}$ can get the concrete model configuration space from $n^*$, as well as other helpful information as for example the default parametrization of certain pipeline components.
 Sometimes the default parametrization may be a good starting point, i.e. first evaluation candidate, for some optimization algorithms.\newline
 Additionally, each optimizer can store their evaluated candidates together with the evaluation score at $n^*$.
-Although this requires additional storage memory, collecting and saving already evaluated candidates has the following advantages:
+Although this requires additional memory storage, collecting and saving already evaluated candidates has the following advantages:
 \begin{itemize}
     \item If saved in a hashtable, candidates can be inserted with a generated key and retrieved with one as well. Therewith, it can be checked if a candidate was already evaluated before and if yes, return the existing score from $n^*$ to the optimizer instead of training and evaluating a pipeline on the dataset again.
     The lookup complexity of a hashtable is constant, while training a machine learning algorithm is generally very time consuming in comparison.
@@ -354,12 +355,12 @@ Additionally, all these previous candidate evaluations are stored in the pipelin
 Hence, the optimization algorithms should utilize this advantage of prior collected data instead of performing the optimization anew from scratch every time.
 
 Starting with a foundation of previously collected data instead of a completely unexplored optimization space is called \textit{warmstarting} an optimizer.
-However, it is important to have a certain robustness against local optima, because without it an optimization algorithm could start in a local optimum, which was found in another optimization run, and might not get out of this local optima.
+However, it is important to have a certain robustness against local optima, because without it an optimization algorithm could start in a local optimum, which was found in another optimization run, and might not get out of this local optimum.
 This robustness can be achieved by the optimization algorithms themselves, but additionally a little bit by the selection of the data for the warmstart as well.
 
 In the following, it is explained how the optimization algorithms that are used for the optimizer ensembles of this approach can be modified to be executed warmstarted.
 All these optimization algorithms are established black box optimization algorithms, which were presented in section~\ref{sec:theory:optimization:search} up to section~\ref{sec:theory:optimization:bayesian}.
-They will therefore utilize an ordered list of pairs of already evaluated candidates in the form of $l = \langle (c_1, s_1), ... (c_k, s_k) \rangle$, where $c_i$ is an already evaluated pipeline configuration and $s_i$ the corresponding score of this evaluation.
+They will therefore utilize an ordered list of pairs of already evaluated candidates for warmstarting in the form of $l = \langle (c_1, s_1), ... (c_k, s_k) \rangle$, where $c_i$ is an already evaluated pipeline configuration and $s_i$ the corresponding score of this evaluation.
 The list $l$ is created from a subset with the top $|l|$ candidates out of the set of all previous evaluations and $|l|$ can be decided by the corresponding optimization algorithm.
 
 \subsubsection{Random Search}
@@ -372,10 +373,10 @@ In this case, it will select a new random starting point.
 Thus, not more than $i$ iterations are lost to a local optimum selected from $l$, which is depending on the optimization budget usually manageable, since random search is a comparably simplistic and therefore fast optimization algorithm.
 
 \subsubsection{Hyperband}
-Hyperband is basically a method of treating multiple, parallel running candidate evaluation as a Multi-Armed Bandit problem and stopping the less successful instances to have more optimization budget for the better performing instances as well as new instances.
-The candidates for evaluations are chosen randomly and this is therewith similar to a random search to a certain degree.
-Therewith, it can also be warmstarted similar to a random search by sometimes choosing candidates in the neighborhood from candidates with high evaluation results.\newline
-The typical Multi-Armed Bandit problem of balancing exploration and exploitation should be applied here as well and not all candidates should be from high performing neighborhoods.
+Hyperband is basically a method of treating multiple, parallel running candidate evaluations as a Multi-Armed Bandit problem and stopping the less successful instances to have more optimization budget for the better performing instances as well as new instances.
+The candidates for evaluation are chosen randomly and this is therewith similar to a random search to a certain degree.
+Hence, it can also be warmstarted similar to a random search by sometimes choosing candidates in the neighborhood from candidates with high evaluation results.\newline
+The typical Multi-Armed Bandit problem of balancing exploration and exploitation should be applied here as well and not all candidates should be from currently high performing neighborhoods.
 If Hyperband is configured to have $k$ parallel running evaluation instances, $\lfloor \sigma \cdot k \rfloor$ instances with $\sigma \in (0,1)$ should start in the direct neighborhood of one of the top candidates from $l$ for exploitation, while $\lceil (1 - \sigma) \cdot k \rceil$ instances should start at new and randomly chosen configuration candidates for a better exploration coverage of each Hyperband run.
 
 \subsubsection{Genetic Optimization}
@@ -389,7 +390,7 @@ Alternatively it is also possible to re-use the Hyperband warmstarting approach,
 
 \subsubsection{SMAC}
 For the Bayesian optimization implementation \textit{SMAC}, a warmstarted variant was developed by~\textcite{Lindauer-Smac-Warmstart}.
-During the optimization, SMAC trains a regression model, for instance, a Random Forest, to predict the performance of a configuration before actually evaluating it.
+During the optimization, SMAC trains a regression model, for instance a Random Forest, to predict the performance of a configuration before actually evaluating it.
 This regression model is then used to guide the selection of candidates that are actually evaluated to build the surrogate function model.
 Additionally to training this regression model progressively during the optimization, it can be trained beforehand with $l$ or any other subset of all previously evaluated candidates to have a more accurate regression model right from the start of the optimization run.
 
@@ -401,5 +402,6 @@ Afterwards the next dimension is refined until each dimension was completely dis
 Therefore, this can be viewed as converting a grid search approach into a tree structure, which will be searched more dynamically then a grid search, with a best-first search, where the nodes are scored via Monte-Carlo simulations.\newline 
 In ML-Plan the optimization was done for model selection and model configuration in a joint graph.
 Here for this approach, instead of creating a search graph for the complete AutoML problem solution space, it is solely applied on the model configuration space, i.e. hyperparameter optimization.\newline
-Warmstarting does here not imply that a starting point of the optimization is selected out of $l$, because the selection is controlled by the best first search depending on the node scores.
-However, if the same optimizer instance is started more than once, this optimization approach can be warmstarted in the way that a search graph is already created for this space and the search can simply be continued.
+Warmstarting does here not imply that a starting point of the optimization is selected out of $l$, because the selection is controlled by the best-first search depending on the node scores.
+However, if the same optimizer instance is started more than once, this optimization approach can be warmstarted in the way that a search graph is already created for this space and traversed to a certain degree.
+Hence, the search can simply be continued.
