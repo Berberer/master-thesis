@@ -10,12 +10,13 @@ It requires a definition of all possible input parameters for one experiment run
 Experiment executions themselves, are orchestrated via one central database.
 The experiment runner will select one possible parametrization of the allowed input parameter values, check via the database if this parametrization was already evaluated and perform the evaluation of the parametrization otherwise.
 With this experiment management via a single database, the actual experiment execution can be parallelized arbitrarily.
-Further details about the libraries setup and functionality can be found in the corresponding repository\footnote{\url{https://github.com/Berberer/python-experimenter}}.\newline
+Further details about the libraries setup and functionality can be found in the corresponding repository\footnote{\url{https://github.com/Berberer/python-experimenter}}.
 
+The setup for the evaluations with this Python experiment environment is explained in the following. 
 Every time a certain file name is assumed for the setup it is given as well, but this can of course be customized for a different setup.
 
 The experiment runner has to be configured with the information regarding the database connection and the values for possible parametrization and expected results.
-For example in the case of the experiments with the timeout of one hour to compare the different approaches regarding their accuracy scores and additionally to count the optimizer runs of frankenstein, the experiment configuration file (\texttt{experiment.properties}) could look like the following:
+For example in the case of the experiments with the timeout of one hour to compare the different approaches regarding their accuracy scores and additionally to count the optimizer runs of frankensteins-automl, the experiment configuration file (\texttt{experiment.properties}) could look like the following:
 \begin{Verbatim}[fontsize=\scriptsize]
 keyfields = timeout,seed,dataset,algorithm
 resultfields = score,random_count,hyperband_count,genetic_count,
@@ -241,7 +242,7 @@ From: ubuntu:20.04
     pip install git+https://github.com/herilalaina/mosaic@0.1
     pip install git+https://github.com/herilalaina/mosaic_ml
 \end{Verbatim}
-This recipe assumes that the image is build in a directory where the reference implementation of the approach of this thesis is located in a folder called \texttt{frankensteins-automl} to allow direct changes and customizations of the code.
+This recipe assumes that the image is build in a directory where the reference implementation is located in a folder called \texttt{frankensteins-automl} to allow direct changes and customizations of the code.
 Alternatively, this can be easily changed in the recipe to directly clone it from GitHub.
 
 After building the image (\texttt{experiment.sif}), the experiments can be started for example via \texttt{singularity exec experiment.sif python3 experiment.py}.\newline

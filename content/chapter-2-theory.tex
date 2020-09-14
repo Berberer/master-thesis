@@ -17,7 +17,7 @@ Before explaining the ensemble approach in the next chapter, which could counter
 Machine learning in general has been a topic in computer science and mathematics for several decades even before attempts to autotomize it  in the form of AutoML were made.
 AutoML is of course not replacing this classical approach, but it is an extension of it.
 Therefore, a short overview from a more abstract and theoretical point of view of this classical machine learning without AutoML is given in this first theory section.
-Especially supervised learning is elucidated here and one possible definition is given since the approach of this thesis will focus on classification settings, which are a sub-group of supervised learning settings.
+Especially supervised learning is elucidated here and one possible definition is given since the approach of this thesis focusses on classification settings, which are a sub-group of supervised learning settings.
 With this foundation, AutoML is explained in the following sections.
 
 If a human is given a task where the correct solution or reaction is not evident, a human has always the possibility to react with a random solution or with an arbitrary reaction.
@@ -48,7 +48,7 @@ This serves two main purposes:
     \item By reducing the amount of manual work to a bare minimum, it offers a big speed-up for applying machine learning regardless of the level of knowledge of the user.
 \end{itemize}
 In this section, a description of the general workflow of an AutoML tool is given and the usual two main steps of such an AutoML workflow are illustrated.
-This will be concluded with a formalization of the AutoML problem setting as an optimization problem.
+This is concluded with a formalization of the AutoML problem setting as an optimization problem.
 
 \subsection{General Workflow}
 \label{sec:theory:automl:workflow}
@@ -77,7 +77,7 @@ The model evaluation step is usually performed by training a pipeline on one spl
 But other evaluation techniques, for example a cross-validation, are also common.\newline
 While the model evaluation step is only very loosely defined and usually not a complex procedure, the model selection and model configuration steps of the AutoML workflow are more sophisticated.
 They have to select a suitable candidate from one or more, usually large, spaces. 
-Both spaces, for model selection as well as for model configuration, will be individually explained in the following.
+Both spaces, for model selection as well as for model configuration, are individually explained in the following.
 
 \subsection{Model Selection}
 \label{sec:theory:automl:selection}
@@ -173,7 +173,7 @@ With the formalization of AutoML as a CASH problem, the question arises whether 
 Unfortunately, the CASH problem is a special case of optimization problem called \textit{Black Box} optimization problem.\newline
 In the following section, it is explained in what way black box problems are different from the standard textbook optimization problem and why established optimization algorithms cannot be used.
 Afterwards, a selection of existing algorithms is presented that can instead be used for black box optimization problems, as for instance the AutoML setting.
-Finally, with the aid of the \textit{No-Free-Lunch Theorem}, it will be reasoned why these approaches cannot be optimal and why therefore an ensemble approach could be more promising.
+Finally, with the aid of the \textit{No-Free-Lunch Theorem}, it is reasoned why these approaches cannot be optimal and why therefore an ensemble approach could be more promising.
 
 \subsection{Differences to General Optimization Problems}
 \label{sec:theory:optimization:differences}
@@ -221,8 +221,8 @@ For example, the two could be (partially) pre-defined or random or a mixture of 
 It is also possible that the combination of both, definition of candidates as well as order of candidate evaluations, is defined implicitly by the prior selected candidates.
 In this case, selecting one more candidate for the set would depend on the already selected candidates in the set as well as knowledge about the optimization landscape gathered from them, and with this stepwise extension the order of evaluations would be implicitly defined.
 
-For each one of the aforementioned black box optimization strategies, this candidate selection and candidate order will be explained in general and on the basis of some concrete approaches from the AutoML research in the following.
-These explanations of the strategies will be supported by a simple running example.\newline
+For each one of the aforementioned black box optimization strategies, this candidate selection and candidate order are explained in general and on the basis of some concrete approaches from the AutoML research in the following.
+These explanations of the strategies are supported by a simple running example.\newline
 The unconstrained target function $f_0 \left( \begin{bmatrix}x\\y \end{bmatrix} \right) = x^2 + y^2$, which can be seen in Fig.~\ref{fig:theory:target-function}, shall be minimized.
 This function is defined in $\mathbb{R}^2$ and has one global minimum.
 Although the running example is a minimization task, the presented algorithms can also perform maximization tasks out of the box or with minor modifications.\newline
@@ -652,7 +652,7 @@ The same transformations of the optimization space can of course be done by only
 
 Since one optimization method will only be the best one for a limited set of problem classes, it can be beneficial to use more than one optimization method and utilize a different optimizer for different transformations of the optimization space.
 Therewith, the the set of problem classes, where a combination of these optimizers can now be superior, is extended.\newline
-In the next section, a selection of approaches will be presented, which use such transformations of the optimization space and more than one optimizer, to utilize this extension of problem classes in the AutoML context, where the theoretical superiority can be achieved by multiple optimizers.
+In the next section, a selection of approaches is presented, which use such transformations of the optimization space and more than one optimizer, to utilize this extension of problem classes in the AutoML context, where the theoretical superiority can be achieved by multiple optimizers.
 
 \section{Related Work}
 \label{sec:theory:related}
@@ -719,7 +719,7 @@ In this search, the task of selecting the next child node of one node for expans
 With this approach, a balance between exploring more unevaluated areas of the tree and exploiting subtrees that have already shown promising scores can be achieved.
 This balance is achieved via a heuristic scoring of nodes via Monte-Carlo simulations and a node selection strategy based on these scores that is formalized as \textit{UCT}(Upper Confidence bound applied to Trees)~\cite{Kocsis-UCT}.
 This combination of UCT and Monte-Carlo simulations is then often referred to as a Monte-Carlo tree search(MCTS).
-MCTS will be exemplified in more detail in section~\ref{sec:approach:selection:mcts}.\newline
+MCTS is exemplified in more detail in section~\ref{sec:approach:selection:mcts}.\newline
 One example of a heuristic graph search based AutoML approach is called \textit{Mosaic}~\cite{Rakotoarison-Mosaic} and it leverages MCTS employed in a multi-stage optimization methodology as well.
 In Mosaic, the tree that is the subject of the MCTS is modeled as a transformation of the optimization space into a model selection space.
 The first $k$ layers of the search tree are representing $k$ possible types of pipeline components, for example pre-processing methods or machine learning algorithms.

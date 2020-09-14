@@ -2,20 +2,20 @@
 %
 \chapter{Implementation}
 \label{sec:implementation}
-The approach of this thesis, described in the previous chapter, is realized as a reference implementation in the \textit{Python} programming language, which can be found here:~\url{https://github.com/Berberer/frankensteins-automl}.\newline
+The approach of this thesis, described in the previous chapter, is realized as a reference implementation in the \textit{Python} programming language and can be found here:~\url{https://github.com/Berberer/frankensteins-automl}.\newline
 For simplicity and practicability reasons, this implementation has some minor restrictions regarding the expected input, but this can be changed or generalized to more inputs with minor modifications.
 As for the current implementation state, the optimization budget input is limited to time as the budget type and the dataset input has to be either in the \textit{ARFF} file format, popularized by \textit{WEKA}~\cite{Witten-Weka}, or directly as \textit{NumPy} arrays.
 
 This reference implementation has two contributions to this thesis:
 \begin{itemize}
-	\item Help for a better understanding as an alternative and more practical representation of the approach, if the reader prefers code instead of a theoretical and lengthy formal definition.
-	\item For the evaluation of this approach and the comparison against other approaches and some baseline values in chapter~\ref{sec:evaluation}, this approach must be provided as an executable program to get results for different experimental settings.
+	\item Help for a better understanding as an alternative and more practical representation of the approach, if the reader prefers code instead of a theoretical and formal description.
+	\item For the evaluation of this approach and the comparison against other approaches in chapter~\ref{sec:evaluation}, this approach must be provided as an executable program to get results for different experimental settings.
 \end{itemize}
 
 The implementation is explained in the following chapter, which is structured into three parts.
 At first, the architectural composition of the implementation and the interaction of the included components is explained.
 With this overall perspective of the implementation, the codebase will be easier to understand and to navigate.
-Since the implementation was not done from scratch, the utilized Python libraries are listed and their functionality is explained as a second part to acknowledge to their creators as well as to elucidate their contribution to the overall functionality.
+Since the implementation was not done from scratch, the utilized Python libraries are listed and their functionality is explained as a second part to acknowledge their creators as well as to elucidate the contribution of the library to the overall functionality of the reference implementation.
 Finally, the description schema of the AutoML optimization space definition is provided, which is a required input for the implementation, such that a user can understand the included optimization spaces of the implementation and modify them if needed.
 
 \section{Components of the Project and their Interaction}
@@ -24,7 +24,7 @@ The components of the implementation and their architectural composition can be 
 All explanations of the implementation will be accompanied by UML class diagrams of the corresponding sources to support the description of the functionality.
 These diagrams only depict the most relevant core mechanics of the respective classes, while getter and setter methods as well as other minor utility methods are omitted.\newline 
 For the model selection as the first of the three components, the search space needs to be constructed from the input optimization space definition.
-Additionally, the management and creation of an HTN planning tree is part of this module as well.\newline
+Additionally, the management and creation of a search tree for HTN planning domains is part of this module as well.\newline
 In the second part, the components for evaluating machine learning pipelines and handling the different warmstarted optimizers as an optimizer ensemble are explicated.\newline
 Finally, all components from the two previous parts are combined via an MCTS implementation into an overall AutoML tool and all components for this are explained in the third part.
 
@@ -45,29 +45,29 @@ Basically, \texttt{SearchSpaceComponent} is a wrapper class for components of th
 Additionally, this class has some helper methods for handling parameters.
 It can create the default parametrization or alternatively draw a random parametrization of this component.
 For a given parametrization, it can check the validity, i.e. exists a value for each parameter and are all selected values allowed for their corresponding parameter.
-Finally, it can split a given parametrization into positional and keyword parameters for utilizing them for a concrete Python function call that is supposed to create this component, which is usually a constructor of the component's class.\newline
+Finally, it can split a given parametrization into positional and keyword parameters for utilizing them for a concrete Python function call that is supposed to create this component, which is usually but not necessarily a constructor of the component's class.\newline
 Within the \texttt{SearchSpace} class, all these components defined in the user-provided input are managed and can be retrieved either by their name of by an interface they provide.
 
-Each planning state in an HTN planning process has a rest problem, i.e. which tasks are satisfied and which are not, because they are not decomposed yet.
+Each planning state in an HTN planning process has a rest problem, i.e. which tasks are solved and which are not, for example because they are not decomposed yet.
 The class \texttt{SearchSpaceRestProblem} is utilized to store this information.
-It saves all required interfaces from both satisfied and not satisfied tasks, which are included in the current plan.
+It saves all required interfaces from both solved and unsolved tasks, which are included in the current plan.
 Additionally, it has a mapping, which required interface is satisfied with which component that provides this interface.\newline
-For using problem representations in a graph search, it has the method \texttt{is\_satisfied}, which returns true if all required interfaces have a suitable mapped provided interface, and \texttt{get\_first\_unsatisfied\_required\_interface} to pick the next interface of a not satisfied task to progress the planning by satisfying it.
-Each graph node for the HTN planning graph represents, that one additional interface has been satisfied and in comparison to the parent node.
-Therefore the class has an additional static helper method \texttt{from\_previous\_rest\_problem} to create a rest problem from the parent node ones by satisfying one required interface.
+For using problem representations in a graph search, it has the method \texttt{is\_satisfied}, which returns true if all required interfaces have a suitable mapped provided interface, and \texttt{get\_first\_unsatisfied\_required\_interface} to pick the next interface of an unsolved task to progress the planning by satisfying it.
+Each graph node for the HTN planning graph represents, that one additional interface has been satisfied in comparison to the parent node.
+Therefore the class has an additional static helper method \texttt{from\_previous\_rest\_problem} to create a rest problem from the rest problem of the parent node by satisfying one required interface.
 
 When all required interfaces in the interface abstraction layer of the considered HTN task-tree are satisfied and a parametrization is generated afterward via the model selection, a concrete \texttt{SearchSpaceComponentInstance} can be created for a \texttt{SearchSpaceComponent} with this mapping from interface to component and the parametrization.
-With the method \texttt{construct\_pipeline\_element}, the actual pipeline element which is represented by the component can be instantiated and configured with the parameters and if necessary, the instantiated pipeline components represented by the required interfaces.
+With the method \texttt{construct\_pipeline\_element}, the actual pipeline element which is represented by the component instance can be instantiated and configured with the parameters and if necessary, the instantiated pipeline components represented by the required interfaces.
 
 Finally, the \texttt{GraphNode} and \texttt{GraphGenerator} classes are inherited for the use-case of model selection HTN planning via a graph search with the \texttt{SearchSpaceGraphNode} and \texttt{SearchSpaceGraphGenerator} classes.
 The abstract methods of the base classes are implemented in the following manner:
 \begin{itemize}
     \item \texttt{GraphNode.is\_leaf\_node}: Each \texttt{SearchSpaceNode} represents one specific rest problem.
-    This node can be considered a leaf node of the planning graph if the \texttt{SearchSpaceRestProblem.is\_satisfied} returns true.
-    \item \texttt{GraphGenerator.get\_root\_node}: The \texttt{SearchSpaceGraphGenerator} has the name of the start component of the planning problem as an initial input.
-    It can get the corresponding component from the \texttt{SearchSpace} instance, construct a \texttt{SearchSpaceRestProblem} for this initial component, and create the root node with it.
+    This node can be considered a leaf node of the planning graph if \texttt{SearchSpaceRestProblem.is\_satisfied} returns true.
+    \item \texttt{GraphGenerator.get\_root\_node}: The \texttt{SearchSpaceGraphGenerator} has the name of the component that represents the input task of the planning problem.
+    It can get this component from the \texttt{SearchSpace} instance, construct a \texttt{SearchSpaceRestProblem} for this initial component, and create the root node with it.
     \item \texttt{GraphGenerator.get\_node\_successors}: The rest problem of the node, which is provided as a parameter of this method, will return one specific unsatisfied interface with its \texttt{get\_first\_unsatisfied\_required\_interface} method.
-    By calling \texttt{SearchSpace.get\_components\_providing\_interface} with the name of this first unsatisfied interface, all suitable components are found and afterwards calling \texttt{SearchSpaceRestProblem.from\_previous\_rest\_problem} for each of this components, will generate the rest problems for the successor nodes.
+    By calling \texttt{SearchSpace.get\_components\_providing\_interface} with the name of this first unsatisfied interface, all suitable components are found and afterwards calling \texttt{SearchSpaceRestProblem.from\_previous\_rest\_problem} for each of these components, will generate the rest problems for the successor nodes.
 \end{itemize}
 
 \begin{figure}[ht!]
@@ -82,16 +82,16 @@ The abstract methods of the base classes are implemented in the following manner
 Once the model selection procedure has created a pipeline topology in the form of a satisfied \textit{SearchSpaceRestProblem}, the model configuration has to optimize a parametrization for the components of this topology.
 This is the task of the optimizer ensembles, which are implemented as illustrated in Fig.~\ref{fig:implementation:uml:optimization}.
 
-For each created pipeline topology of the model selection, i.e. one for each Pipeline Node, a \texttt{OptimizationParameterDomain} object is created and attached.
+For each created pipeline topology of the model selection, i.e. one for each Pipeline Node, a \texttt{OptimizationParameterDomain} object is created and attached to the pipeline node object.
 It can manage the components and the corresponding parameter space of this pipeline as well as all already evaluated candidates parametrizations.\newline
-All parametrizations are considered from two points of view: For creating actual pipeline objects for evaluation with a component mapping, where the parameters are stored in a map to have them associated to their component, and for optimizing this configurations, which is done in the more generalized form of NumPy arrays, i.e. basically vectors.
-Between these two perspectives, the optimization domain \texttt{OptimizationParameterDomain} can perform transformations between both formats.\newline
+All parametrizations are considered from two points of view: For creating actual pipeline objects for evaluation with a component mapping, where the parameters are stored in a map to have them associated to their component, and for optimizing these configurations, which is done in the more generalized form of NumPy arrays, i.e. basically vectors.
+For these two perspectives, the optimization domain \texttt{OptimizationParameterDomain} can perform transformations between both formats.\newline
 As a starting point for optimization runs, the domain can create the default configuration and random configurations.
 Afterwards during the optimization, the domain keeps track of all results in both a heap as well as a mapping from a hashed parametrization id to the scores, i.e. a hashtable.
 This duplicate storing has the downside of a higher memory consumption, but the upside of faster access in two different use-cases:
 \begin{enumerate}
-    \item Retrieving the top $n$ results from all already evaluated results via the heap, if one optimization method needs this for a warmstart. Thus, it can be defined individually for each optimization algorithm how many datapoints it utilizes for wamrstarting. When a high $n$ is selected, the optimizer will also get information about regions of the optimization landscape with a low performance such that it can avoid these regions.
-    \item Checking if one found parametrization was already evaluated and if yes to retrieve the score via the mapping in the hashtable to prevent a repeated evaluation.
+    \item Retrieving the top $n$ results from all already evaluated results via the heap, if one optimization method needs this for a warmstart. Thus, it can be defined individually for each optimization algorithm how many datapoints it utilizes for warmstarting. When a high $n$ is selected, the optimizer will also get information about regions of the optimization landscape with a low performance such that it can avoid these regions.
+    \item Checking if a parametrization was already evaluated and if yes to retrieve the score via the mapping in the hashtable to prevent a repeated evaluation.
 \end{enumerate}
 
 The core functionalities that all optimization algorithms might need, are provided in the \texttt{AbstractOptimizer} base class.
@@ -118,7 +118,7 @@ In this current reference implementation, five optimization algorithms are imple
     \item \texttt{Hyperband}: This Hyperband implementation is based on an existing open-source implementation\footnote{\url{https://github.com/zygmuntz/hyperband}}.
     The existing implementation is utilized in the wrapper class \texttt{HyperbandRunner} which is called by the \texttt{Hyperband} optimizer class as a part of the common integration concept via the \texttt{AbstractOptimizer} class.
     It is warmstarted by selecting candidates from the direct neighborhood of the top 50 configurations from the optimization domain, or alternatively all existing if there are less then 50, and fill the list of starting points with random configurations up until 100 starting points for the Hyperband.
-    This is done to achieve a balance between exploration and exploitation, because Hyperband is internally managed as a Multi-Armed Bandit problem.
+    This is done to achieve a balance between exploration and exploitation right from the start, because Hyperband is internally managed as a Multi-Armed Bandit problem.
     \item \texttt{GeneticAlgorithm}: For this reference implementation, the genetic algorithm implementation was modeled after \textit{TPOT}, since this approach has shown good results for tackling AutoML problems with genetic algorithms.
     Therefore, the following operations are applied in every iteration to produce the next generation of 100 individuals from the current population:
         \begin{enumerate}
@@ -130,7 +130,7 @@ In this current reference implementation, five optimization algorithms are imple
     The warmstarted initial generation of 100 individuals for each genetic algorithm run is initiated with the best 20 candidate configurations from the optimization domain and 80 random configurations.
     \item \texttt{SMAC}: This is a wrapper class for the official \textit{SMAC} implementation.
     As in the Hyperband integration, it is warmstarted with the top 50 candidates, if so many exist, and additional random configurations to get 100 starting point configurations.
-    In theory, it would be beneficial for SMAC to have as much warmstart data as possible, but the SMAC requires a so called \texttt{RunHistory} object as warmstarting input that has to be created on-the-fly for each optimization run.
+    In theory, it would be beneficial for SMAC to have as much warmstarting data as possible, but SMAC requires a so called \texttt{RunHistory} object as warmstarting input that has to be created on-the-fly for each optimization run.
     Hence, the size of the input was limited to 100 for this reference implementation.
     As future work, this limit can probably be extended and thus increase the capabilities of the SMAC integration.
     \item \texttt{DiscretizationSearch}: For a discretization search, in the optimization domain, an order is set for the parameters of the pipeline topology and this order is also applied for creating new child nodes via discretizations.\newline
@@ -138,11 +138,11 @@ In this current reference implementation, five optimization algorithms are imple
     In the case of integer or real numbers, the minimum and maximum can be really far apart and creating a lot of child nodes in a single refinement step to achieve a high coverage of the values in between will blow up the degree of the graph enormously.
     Instead, numeric parameters are split by half and one child node is attached for each half.
     This is continued until each half consists only of a single number in the case of integers, or the lower and upper bound of the halves are smaller than $\varepsilon \cdot (\max(p) - min(p))$ of the range of parameter $p$, in which case this node represents the value $\frac{\max(p) - min(p)}{2}$.\newline
-    For creating these discretizations depending on the type, the \textit{Discretization} class and especially its static methods are used.
+    For creating these discretizations depending on the type, the \texttt{Discretization} class and especially its static methods are used.
     Once more, subclasses of \texttt{GraphNode} and \texttt{GraphGenerator} are created where each node represents one discretization down to the leaf nodes where the last parameter dimension is discretized as far as possible.
     Therewith, the actual values for all parameters are selected in this leaf, because every dimension is discretized down to a single value. 
     Here, the discretization is atomic.\newline
-    The graph that is created with this mechanism is searched via a best-first search, where each node is scored via the best result of three Monte-Carlo simulations.
+    The graph that is created with this mechanism is searched via a best-first search, where each node is scored via the best result of three Monte-Carlo simulations, similar to ML-Plan.
     If all child nodes of a node were visited during the search, this node is marked as \texttt{covered} and will be ignored from this point on.
     Hence, it can occur for small parameter spaces and large optimization budgets, that this approach will finish with every possible candidate evaluated before the optimization budget is spent because of the discretized view of a continuous space.
 \end{itemize}
@@ -156,10 +156,11 @@ In this current reference implementation, five optimization algorithms are imple
 
 \subsection{MCTS and Optimizer Integration for AutoML}
 \label{sec:implementation:components:mcts}
-So far, the model selection is implemented as an HTN planning problem with a suitable graph search space, where the model configuration is embedded in the optimizer nodes via the optimizer ensembles.
-Now, this model selection search space with embedded model configuration has to be actually searched for a functioning AutoML tool.
-Additionally, it needs a user-facing interface, i.e. a Python classes the user can use directly in their program, such that anyone can start an AutoML process with their custom dataset.
-These two functionalities are illustrated in Fig.~\ref{fig:implementation:uml:mcts} and outlined in the following.\newline
+So far, the model selection is implemented as an HTN planning problem with a suitable graph search space.
+Now, the model configuration has to be embedded, i.e. the graph generation has to be extended such that optimizer nodes are created for the optimizer ensembles.
+Afterwards, this model selection search space with embedded model configuration has to be actually searched for a functioning AutoML tool.
+Additionally, it needs a user-facing interface, i.e. a Python class the user can use directly in their program, such that anyone can start an AutoML process with their custom dataset.
+These functionalities are illustrated in Fig.~\ref{fig:implementation:uml:mcts} and outlined in the following.\newline
 A user should start with creating a \texttt{FrankensteinsAutoMLConfig}.
 They can customize all configuration values as wanted, but all have suitable default values such that this can be omitted as well.
 The only requirement is a dataset as the AutoML problem input, which can either be given as a \texttt{*.arff} file in combination with the index of the target class column or alternatively as two NumPy arrays.
@@ -167,22 +168,22 @@ With such a configuration object, the actual AutoML runner \texttt{Frankensteins
 
 After the start, it will create an \texttt{MctsSearchConfig} according to the user-provided \texttt{FrankensteinsAutoMLConfig} and start an \texttt{MctsSearch} with it.
 This search object will create the HTN \texttt{SearchSpace} object with the search space definition files of the AutoML optimization space, which is the basis for the MCTS graph.\newline
-For the concrete use-case of an MCTS, the \texttt{SearchSpaceGraphGenerator} and the \texttt{SearchSpaceGraphNode} are extended with additional functionality to support an MCTS and to integrate the optimizer ensembles into the HTN planning graph.
+For the concrete use-case of an MCTS as well as embedding the optimizers, the \texttt{SearchSpaceGraphGenerator} and the \texttt{SearchSpaceGraphNode} are extended with additional functionality to support these two aspects on top of the the HTN planning search graph generation.
 The graph generation works for the most part identical to the graph generation of the HTN planning but will generate the extended search graph $G'$ instead of the HTN planning graph $G$.
 It will attach an \texttt{OptimizationParameterDomain} instance to the pipeline nodes, i.e. the model selection leaf nodes $n^*_j \in N^*$, which is the parameter domain for this concrete model selection pipeline outcome $p_{n^*_j}$.
-The graph generator receives a list of \texttt{AbstractOptimizer} classes as an input, such that it can create the additional optimizer nodes $N^A_{n^*_j}$ as child nodes to $n^*_j$ for all given optimizer classes.\newline
+The graph generator receives a list of \texttt{AbstractOptimizer} classes as an input, such that it can create the additional optimizer nodes $N^A_{n^*_j}$ as child nodes to $n^*_j$ for all given optimizer classes.
 Thus, there can be three possible types of an \texttt{MctsGraphNode}:
 \begin{enumerate}
     \item It is an inner node, where the HTN planning state is not satisfied yet. It has neither a parameter domain nor an optimizer attached.
-    \item It is a pipeline node, where the HTN planning state is satisfied and the pipeline selection finalized. Therewith, a parameter domain can be created and is attached to the node.
-    \item It is an optimizer node, where one of the ensembles optimizers is attached. It will utilize the optimization domain that is attached to this nodes parent node, i.e. the corresponding pipeline node.
+    \item It is a pipeline node, where the HTN planning state is satisfied and the pipeline model selection finalized. Therewith, a parameter domain can be created and is attached to the node.
+    \item It is an optimizer node, where one of the ensemble optimizers is attached. It will utilize the optimization domain that is attached to this node's parent node, i.e. the corresponding pipeline node.
 \end{enumerate}
 
 The \texttt{MctsSearch} class follows the usual MCTS loop, where the UCT values are stored and updated on \texttt{MctsGraphNode} level which is the basis for selecting the search paths.
-Every time a node at the current end of such a path is expanded during this loop, i.e. the child nodes are generated, each new node is scored with Monte-Carlo simulations.\newline
+Every time a node at the current end of such a path is expanded during this loop, i.e. the child nodes are generated, each new child node is scored with Monte-Carlo simulations.\newline
 For this scoring mechanism, a list of all new nodes is given to an instance of a \texttt{MonteCarloSimulationRunner} as well as the number of runs that will be started for each new node.
 The single simulations are random searches that extend the Python \texttt{Thread} class in the form of the class \texttt{RandomSearchRun} to parallelize the search for optimizer nodes.
-Once all random searches reached an optimizer node, the optimizers in the corresponding optimizer nodes are started with the given timeout parameter as an optimization budget and when all optimizers terminate with their best result of this optimization run after the budget is spent, the simulation runner will return a list of node and score tuples.
+Once all random searches reached an optimizer node, the optimizers in the corresponding optimizer nodes are started with the given \texttt{timeout} parameter as an optimization budget and when all optimizers terminate with their best result of this optimization run after the budget is spent, the simulation runner will return a list of node and score tuples.
 With this tuple list, the scores can be backpropagated from the expanded child nodes and the next MCTS loop iteration can be started.
 
 \begin{figure}[ht!]
@@ -196,15 +197,15 @@ With this tuple list, the scores can be backpropagated from the expanded child n
 \label{sec:implementation:libraries}
 This reference implementation relies on a few Open-Source Python libraries.
 In the following they are listed and their contribution to the functionality of the approach explained in combination with references to their repository and/or creators.
-Libraries for development purposes that have not direct influence on the functionality, as for example libraries for unit-testing or code formatting, are omitted from this list but can be seen here:~\url{https://github.com/Berberer/frankensteins-automl/blob/master/requirements.txt}. 
+Libraries for development purposes that have no direct influence on the functionality, as for example libraries for unit-testing or code formatting, are omitted from this list but can be seen here:~\url{https://github.com/Berberer/frankensteins-automl/blob/master/requirements.txt}. 
 \begin{itemize}
     \item \textit{LIAC-ARFF}\footnote{\url{https://github.com/renatopp/liac-arff}}: A parser for files in the ARFF format to access their data from a Python program.
     \item \textit{NumPy}\footnote{\url{https://github.com/numpy/numpy}}: As a part of the \textit{SciPy} project~\cite{Virtanen-SciPy} for scientific computation, NumPy is an implementation for a wide range of mathematical functions, especially matrix calculation.
     \item \textit{PyPubSub}\footnote{\url{https://github.com/schollii/pypubsub}}: Library for implementing a Publish-Subscribe-Pattern in Python for event handling.
-    If for different events of the AutoML workflow event publishers are added, it is easy to add additional functionality, as for example logging or visualization, as subscriber plug-ins in the form of event listeners, without having to add the plug-ins functionality at every location in the code, where a relevant event occurs.
+    If for different events of the AutoML workflow event publishers are added, it is easy to add additional functionality, as for example logging or visualization, as subscriber plug-ins in the form of event listeners, without having to add the functionality of the plug-in at every location in the code, where a relevant event occurs.
     \item \textit{scikit-learn}\footnote{\url{https://github.com/scikit-learn/scikit-learn}}: The solved task-trees from the model selection and parametrizations from the model configuration have to be instantiated as an executable machine learning pipeline for evaluation during the optimization and as the final result of the AutoML problem.
     Scikit-learn~\cite{Pedregosa-Scikit-learn} is an established machine learning library with a variety of included components.
-    Most of the desired components of this AutoML optimization space will be included in scikit-learn and can be referenced in the model selection space definition.
+    Most of the desired components of this AutoML optimization space will be included in scikit-learn and can be referenced in the model selection space definition JSON files.
     Although it is possible to replace scikit-learn components in this space definition with components from another machine learning toolbox to construct pipelines automatically with this toolbox as a foundation, scikit-learn would still be a required dependency because it is also used for the evaluation of pipelines.
     \item \textit{SMAC v3}\footnote{\url{https://github.com/automl/SMAC3}}: Current version of the official SMAC implementation. It already has new additions to the original approach included, as for example warmstarting.
 \end{itemize}
@@ -213,7 +214,7 @@ Libraries for development purposes that have not direct influence on the functio
 \label{sec:implementation:json}
 To generate an HTN planning space for the model selection as well as to deduce a model configuration space for a constructed pipeline, an AutoML optimization space specification is required.
 The reference implementation of this approach uses an optimization space definition schema in the form of JSON files in a certain format.\newline
-Since it is centered around the HTN planning tasks, which can be translated to pipeline component or pipeline construction steps, this JSON format is an array of components.
+Since it is centered around the HTN planning tasks, which can be translated to pipeline components or pipeline construction steps, this JSON format is an array of components.
 Files for the component definitions have the following structure:
 \begin{verbatim}
 {
@@ -249,13 +250,13 @@ Files for the component definitions have the following structure:
 }
 \end{verbatim}
 
-The elements of the definition structure have the following semantic:
+The elements of this definition structure have the following semantic:
 \begin{itemize}
 	\item \texttt{components}: An array of the components defined in this file. They all have the following structure:
 		\begin{itemize}[label=\textbullet]
-			\item \texttt{name}: This value is used to resolve the corresponding Python class/function when constructing this component and has therefore to include the Python module path as well as the actual name, as for example "\texttt{sklearn.naive\_bayes.GaussianNB}".
+			\item \texttt{name}: This value is used to resolve the corresponding Python class or function when constructing this component and has therefore to include the Python module path as well as the actual name, as for example "\texttt{sklearn.naive\_bayes.GaussianNB}".
 			\item \texttt{providedInterfaces}: This array of strings contains unique identifiers for each interface this component provides. With one of this provided interfaces and possibly more other provided interfaces from other components, a compound task can be decomposed. 
-            \item \texttt{requiredInterfaces}: If this component is represented as a compound task and needs to be decomposed and solved to be instantiable, in this array there are definitions for the required interfaces of the decomposition. Each has the following structure:
+            \item \texttt{requiredInterfaces}: If this component is represented as a compound task and needs to be decomposed and solved to be instantiable, this array has to contain the required interface definitions for possible decompositions. Each definition has the following structure:
             \begin{itemize}[label=\textbullet]
                 \item \texttt{name}: A unique identifier of a required interface to match valid components against it for decomposition.
                 \item \texttt{construction\_key}: Since the resolved Python class constructor will be called to instantiate the current component, which has this required interfaces, the parameter type signature of the constructor has to be met with the call.
@@ -292,8 +293,8 @@ The component definition of a scikit-learn feature selection component named Sel
     ],
     "requiredInterface": [
         {
-            "name": "sklearn.feature_selection.f_classif",
-            "construction_key": 0
+            "name": "FeatureSelectionScoreFunction",
+            "construction_key": "score_func"
         }
     ],
     "parameter": [
